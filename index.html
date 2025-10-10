@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kyros — Investment Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      padding: 20px;
+    }
+
+    .gold-card {
+      background: linear-gradient(145deg, #f0ead6, #d9c89e);
+      border-radius: 10px;
+      padding: 60px 40px;
+      box-shadow:
+        inset 3px 3px 6px rgba(0, 0, 0, 0.25),
+        inset -3px -3px 6px rgba(255, 255, 255, 0.8),
+        0 20px 60px rgba(0, 0, 0, 0.5);
+      max-width: 800px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gold-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    .gold-deboss {
+      font-family: "Cinzel", serif;
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 700;
+      position: relative;
+      letter-spacing: 0.5px;
+      margin-bottom: 1.5rem;
+
+      background: linear-gradient(
+        120deg,
+        #b8860b 0%,
+        #f6e27a 20%,
+        #d4af37 40%,
+        #fff9c4 50%,
+        #c5a017 70%,
+        #8b7500 100%
+      );
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+      text-shadow:
+        1px 1px 1px rgba(255, 255, 255, 0.3),
+        -2px -2px 3px rgba(0, 0, 0, 0.4),
+        0 3px 6px rgba(0, 0, 0, 0.6);
+
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    .gold-deboss::before {
+      content: attr(data-text);
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      z-index: -1;
+      background: rgba(0, 0, 0, 0.2);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: blur(1px);
+    }
+
+    .subtitle {
+      font-family: "Cinzel", serif;
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      color: #5a4a2a;
+      margin-bottom: 2.5rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .contact {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      color: #6a5a3a;
+      line-height: 1.6;
+    }
+
+    .contact a {
+      color: #b8860b;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .contact a:hover {
+      color: #d4af37;
+    }
+  </style>
+</head>
+<body>
+  <div class="gold-card">
+    <h1 class="gold-deboss" data-text="Build the change you wish to see in the world.">
+      Build the change you wish to see in the world.
+    </h1>
+    <p class="subtitle">Kyros, an investment studio.</p>
+    <p class="contact">
+      Have an idea, question, connection, deal?<br>
+      Email us: <a href="mailto:hello@kyros.cc">hello@kyros.cc</a>
+    </p>
+  </div>
+</body>
+</html>
+
