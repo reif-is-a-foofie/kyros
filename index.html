@@ -85,14 +85,14 @@
 
     // No starfield - clean background
 
-    // Darker matte black material
+    // Emerald green material
     const solidGold = new THREE.MeshStandardMaterial({
-      color: 0x000000,           // Pure black color
+      color: 0x50C878,           // Emerald green color
       metalness: 0.0,            // No metalness
       roughness: 1.0,            // Maximum roughness - matte finish
       emissive: 0x000000,        // No emission
       side: THREE.DoubleSide,
-      flatShading: true          // Flat shading for darker, more solid look
+      flatShading: true          // Flat shading for solid look
     });
 
     // Particle system
@@ -110,22 +110,22 @@
     const tempPos = new THREE.Vector3();
     let currentTween = null;
 
-    // Fonts array for "build" - only great fonts
+    // Fonts array for "build" - only great fonts (same size as rest)
     const buildFonts = [
-      '80px "Barrio", cursive',
-      '80px "Fredoka One", cursive',
-      '80px "Grenze Gotisch", cursive',
-      '80px "Londrina Shadow", cursive',
-      '80px "Press Start 2P", monospace',
-      '80px "Rye", cursive',
-      '80px "Spicy Rice", cursive',
-      '80px "Trade Winds", cursive',
-      '80px "UnifrakturMaguntia", cursive',
-      '80px "Orbitron", monospace',
-      '80px "Righteous", cursive',
-      '80px "Alfa Slab One", cursive',
-      '80px "Bungee", cursive',
-      '80px "Rubik Wet Paint", cursive'
+      '40px "Barrio", cursive',
+      '40px "Fredoka One", cursive',
+      '40px "Grenze Gotisch", cursive',
+      '40px "Londrina Shadow", cursive',
+      '40px "Press Start 2P", monospace',
+      '40px "Rye", cursive',
+      '40px "Spicy Rice", cursive',
+      '40px "Trade Winds", cursive',
+      '40px "UnifrakturMaguntia", cursive',
+      '40px "Orbitron", monospace',
+      '40px "Righteous", cursive',
+      '40px "Alfa Slab One", cursive',
+      '40px "Bungee", cursive',
+      '40px "Rubik Wet Paint", cursive'
     ];
     
     // Static font for the rest of the sentence
@@ -163,9 +163,9 @@
       ctx.textAlign = 'left';
       ctx.fillText('build', 20, height/2);
       
-      // Draw rest of sentence in static font
+      // Draw rest of sentence in static font (aligned at same baseline)
       ctx.font = staticFont;
-      ctx.fillText(restText, 20 + buildWidth, height/2 + 5); // Slight offset for baseline alignment
+      ctx.fillText(restText, 20 + buildWidth, height/2); // Same baseline since both are 40px now
       
       const imageData = ctx.getImageData(0, 0, totalWidth, height);
       const pixels = [];
