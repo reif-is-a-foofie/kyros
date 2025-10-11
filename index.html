@@ -176,14 +176,14 @@
       const imageData = ctx.getImageData(0, 0, width, height);
       const pixels = [];
       
-      const step = 0.5;        // Dense sampling
+      const step = 1;        // Sample each pixel exactly once
       const scale = 0.12;
       
       // Sample only once per pixel - NO depth layers
       for(let y = 0; y < height; y += step) {
         for(let x = 0; x < width; x += step) {
-          const i = (y * width + x) * 4;
-          if(imageData.data[i] > 128) {
+          const pixelIndex = (Math.floor(y) * width + Math.floor(x)) * 4;
+          if(imageData.data[pixelIndex] > 128) {
             pixels.push(
               (x - width/2) * scale,
               (height/2 - y) * scale,
@@ -281,6 +281,7 @@
           center[s+1] + offset[s+1] * t,
           center[s+2] + offset[s+2] * t
         );
+        matrix.identity();  // Reset matrix to identity first
         matrix.setPosition(tempPos);
         instancedMesh.setMatrixAt(i, matrix);
       }
