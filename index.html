@@ -223,11 +223,20 @@
 
     // Morphing functionality
     let morphIndex = 0;
+    let currentTween = null;
+    
     function morphTo(index){
+      // Kill any existing animation
+      if(currentTween) {
+        currentTween.kill();
+      }
+      
       const c = combos[index];
       targetPositions.set(c.pts);
       
-      gsap.to({uProgress: 0}, {
+      console.log(`Starting 10-second morph to font ${index}`);
+      
+      currentTween = gsap.to({uProgress: 0}, {
         uProgress: 1,
         duration: 10,
         ease: "power2.inOut",
@@ -248,6 +257,8 @@
         onComplete: function(){
           positions.set(targetPositions);
           uProgress = 0;
+          currentTween = null;
+          console.log(`Morph to font ${index} complete`);
         }
       });
     }
