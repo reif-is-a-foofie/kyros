@@ -28,6 +28,7 @@
     renderer.toneMappingExposure = 1.8;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.autoClear = true;  // Ensure buffer clears every frame
     document.body.appendChild(renderer.domElement);
 
     // Bright environment for strong reflections
@@ -99,7 +100,7 @@
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // Solid gold material - tuned for tight reflection
+    // Pure matte black material
     const solidGold = new THREE.MeshPhysicalMaterial({
       color: 0x000000,           // Pure black color
       metalness: 0.0,            // No metalness
@@ -107,10 +108,8 @@
       clearcoat: 0.0,            // No clearcoat
       clearcoatRoughness: 1.0,   // Maximum roughness
       envMapIntensity: 0.0,      // No environment reflection
-      ior: 0.17,                 // Gold's actual index of refraction
-      reflectivity: 1.0,         // Maximum reflectivity
-      transmission: 0.0,         // No transmission (solid metal)
-      thickness: 0.0,            // No thickness (solid metal)
+      blending: THREE.NormalBlending,  // Normal blending to avoid ghosting
+      depthWrite: true,          // Enable depth writing
       side: THREE.DoubleSide
     });
 
@@ -318,6 +317,8 @@
       camera.position.set(panX, panY, 200);
       camera.lookAt(0, 0, 0);
       
+      // Clear and render
+      renderer.clear();
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
