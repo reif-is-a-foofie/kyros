@@ -99,14 +99,14 @@
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // Mirror-like gold material
-    const goldMaterial = new THREE.MeshPhysicalMaterial({
+    // Solid gold material - tuned for tight reflection
+    const solidGold = new THREE.MeshPhysicalMaterial({
       color: 0xffd700,           // Pure gold color
       metalness: 1.0,            // Perfect metal
-      roughness: 0.0,            // Perfect mirror surface
+      roughness: 0.05,           // Slight roughness for realistic look
       clearcoat: 1.0,            // Full clearcoat
-      clearcoatRoughness: 0.0,   // Perfect clearcoat
-      envMapIntensity: 15.0,     // Very strong environment reflection
+      clearcoatRoughness: 0.02,  // Slight clearcoat roughness
+      envMapIntensity: 2.5,      // Strong but not overwhelming reflection
       ior: 0.17,                 // Gold's actual index of refraction
       reflectivity: 1.0,         // Maximum reflectivity
       transmission: 0.0,         // No transmission (solid metal)
@@ -117,14 +117,17 @@
     // Particle system
     const maxPoints = 50000;
     const sphereGeometry = new THREE.SphereGeometry(0.06, 8, 8);
-    const instancedMesh = new THREE.InstancedMesh(sphereGeometry, goldMaterial, maxPoints);
+    const instancedMesh = new THREE.InstancedMesh(sphereGeometry, solidGold, maxPoints);
     scene.add(instancedMesh);
 
-    const positions = new Float32Array(maxPoints * 3);
-    const targetPositions = new Float32Array(maxPoints * 3);
+    // Three position arrays for clean control
+    const basePositions = new Float32Array(maxPoints * 3);     // current word shape
+    const dispersedOffsets = new Float32Array(maxPoints * 3);  // random explosion offsets
+    const targetPositions = new Float32Array(maxPoints * 3);   // next word shape
+    
     const matrix = new THREE.Matrix4();
     const tempPos = new THREE.Vector3();
-    let uProgress = 0;
+    let currentTween = null;
 
     // Fonts array - only great fonts
     const fonts = [
@@ -209,7 +212,7 @@
         // Ensure each font is loaded
         await document.fonts.load(fonts[i]);
         const pts = sampleText('build', i);
-        combos.push({pts, surface: goldMaterial, word: 'build', font: fonts[i]});
+        combos.push({pts, surface: solidGold, word: 'build', font: fonts[i]});
       }
       
       return combos;
@@ -218,54 +221,71 @@
     // Initialize after fonts load
     const combos = await buildCombos();
 
-    // Initialize with first font
-    positions.set(combos[0].pts);
-    targetPositions.set(combos[0].pts);
-    
+    // Generate explosion vectors once
     for(let i = 0; i < maxPoints; i++){
-      matrix.setPosition(positions[i*3], positions[i*3+1], positions[i*3+2]);
-      instancedMesh.setMatrixAt(i, matrix);
+      dispersedOffsets[i*3] = (Math.random() - 0.5) * 200;
+      dispersedOffsets[i*3+1] = (Math.random() - 0.5) * 200;
+      dispersedOffsets[i*3+2] = (Math.random() - 0.5) * 200;
     }
-    instancedMesh.instanceMatrix.needsUpdate = true;
 
-    // Morphing functionality
+    // Initialize with first font
+    basePositions.set(combos[0].pts);
+    updatePositions(basePositions, dispersedOffsets, 0); // solid state
+
+    // Update positions function
+    function updatePositions(center, offset, t){
+      for(let i = 0; i < maxPoints; i++){
+        const s = i * 3;
+        tempPos.set(
+          center[s] + offset[s] * t,
+          center[s+1] + offset[s+1] * t,
+          center[s+2] + offset[s+2] * t
+        );
+        matrix.setPosition(tempPos);
+        instancedMesh.setMatrixAt(i, matrix);
+      }
+      instancedMesh.instanceMatrix.needsUpdate = true;
+    }
+
+    // Morphing functionality - explode then reform
     let morphIndex = 0;
-    let currentTween = null;
     
-    function morphTo(index){
+    function explodeThenMorph(nextIndex){
       // Kill any existing animation
       if(currentTween) {
         currentTween.kill();
       }
       
-      const c = combos[index];
+      const c = combos[nextIndex];
       targetPositions.set(c.pts);
       
-      console.log(`Starting 10-second morph to font ${index}`);
+      console.log(`Starting explode-then-morph to font ${nextIndex}`);
       
-      currentTween = gsap.to({uProgress: 0}, {
-        uProgress: 1,
-        duration: 10,
-        ease: "power2.inOut",
+      // Step 1: explode outward
+      currentTween = gsap.to(instancedMesh.userData, {
+        progress: 1,
+        duration: 2,
+        ease: "power2.out",
         onUpdate: function(){
-          uProgress = this.targets()[0].uProgress;
-          
-          // Update positions
-          for(let i = 0; i < maxPoints; i++){
-            positions[i*3] = THREE.MathUtils.lerp(positions[i*3], targetPositions[i*3], uProgress);
-            positions[i*3+1] = THREE.MathUtils.lerp(positions[i*3+1], targetPositions[i*3+1], uProgress);
-            positions[i*3+2] = THREE.MathUtils.lerp(positions[i*3+2], targetPositions[i*3+2], uProgress);
-            
-            matrix.setPosition(positions[i*3], positions[i*3+1], positions[i*3+2]);
-            instancedMesh.setMatrixAt(i, matrix);
-          }
-          instancedMesh.instanceMatrix.needsUpdate = true;
+          const p = this.targets()[0].progress;
+          updatePositions(basePositions, dispersedOffsets, p);
         },
         onComplete: function(){
-          positions.set(targetPositions);
-          uProgress = 0;
-          currentTween = null;
-          console.log(`Morph to font ${index} complete`);
+          // Step 2: reform into new shape
+          gsap.to(instancedMesh.userData, {
+            progress: 0,
+            duration: 8,
+            ease: "power2.inOut",
+            onUpdate: function(){
+              const p = this.targets()[0].progress;
+              updatePositions(targetPositions, dispersedOffsets, p);
+            },
+            onComplete: function(){
+              basePositions.set(targetPositions);
+              currentTween = null;
+              console.log(`Morph to font ${nextIndex} complete`);
+            }
+          });
         }
       });
     }
@@ -274,7 +294,7 @@
     document.addEventListener('click', () => {
       morphIndex = (morphIndex + 1) % combos.length;
       console.log(`Morphing to font ${morphIndex}: ${combos[morphIndex].font}`);
-      morphTo(morphIndex);
+      explodeThenMorph(morphIndex);
     });
 
     function animate(t){
