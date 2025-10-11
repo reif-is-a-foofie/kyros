@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Build — Metallic Gold</title>
+  <title>Build — 14 Fonts, Metallic Gold</title>
   <style>
     html,body {margin:0;height:100%;background:#000;overflow:hidden;}
-    canvas {display:block;}
+    canvas {display:block;cursor:pointer;}
   </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barrio:wght@400&family=Chiller:wght@400&family=Comic+Neue:wght@700&family=Courier+Prime:wght@700&family=Creepster&family=Fredoka+One:wght@400&family=Grenze+Gotisch:wght@700&family=Londrina+Shadow:wght@400&family=Papyrus:wght@400&family=Press+Start+2P&family=Rye:wght@400&family=Spicy+Rice&family=Trade+Winds:wght@400&family=UnifrakturMaguntia:wght@400&display=swap" rel="stylesheet">
 </head>
 <body>
   <script type="module">
@@ -83,18 +86,36 @@
     const tempPos = new THREE.Vector3();
     let uProgress = 0;
 
+    // Fonts array
+    const fonts = [
+      '80px "Barrio", cursive',
+      '80px "Chiller", fantasy', 
+      '80px "Comic Neue", cursive',
+      '80px "Courier Prime", monospace',
+      '80px "Creepster", fantasy',
+      '80px "Fredoka One", cursive',
+      '80px "Grenze Gotisch", cursive',
+      '80px "Londrina Shadow", cursive',
+      '80px "Papyrus", fantasy',
+      '80px "Press Start 2P", monospace',
+      '80px "Rye", cursive',
+      '80px "Spicy Rice", cursive',
+      '80px "Trade Winds", cursive',
+      '80px "UnifrakturMaguntia", cursive'
+    ];
+
     // Sample text with 4 depth layers
-    function sampleText(word){
+    function sampleText(word, fontIndex){
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      ctx.font = '80px Arial, sans-serif';
+      ctx.font = fonts[fontIndex];
       const metrics = ctx.measureText(word);
       const width = Math.ceil(metrics.width) + 20;
       const height = 100;
       
       canvas.width = width;
       canvas.height = height;
-      ctx.font = '80px Arial, sans-serif';
+      ctx.font = fonts[fontIndex];
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'middle';
       ctx.fillText(word, 10, height/2);
@@ -135,16 +156,59 @@
       return out;
     }
 
-    // Initialize
-    const pts = sampleText('build');
-    positions.set(pts);
-    targetPositions.set(pts);
+    // Build combos for all fonts
+    const combos = [];
+    for(let i = 0; i < fonts.length; i++){
+      const pts = sampleText('build', i);
+      combos.push({pts, surface: goldMaterial, word: 'build', font: fonts[i]});
+    }
+
+    // Initialize with first font
+    positions.set(combos[0].pts);
+    targetPositions.set(combos[0].pts);
     
     for(let i = 0; i < maxPoints; i++){
       matrix.setPosition(positions[i*3], positions[i*3+1], positions[i*3+2]);
       instancedMesh.setMatrixAt(i, matrix);
     }
     instancedMesh.instanceMatrix.needsUpdate = true;
+
+    // Morphing functionality
+    let morphIndex = 0;
+    function morphTo(index){
+      const c = combos[index];
+      targetPositions.set(c.pts);
+      
+      gsap.to({uProgress: 0}, {
+        uProgress: 1,
+        duration: 2,
+        ease: "power2.inOut",
+        onUpdate: function(){
+          uProgress = this.targets()[0].uProgress;
+          
+          // Update positions
+          for(let i = 0; i < maxPoints; i++){
+            positions[i*3] = THREE.MathUtils.lerp(positions[i*3], targetPositions[i*3], uProgress);
+            positions[i*3+1] = THREE.MathUtils.lerp(positions[i*3+1], targetPositions[i*3+1], uProgress);
+            positions[i*3+2] = THREE.MathUtils.lerp(positions[i*3+2], targetPositions[i*3+2], uProgress);
+            
+            matrix.setPosition(positions[i*3], positions[i*3+1], positions[i*3+2]);
+            instancedMesh.setMatrixAt(i, matrix);
+          }
+          instancedMesh.instanceMatrix.needsUpdate = true;
+        },
+        onComplete: function(){
+          positions.set(targetPositions);
+          uProgress = 0;
+        }
+      });
+    }
+
+    // Click to morph
+    document.addEventListener('click', () => {
+      morphIndex = (morphIndex + 1) % combos.length;
+      morphTo(morphIndex);
+    });
 
     function animate(t){
       // Gentle rotation
