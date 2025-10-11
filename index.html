@@ -114,11 +114,29 @@
     const tempPos = new THREE.Vector3();
     let currentTween = null;
 
-    // Use same font for entire sentence - no morphing
+    // Fonts for main text morphing
+    const buildFonts = [
+      '40px "Barrio", cursive',
+      '40px "Fredoka One", cursive',
+      '40px "Grenze Gotisch", cursive',
+      '40px "Londrina Shadow", cursive',
+      '40px "Press Start 2P", monospace',
+      '40px "Rye", cursive',
+      '40px "Spicy Rice", cursive',
+      '40px "Trade Winds", cursive',
+      '40px "UnifrakturMaguntia", cursive',
+      '40px "Orbitron", monospace',
+      '40px "Righteous", cursive',
+      '40px "Alfa Slab One", cursive',
+      '40px "Bungee", cursive',
+      '40px "Rubik Wet Paint", cursive'
+    ];
+    
     const staticFont = '40px "Helvetica Neue", "Arial", sans-serif';
+    const smallFont = '28px "Helvetica Neue", "Arial", sans-serif';
 
-    // Sample full sentence with company info
-    function sampleSentence(){
+    // Sample full sentence with company info (main text changes font, company info stays static)
+    function sampleSentence(mainFontSpec){
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
@@ -126,12 +144,11 @@
       const companyName = 'Kyros : an investment studio';
       const contactText = 'Build with us at hello@kyros.cc';
       
-      // Measure main text
-      ctx.font = staticFont;
+      // Measure main text with variable font
+      ctx.font = mainFontSpec;
       const mainWidth = ctx.measureText(mainText).width;
       
-      // Measure company info (slightly smaller font)
-      const smallFont = '28px "Helvetica Neue", "Arial", sans-serif';
+      // Measure company info (static smaller font)
       ctx.font = smallFont;
       const companyWidth = ctx.measureText(companyName).width;
       const contactWidth = ctx.measureText(contactText).width;
@@ -150,15 +167,15 @@
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
       
-      // Draw main sentence
-      ctx.font = staticFont;
+      // Draw main sentence (morphing font)
+      ctx.font = mainFontSpec;
       ctx.fillText(mainText, 20, 30);
       
-      // Draw company name (with extra spacing)
+      // Draw company name (static font)
       ctx.font = smallFont;
       ctx.fillText(companyName, 20, 110);
       
-      // Draw contact info
+      // Draw contact info (static font)
       ctx.fillText(contactText, 20, 150);
       
       const imageData = ctx.getImageData(0, 0, totalWidth, height);
@@ -266,12 +283,34 @@
       return { positions: out, count: textParticleCount };
     }
 
-    // Build static sentence (no morphing)
+    // Build combos with morphing main text
     async function buildCombos(){
       await document.fonts.ready;
       
-      const { positions } = sampleSentence();
-      return [{pts: positions, surface: solidGold}];
+      const combos = [];
+      for(let i = 0; i < buildFonts.length; i++){
+        const fontSpec = buildFonts[i];
+        try {
+          await document.fonts.load(fontSpec, 'build');
+        } catch (err) {
+          console.warn(`Failed loading font ${fontSpec}`, err);
+          continue;
+        }
+        
+        const { positions, count } = sampleSentence(fontSpec);
+        if (!count) {
+          console.warn(`Skipping font ${fontSpec} due to zero sampled particles`);
+          continue;
+        }
+        combos.push({pts: positions, surface: solidGold, font: fontSpec});
+      }
+      
+      if (!combos.length) {
+        const { positions } = sampleSentence(staticFont);
+        combos.push({pts: positions, surface: solidGold, font: staticFont});
+      }
+
+      return combos;
     }
     
     // Initialize after fonts load
@@ -358,7 +397,12 @@
       });
     }
 
-    // Static text - no morphing
+    // Click to morph main text
+    document.addEventListener('click', () => {
+      morphIndex = (morphIndex + 1) % combos.length;
+      console.log(`Morphing to font ${morphIndex}: ${combos[morphIndex].font}`);
+      explodeThenMorph(morphIndex);
+    });
 
     function animate(t){
       // Almost imperceptible rotation to show subtle 3D depth
