@@ -260,6 +260,11 @@
       targetPositions.set(c.pts);
       
       console.log(`Starting smooth morph to font ${nextIndex}`);
+      console.log('Base positions sample:', basePositions[0], basePositions[1], basePositions[2]);
+      console.log('Target positions sample:', targetPositions[0], targetPositions[1], targetPositions[2]);
+      
+      // Reset progress
+      instancedMesh.userData.progress = 0;
       
       // Direct smooth transition without explosion
       currentTween = gsap.to(instancedMesh.userData, {
