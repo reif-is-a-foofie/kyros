@@ -99,11 +99,16 @@
       flatShading: true          // Flat shading for solid look
     });
 
-    // Particle system
+    // Particle system for morphing main text
     const maxPoints = 80000;  // More particles for denser sampling
     const sphereGeometry = new THREE.SphereGeometry(0.04, 6, 6);  // Slightly larger spheres for darker fill
     const instancedMesh = new THREE.InstancedMesh(sphereGeometry, solidGold, maxPoints);
     scene.add(instancedMesh);
+    
+    // Separate particle system for static company info
+    const staticMaxPoints = 40000;
+    const staticInstancedMesh = new THREE.InstancedMesh(sphereGeometry, solidGold, staticMaxPoints);
+    scene.add(staticInstancedMesh);
 
     // Three position arrays for clean control
     const basePositions = new Float32Array(maxPoints * 3);     // current word shape
@@ -135,48 +140,30 @@
     const staticFont = '40px "Helvetica Neue", "Arial", sans-serif';
     const smallFont = '28px "Helvetica Neue", "Arial", sans-serif';
 
-    // Sample full sentence with company info (main text changes font, company info stays static)
-    function sampleSentence(mainFontSpec){
+    // Sample only main text (morphing)
+    function sampleMainText(mainFontSpec){
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
       const mainText = 'build the change you wish to see in the world.';
-      const companyName = 'Kyros : an investment studio';
-      const contactText = 'Build with us at hello@kyros.cc';
       
-      // Measure main text with variable font
       ctx.font = mainFontSpec;
       const mainWidth = ctx.measureText(mainText).width;
       
-      // Measure company info (static smaller font)
-      ctx.font = smallFont;
-      const companyWidth = ctx.measureText(companyName).width;
-      const contactWidth = ctx.measureText(contactText).width;
-      
-      const totalWidth = Math.ceil(Math.max(mainWidth, companyWidth, contactWidth)) + 40;
-      const height = 280;
+      const totalWidth = Math.ceil(mainWidth) + 40;
+      const height = 100;
       
       canvas.width = totalWidth;
       canvas.height = height;
       
-      // Clear canvas
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, totalWidth, height);
       
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
-      
-      // Draw main sentence (morphing font)
       ctx.font = mainFontSpec;
-      ctx.fillText(mainText, 20, 30);
-      
-      // Draw company name (static font)
-      ctx.font = smallFont;
-      ctx.fillText(companyName, 20, 110);
-      
-      // Draw contact info (static font)
-      ctx.fillText(contactText, 20, 150);
+      ctx.fillText(mainText, 20, 20);
       
       const imageData = ctx.getImageData(0, 0, totalWidth, height);
       const pixels = [];
@@ -211,7 +198,73 @@
         out[i * 3 + 2] = pixels[sourceIndex + 2];
       }
       
-      console.log(`Static sentence: ${textParticleCount} base particles, ${maxPoints} total (${Math.floor(maxPoints/textParticleCount)}x density)`);
+      console.log(`Main text: ${textParticleCount} base particles, ${maxPoints} total (${Math.floor(maxPoints/textParticleCount)}x density)`);
+      
+      return { positions: out, count: textParticleCount };
+    }
+    
+    // Sample static company info (never changes)
+    function sampleCompanyInfo(){
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const companyName = 'Kyros : an investment studio';
+      const contactText = 'Build with us at hello@kyros.cc';
+      
+      ctx.font = smallFont;
+      const companyWidth = ctx.measureText(companyName).width;
+      const contactWidth = ctx.measureText(contactText).width;
+      
+      const totalWidth = Math.ceil(Math.max(companyWidth, contactWidth)) + 40;
+      const height = 120;
+      
+      canvas.width = totalWidth;
+      canvas.height = height;
+      
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, totalWidth, height);
+      
+      ctx.fillStyle = 'white';
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'left';
+      ctx.font = smallFont;
+      ctx.fillText(companyName, 20, 10);
+      ctx.fillText(contactText, 20, 50);
+      
+      const imageData = ctx.getImageData(0, 0, totalWidth, height);
+      const pixels = [];
+      
+      const step = 1;
+      const scale = 0.12;
+      const depthLayers = 4;
+      const depthStep = 0.8;
+      
+      for(let y = 0; y < height; y += step) {
+        for(let x = 0; x < totalWidth; x += step) {
+          const pixelIndex = (Math.floor(y) * totalWidth + Math.floor(x)) * 4;
+          if(imageData.data[pixelIndex] > 128) {
+            for(let z = 0; z < depthLayers; z++) {
+              pixels.push(
+                (x - totalWidth/2) * scale,
+                -10 + (height/2 - y) * scale,  // Offset down from main text
+                (z - 1.5) * depthStep
+              );
+            }
+          }
+        }
+      }
+      
+      const out = new Float32Array(staticMaxPoints * 3);
+      const textParticleCount = pixels.length / 3;
+      
+      for (let i = 0; i < staticMaxPoints; i++) {
+        const sourceIndex = (i % textParticleCount) * 3;
+        out[i * 3] = pixels[sourceIndex];
+        out[i * 3 + 1] = pixels[sourceIndex + 1];
+        out[i * 3 + 2] = pixels[sourceIndex + 2];
+      }
+      
+      console.log(`Company info: ${textParticleCount} base particles, ${staticMaxPoints} total`);
       
       return { positions: out, count: textParticleCount };
     }
@@ -297,7 +350,7 @@
           continue;
         }
         
-        const { positions, count } = sampleSentence(fontSpec);
+        const { positions, count } = sampleMainText(fontSpec);
         if (!count) {
           console.warn(`Skipping font ${fontSpec} due to zero sampled particles`);
           continue;
@@ -306,7 +359,7 @@
       }
       
       if (!combos.length) {
-        const { positions } = sampleSentence(staticFont);
+        const { positions } = sampleMainText(staticFont);
         combos.push({pts: positions, surface: solidGold, font: staticFont});
       }
 
@@ -315,6 +368,25 @@
     
     // Initialize after fonts load
     const combos = await buildCombos();
+    
+    // Initialize static company info (never changes)
+    const companyInfo = sampleCompanyInfo();
+    const staticMatrix = new THREE.Matrix4();
+    const staticTempPos = new THREE.Vector3();
+    
+    // Set up static company info particles
+    for(let i = 0; i < staticMaxPoints; i++){
+      const s = i * 3;
+      staticTempPos.set(
+        companyInfo.positions[s],
+        companyInfo.positions[s + 1],
+        companyInfo.positions[s + 2]
+      );
+      staticMatrix.identity();
+      staticMatrix.setPosition(staticTempPos);
+      staticInstancedMesh.setMatrixAt(i, staticMatrix);
+    }
+    staticInstancedMesh.instanceMatrix.needsUpdate = true;
 
     // Generate explosion vectors once
     for(let i = 0; i < maxPoints; i++){
