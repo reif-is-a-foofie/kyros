@@ -218,23 +218,36 @@
       const companyWidth = ctx.measureText(companyName).width;
       const contactWidth = ctx.measureText(contactText).width;
       
-      const totalWidth = Math.ceil(Math.max(companyWidth, contactWidth)) + 40;
-      const height = 80;
+      // Stack vertically with spacing
+      const width = 60;  // Narrow width for side placement
+      const height = Math.ceil(Math.max(companyWidth, contactWidth)) + 40;
       
-      canvas.width = totalWidth;
+      canvas.width = width;
       canvas.height = height;
       
       ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, totalWidth, height);
+      ctx.fillRect(0, 0, width, height);
       
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
-      ctx.font = sideFont;
-      ctx.fillText(companyName, 20, 10);
-      ctx.fillText(contactText, 20, 40);
       
-      const imageData = ctx.getImageData(0, 0, totalWidth, height);
+      // Rotate 90 degrees and draw text
+      ctx.save();
+      ctx.translate(15, 20);
+      ctx.rotate(Math.PI / 2);
+      ctx.font = sideFont;
+      ctx.fillText(companyName, 0, 0);
+      ctx.restore();
+      
+      ctx.save();
+      ctx.translate(40, 20);
+      ctx.rotate(Math.PI / 2);
+      ctx.font = sideFont;
+      ctx.fillText(contactText, 0, 0);
+      ctx.restore();
+      
+      const imageData = ctx.getImageData(0, 0, width, height);
       const pixels = [];
       
       const step = 1;
@@ -243,20 +256,15 @@
       const depthStep = 0.8;
       
       for(let y = 0; y < height; y += step) {
-        for(let x = 0; x < totalWidth; x += step) {
-          const pixelIndex = (Math.floor(y) * totalWidth + Math.floor(x)) * 4;
+        for(let x = 0; x < width; x += step) {
+          const pixelIndex = (Math.floor(y) * width + Math.floor(x)) * 4;
           if(imageData.data[pixelIndex] > 128) {
             for(let z = 0; z < depthLayers; z++) {
-              // Rotate 90 degrees clockwise and position on left
-              // x becomes -y (reads vertically), y becomes x (side by side)
-              const rotatedX = -35;  // Fixed position on left side
-              const rotatedY = (x - totalWidth/2) * scale;    // Vertical text runs top to bottom
-              const rotatedZ = (height/2 - y) * scale;         // Text lines separated in Z
-              
+              // Position on left side - already rotated in canvas
               pixels.push(
-                rotatedX,
-                rotatedY,
-                rotatedZ + (z - 1.5) * depthStep
+                -40 + (x - width/2) * scale,  // X position on left
+                (y - height/2) * scale,        // Y position vertically
+                (z - 1.5) * depthStep
               );
             }
           }
