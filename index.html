@@ -259,33 +259,21 @@
       const c = combos[nextIndex];
       targetPositions.set(c.pts);
       
-      console.log(`Starting explode-then-morph to font ${nextIndex}`);
+      console.log(`Starting smooth morph to font ${nextIndex}`);
       
-      // Step 1: explode outward
+      // Direct smooth transition without explosion
       currentTween = gsap.to(instancedMesh.userData, {
         progress: 1,
-        duration: 2,
-        ease: "power2.out",
+        duration: 10,
+        ease: "power2.inOut",
         onUpdate: function(){
           const p = this.targets()[0].progress;
-          updatePositions(basePositions, dispersedOffsets, p);
+          updatePositions(targetPositions, dispersedOffsets, 1 - p);
         },
         onComplete: function(){
-          // Step 2: reform into new shape
-          gsap.to(instancedMesh.userData, {
-            progress: 0,
-            duration: 8,
-            ease: "power2.inOut",
-            onUpdate: function(){
-              const p = this.targets()[0].progress;
-              updatePositions(targetPositions, dispersedOffsets, p);
-            },
-            onComplete: function(){
-              basePositions.set(targetPositions);
-              currentTween = null;
-              console.log(`Morph to font ${nextIndex} complete`);
-            }
-          });
+          basePositions.set(targetPositions);
+          currentTween = null;
+          console.log(`Morph to font ${nextIndex} complete`);
         }
       });
     }
