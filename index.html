@@ -25,7 +25,7 @@
     const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(innerWidth, innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.8;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
@@ -35,20 +35,24 @@
     const envScene = new THREE.Scene();
     envScene.background = new THREE.Color(0xffffff);
     
-    // Bright studio lighting setup
-    const studioLight1 = new THREE.DirectionalLight(0xffffff, 8);
+    // Ultra-bright studio lighting setup for strong reflections
+    const studioLight1 = new THREE.DirectionalLight(0xffffff, 15);
     studioLight1.position.set(10, 10, 5);
     envScene.add(studioLight1);
     
-    const studioLight2 = new THREE.DirectionalLight(0xffdd88, 4);
+    const studioLight2 = new THREE.DirectionalLight(0xffdd88, 12);
     studioLight2.position.set(-8, 6, -3);
     envScene.add(studioLight2);
     
-    const studioLight3 = new THREE.DirectionalLight(0x88aaff, 3);
+    const studioLight3 = new THREE.DirectionalLight(0x88aaff, 10);
     studioLight3.position.set(0, -5, 8);
     envScene.add(studioLight3);
     
-    const ambientFill = new THREE.AmbientLight(0xffffff, 2);
+    const studioLight4 = new THREE.DirectionalLight(0xff6666, 8);
+    studioLight4.position.set(5, -8, -5);
+    envScene.add(studioLight4);
+    
+    const ambientFill = new THREE.AmbientLight(0xffffff, 5);
     envScene.add(ambientFill);
     
     scene.environment = pmremGenerator.fromScene(envScene).texture;
@@ -95,14 +99,14 @@
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // Vibrant gold material
+    // Mirror-like gold material
     const goldMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xffd700,           // Pure gold color
-      metalness: 0.9,            // Very metallic
-      roughness: 0.05,           // Very smooth for mirror-like reflections
+      metalness: 1.0,            // Perfect metal
+      roughness: 0.0,            // Perfect mirror surface
       clearcoat: 1.0,            // Full clearcoat
-      clearcoatRoughness: 0.02,  // Very smooth clearcoat
-      envMapIntensity: 8.0,      // Strong environment reflection
+      clearcoatRoughness: 0.0,   // Perfect clearcoat
+      envMapIntensity: 15.0,     // Very strong environment reflection
       ior: 0.17,                 // Gold's actual index of refraction
       reflectivity: 1.0,         // Maximum reflectivity
       transmission: 0.0,         // No transmission (solid metal)
