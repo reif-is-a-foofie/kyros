@@ -100,22 +100,19 @@
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // Pure matte black material
-    const solidGold = new THREE.MeshPhysicalMaterial({
+    // Darker matte black material
+    const solidGold = new THREE.MeshStandardMaterial({
       color: 0x000000,           // Pure black color
       metalness: 0.0,            // No metalness
       roughness: 1.0,            // Maximum roughness - matte finish
-      clearcoat: 0.0,            // No clearcoat
-      clearcoatRoughness: 1.0,   // Maximum roughness
-      envMapIntensity: 0.0,      // No environment reflection
-      blending: THREE.NormalBlending,  // Normal blending to avoid ghosting
-      depthWrite: true,          // Enable depth writing
-      side: THREE.DoubleSide
+      emissive: 0x000000,        // No emission
+      side: THREE.DoubleSide,
+      flatShading: true          // Flat shading for darker, more solid look
     });
 
     // Particle system
     const maxPoints = 80000;  // More particles for denser sampling
-    const sphereGeometry = new THREE.SphereGeometry(0.03, 6, 6);  // Smaller, tighter spheres
+    const sphereGeometry = new THREE.SphereGeometry(0.04, 6, 6);  // Slightly larger spheres for darker fill
     const instancedMesh = new THREE.InstancedMesh(sphereGeometry, solidGold, maxPoints);
     scene.add(instancedMesh);
 
@@ -200,22 +197,24 @@
       const out = new Float32Array(maxPoints * 3);
       const textParticleCount = pixels.length / 3;
       
-      // Fill text particles only up to what we need
-      const visibleParticles = Math.min(textParticleCount, maxPoints);
-      for (let i = 0; i < visibleParticles; i++) {
-        out[i * 3] = pixels[i * 3];
-        out[i * 3 + 1] = pixels[i * 3 + 1];
-        out[i * 3 + 2] = pixels[i * 3 + 2];
+      // Always use all maxPoints - repeat text particles if needed
+      for (let i = 0; i < maxPoints; i++) {
+        const sourceIndex = (i % textParticleCount) * 3;
+        out[i * 3] = pixels[sourceIndex];
+        out[i * 3 + 1] = pixels[sourceIndex + 1];
+        out[i * 3 + 2] = pixels[sourceIndex + 2];
       }
       
-      // Hide extra particles far away
-      for (let i = visibleParticles; i < maxPoints; i++) {
-        out[i * 3] = 0;
-        out[i * 3 + 1] = 0;
-        out[i * 3 + 2] = -10000;  // Far behind camera
+      // If we have extra particles beyond text, hide them
+      if(textParticleCount < maxPoints) {
+        for (let i = textParticleCount; i < maxPoints; i++) {
+          out[i * 3] = 0;
+          out[i * 3 + 1] = 0;
+          out[i * 3 + 2] = -10000;  // Far behind camera
+        }
       }
       
-      console.log(`Font "${fontSpec}": ${textParticleCount} text particles, using ${visibleParticles} visible`);
+      console.log(`Font "${fontSpec}": ${textParticleCount} text particles, ${maxPoints} total particles`);
       
       return { positions: out, count: textParticleCount };
     }
