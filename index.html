@@ -192,12 +192,24 @@
       return out;
     }
 
-    // Build combos for all fonts
-    const combos = [];
-    for(let i = 0; i < fonts.length; i++){
-      const pts = sampleText('build', i);
-      combos.push({pts, surface: goldMaterial, word: 'build', font: fonts[i]});
+    // Wait for fonts to load, then build combos
+    async function buildCombos(){
+      // Wait for all fonts to load
+      await document.fonts.ready;
+      
+      const combos = [];
+      for(let i = 0; i < fonts.length; i++){
+        // Ensure each font is loaded
+        await document.fonts.load(fonts[i]);
+        const pts = sampleText('build', i);
+        combos.push({pts, surface: goldMaterial, word: 'build', font: fonts[i]});
+      }
+      
+      return combos;
     }
+    
+    // Initialize after fonts load
+    const combos = await buildCombos();
 
     // Initialize with first font
     positions.set(combos[0].pts);
@@ -243,6 +255,7 @@
     // Click to morph
     document.addEventListener('click', () => {
       morphIndex = (morphIndex + 1) % combos.length;
+      console.log(`Morphing to font ${morphIndex}: ${combos[morphIndex].font}`);
       morphTo(morphIndex);
     });
 
