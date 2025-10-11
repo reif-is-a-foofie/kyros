@@ -197,7 +197,7 @@
       const out = new Float32Array(maxPoints * 3);
       const textParticleCount = pixels.length / 3;
       
-      // Always use all maxPoints - repeat text particles if needed
+      // Always use all maxPoints - distribute across layers for density
       for (let i = 0; i < maxPoints; i++) {
         const sourceIndex = (i % textParticleCount) * 3;
         out[i * 3] = pixels[sourceIndex];
@@ -205,16 +205,7 @@
         out[i * 3 + 2] = pixels[sourceIndex + 2];
       }
       
-      // If we have extra particles beyond text, hide them
-      if(textParticleCount < maxPoints) {
-        for (let i = textParticleCount; i < maxPoints; i++) {
-          out[i * 3] = 0;
-          out[i * 3 + 1] = 0;
-          out[i * 3 + 2] = -10000;  // Far behind camera
-        }
-      }
-      
-      console.log(`Font "${fontSpec}": ${textParticleCount} text particles, ${maxPoints} total particles`);
+      console.log(`Font "${fontSpec}": ${textParticleCount} base particles, ${maxPoints} total (${Math.floor(maxPoints/textParticleCount)}x density)`);
       
       return { positions: out, count: textParticleCount };
     }
