@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Build — 14 Fonts, Metallic Gold</title>
   <style>
-    html,body {margin:0;height:100%;background:#000;overflow:hidden;}
+    html,body {margin:0;height:100%;background:#fff;overflow:hidden;}
     canvas {display:block;cursor:pointer;}
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,7 @@
     import gsap from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm';
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    scene.background = new THREE.Color(0xffffff);
 
     const camera = new THREE.PerspectiveCamera(35, innerWidth/innerHeight, 0.1, 1000);
     camera.position.z = 200;
@@ -95,14 +95,14 @@
     }
     
     starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    const starMaterial = new THREE.PointsMaterial({size: 2, color: 0xffffff, transparent: true, opacity: 0.8});
+    const starMaterial = new THREE.PointsMaterial({size: 2, color: 0x000000, transparent: true, opacity: 0.3});
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
     // Solid gold material - tuned for tight reflection
     const solidGold = new THREE.MeshPhysicalMaterial({
-      color: 0xffd700,           // Pure gold color
-      metalness: 1.0,            // Perfect metal
+      color: 0x000000,           // Black color
+      metalness: 0.1,            // Minimal metalness
       roughness: 0.05,           // Slight roughness for realistic look
       clearcoat: 1.0,            // Full clearcoat
       clearcoatRoughness: 0.02,  // Slight clearcoat roughness
