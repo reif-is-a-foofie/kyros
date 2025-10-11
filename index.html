@@ -115,7 +115,7 @@
     });
 
     // Particle system
-    const maxPoints = 30000;
+    const maxPoints = 50000;
     const sphereGeometry = new THREE.SphereGeometry(0.06, 8, 8);
     const instancedMesh = new THREE.InstancedMesh(sphereGeometry, goldMaterial, maxPoints);
     scene.add(instancedMesh);
@@ -186,12 +186,15 @@
       const out = new Float32Array(maxPoints * 3);
       const textParticleCount = pixels.length / 3;
       
+      // Fill with text particles, repeating if needed
       for (let i = 0; i < maxPoints; i++) {
         const sourceIndex = (i % textParticleCount) * 3;
         out[i * 3] = pixels[sourceIndex];
         out[i * 3 + 1] = pixels[sourceIndex + 1];
         out[i * 3 + 2] = pixels[sourceIndex + 2];
       }
+      
+      console.log(`Font ${fontIndex}: ${textParticleCount} text particles, ${maxPoints} total particles`);
       
       return out;
     }
