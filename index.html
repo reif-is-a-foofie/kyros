@@ -83,22 +83,7 @@
     fillLight.position.set(5, -10, 5);
     scene.add(fillLight);
 
-    // Starfield
-    const starGeometry = new THREE.BufferGeometry();
-    const starCount = 300;
-    const starPositions = new Float32Array(starCount * 3);
-    
-    for(let i = 0; i < starCount; i++){
-      const spread = 300;
-      starPositions[i * 3] = (Math.random() - 0.5) * spread;
-      starPositions[i * 3 + 1] = (Math.random() - 0.5) * spread;
-      starPositions[i * 3 + 2] = -150 + Math.random() * 100;
-    }
-    
-    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    const starMaterial = new THREE.PointsMaterial({size: 2, color: 0x000000, transparent: true, opacity: 0.5});
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
+    // No starfield - clean background
 
     // Darker matte black material
     const solidGold = new THREE.MeshStandardMaterial({
@@ -125,8 +110,8 @@
     const tempPos = new THREE.Vector3();
     let currentTween = null;
 
-    // Fonts array - only great fonts
-    const fonts = [
+    // Fonts array for "build" - only great fonts
+    const buildFonts = [
       '80px "Barrio", cursive',
       '80px "Fredoka One", cursive',
       '80px "Grenze Gotisch", cursive',
@@ -142,8 +127,85 @@
       '80px "Bungee", cursive',
       '80px "Rubik Wet Paint", cursive'
     ];
+    
+    // Static font for the rest of the sentence
+    const staticFont = '40px "Helvetica Neue", "Arial", sans-serif';
 
-    // Sample text - single flat layer, no duplication
+    // Sample full sentence with dynamic "build" word
+    function sampleSentence(buildFontSpec){
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Measure "build" in its font
+      ctx.font = buildFontSpec;
+      const buildWidth = ctx.measureText('build').width;
+      const buildHeight = 120;
+      
+      // Measure rest of sentence in static font
+      ctx.font = staticFont;
+      const restText = ' the change you wish to see in the world.';
+      const restWidth = ctx.measureText(restText).width;
+      
+      const totalWidth = Math.ceil(buildWidth + restWidth) + 40;
+      const height = 160;
+      
+      canvas.width = totalWidth;
+      canvas.height = height;
+      
+      // Clear canvas
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, totalWidth, height);
+      
+      // Draw "build" in dynamic font
+      ctx.font = buildFontSpec;
+      ctx.fillStyle = 'white';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      ctx.fillText('build', 20, height/2);
+      
+      // Draw rest of sentence in static font
+      ctx.font = staticFont;
+      ctx.fillText(restText, 20 + buildWidth, height/2 + 5); // Slight offset for baseline alignment
+      
+      const imageData = ctx.getImageData(0, 0, totalWidth, height);
+      const pixels = [];
+      
+      const step = 1;
+      const scale = 0.12;
+      const depthLayers = 4;
+      const depthStep = 0.8;
+      
+      for(let y = 0; y < height; y += step) {
+        for(let x = 0; x < totalWidth; x += step) {
+          const pixelIndex = (Math.floor(y) * totalWidth + Math.floor(x)) * 4;
+          if(imageData.data[pixelIndex] > 128) {
+            for(let z = 0; z < depthLayers; z++) {
+              pixels.push(
+                (x - totalWidth/2) * scale,
+                (height/2 - y) * scale,
+                (z - 1.5) * depthStep
+              );
+            }
+          }
+        }
+      }
+      
+      const out = new Float32Array(maxPoints * 3);
+      const textParticleCount = pixels.length / 3;
+      
+      for (let i = 0; i < maxPoints; i++) {
+        const sourceIndex = (i % textParticleCount) * 3;
+        out[i * 3] = pixels[sourceIndex];
+        out[i * 3 + 1] = pixels[sourceIndex + 1];
+        out[i * 3 + 2] = pixels[sourceIndex + 2];
+      }
+      
+      console.log(`Font "${buildFontSpec}": ${textParticleCount} base particles, ${maxPoints} total (${Math.floor(maxPoints/textParticleCount)}x density)`);
+      
+      return { positions: out, count: textParticleCount };
+    }
+
+    // Old sampleText function (keeping for reference, but not used)
     function sampleText(word, fontSpec){
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -215,35 +277,33 @@
       // Wait for all fonts to load
       await document.fonts.ready;
       
-      const word = 'build';
       const combos = [];
-      for(let i = 0; i < fonts.length; i++){
-        // Ensure each font is loaded
-        const fontSpec = fonts[i];
+      for(let i = 0; i < buildFonts.length; i++){
+        const fontSpec = buildFonts[i];
         try {
-          await document.fonts.load(fontSpec, word);
+          await document.fonts.load(fontSpec, 'build');
         } catch (err) {
           console.warn(`Failed loading font ${fontSpec}`, err);
           continue;
         }
         
-        if (!document.fonts.check(fontSpec, word)) {
-          console.warn(`Skipping font ${fontSpec} missing glyphs for "${word}"`);
+        if (!document.fonts.check(fontSpec, 'build')) {
+          console.warn(`Skipping font ${fontSpec} missing glyphs for "build"`);
           continue;
         }
 
-        const { positions, count } = sampleText(word, fontSpec);
+        const { positions, count } = sampleSentence(fontSpec);
         if (!count) {
           console.warn(`Skipping font ${fontSpec} due to zero sampled particles`);
           continue;
         }
-        combos.push({pts: positions, surface: solidGold, word, font: fontSpec});
+        combos.push({pts: positions, surface: solidGold, font: fontSpec});
       }
       
       if (!combos.length) {
         const fallbackFont = '80px "Arial", sans-serif';
-        const { positions } = sampleText(word, fallbackFont);
-        combos.push({pts: positions, surface: solidGold, word, font: fallbackFont});
+        const { positions } = sampleSentence(fallbackFont);
+        combos.push({pts: positions, surface: solidGold, font: fallbackFont});
       }
 
       return combos;
@@ -341,9 +401,9 @@
     });
 
     function animate(t){
-      // Subtle rotation to show 3D depth
-      instancedMesh.rotation.y = Math.sin(t * 0.0002) * 0.15;  // Reduced from 0.3
-      instancedMesh.rotation.x = Math.cos(t * 0.00015) * 0.08; // Reduced from 0.15
+      // Almost imperceptible rotation to show subtle 3D depth
+      instancedMesh.rotation.y = Math.sin(t * 0.0001) * 0.02;  // Super subtle
+      instancedMesh.rotation.x = Math.cos(t * 0.00008) * 0.01; // Almost non-existent
       
       // Slow camera pan
       const panSpeed = 0.0001;
