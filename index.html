@@ -249,6 +249,7 @@
 
     // Morphing functionality - explode then reform
     let morphIndex = 0;
+    const morphState = { progress: 0 };
     
     function explodeThenMorph(nextIndex){
       // Kill any existing animation
@@ -264,15 +265,15 @@
       console.log('Target positions sample:', targetPositions[0], targetPositions[1], targetPositions[2]);
       
       // Reset progress
-      instancedMesh.userData.progress = 0;
+      morphState.progress = 0;
       
       // Direct smooth transition without explosion
-      currentTween = gsap.to(instancedMesh.userData, {
+      currentTween = gsap.to(morphState, {
         progress: 1,
         duration: 10,
         ease: "power2.inOut",
         onUpdate: function(){
-          const p = this.targets()[0].progress;
+          const p = morphState.progress;
           // Lerp directly from base to target and update basePositions
           for(let i = 0; i < maxPoints; i++){
             const s = i * 3;
