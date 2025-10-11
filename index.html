@@ -203,7 +203,7 @@
       return { positions: out, count: textParticleCount };
     }
     
-    // Sample static company info (never changes)
+    // Sample static company info (vertical on left side)
     function sampleCompanyInfo(){
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -211,12 +211,15 @@
       const companyName = 'Kyros : an investment studio';
       const contactText = 'Build with us at hello@kyros.cc';
       
-      ctx.font = smallFont;
+      // Smaller font for vertical side text
+      const sideFont = '20px "Helvetica Neue", "Arial", sans-serif';
+      
+      ctx.font = sideFont;
       const companyWidth = ctx.measureText(companyName).width;
       const contactWidth = ctx.measureText(contactText).width;
       
       const totalWidth = Math.ceil(Math.max(companyWidth, contactWidth)) + 40;
-      const height = 120;
+      const height = 80;
       
       canvas.width = totalWidth;
       canvas.height = height;
@@ -227,9 +230,9 @@
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
-      ctx.font = smallFont;
+      ctx.font = sideFont;
       ctx.fillText(companyName, 20, 10);
-      ctx.fillText(contactText, 20, 50);
+      ctx.fillText(contactText, 20, 40);
       
       const imageData = ctx.getImageData(0, 0, totalWidth, height);
       const pixels = [];
@@ -244,9 +247,13 @@
           const pixelIndex = (Math.floor(y) * totalWidth + Math.floor(x)) * 4;
           if(imageData.data[pixelIndex] > 128) {
             for(let z = 0; z < depthLayers; z++) {
+              // Rotate 90 degrees: swap x/y and flip, position on left side
+              const rotatedX = -50 + (height/2 - y) * scale;  // Position far left
+              const rotatedY = (x - totalWidth/2) * scale;    // Vertical text
+              
               pixels.push(
-                (x - totalWidth/2) * scale,
-                -10 + (height/2 - y) * scale,  // Offset down from main text
+                rotatedX,
+                rotatedY,
                 (z - 1.5) * depthStep
               );
             }
