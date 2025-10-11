@@ -146,41 +146,49 @@
       '80px "Rubik Wet Paint", cursive'
     ];
 
-    // Sample text with 4 depth layers
-    function sampleText(word, fontIndex){
+    // Sample text - single flat layer, no duplication
+    function sampleText(word, fontSpec){
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      ctx.font = fonts[fontIndex];
-      const metrics = ctx.measureText(word);
-      const width = Math.ceil(metrics.width) + 20;
-      const height = 100;
+      ctx.font = fontSpec;
+      
+      const letterSpacing = 12;
+      const letters = [...word];
+      const letterWidths = letters.map(letter => ctx.measureText(letter).width);
+      const totalLetterWidth = letterWidths.reduce((sum, w) => sum + w, 0);
+      const spacingWidth = Math.max(0, letters.length - 1) * letterSpacing;
+      const width = Math.ceil(totalLetterWidth + spacingWidth) + 20;
+      const height = 120;
       
       canvas.width = width;
       canvas.height = height;
-      ctx.font = fonts[fontIndex];
+      ctx.font = fontSpec;
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'middle';
-      ctx.fillText(word, 10, height/2);
+      ctx.textAlign = 'left';
+      
+      let cursorX = 10;
+      for (let i = 0; i < letters.length; i++) {
+        ctx.fillText(letters[i], cursorX, height/2);
+        cursorX += letterWidths[i] + letterSpacing;
+      }
       
       const imageData = ctx.getImageData(0, 0, width, height);
       const pixels = [];
       
-      const depthLayers = 1;   // Single flat layer to avoid duplication
-      const depthStep = 0.0;   // No depth offset
       const step = 0.5;        // Dense sampling
       const scale = 0.12;
       
+      // Sample only once per pixel - NO depth layers
       for(let y = 0; y < height; y += step) {
         for(let x = 0; x < width; x += step) {
           const i = (y * width + x) * 4;
           if(imageData.data[i] > 128) {
-            for(let z = 0; z < depthLayers; z++) {
-              pixels.push(
-                (x - width/2) * scale,
-                (height/2 - y) * scale,
-                (z - 1.5) * depthStep
-              );
-            }
+            pixels.push(
+              (x - width/2) * scale,
+              (height/2 - y) * scale,
+              0  // All particles at z=0
+            );
           }
         }
       }
@@ -188,17 +196,24 @@
       const out = new Float32Array(maxPoints * 3);
       const textParticleCount = pixels.length / 3;
       
-      // Fill with text particles, repeating if needed
-      for (let i = 0; i < maxPoints; i++) {
-        const sourceIndex = (i % textParticleCount) * 3;
-        out[i * 3] = pixels[sourceIndex];
-        out[i * 3 + 1] = pixels[sourceIndex + 1];
-        out[i * 3 + 2] = pixels[sourceIndex + 2];
+      // Fill text particles only up to what we need
+      const visibleParticles = Math.min(textParticleCount, maxPoints);
+      for (let i = 0; i < visibleParticles; i++) {
+        out[i * 3] = pixels[i * 3];
+        out[i * 3 + 1] = pixels[i * 3 + 1];
+        out[i * 3 + 2] = pixels[i * 3 + 2];
       }
       
-      console.log(`Font ${fontIndex}: ${textParticleCount} text particles, ${maxPoints} total particles`);
+      // Hide extra particles far away
+      for (let i = visibleParticles; i < maxPoints; i++) {
+        out[i * 3] = 0;
+        out[i * 3 + 1] = 0;
+        out[i * 3 + 2] = -10000;  // Far behind camera
+      }
       
-      return out;
+      console.log(`Font "${fontSpec}": ${textParticleCount} text particles, using ${visibleParticles} visible`);
+      
+      return { positions: out, count: textParticleCount };
     }
 
     // Wait for fonts to load, then build combos
@@ -206,14 +221,37 @@
       // Wait for all fonts to load
       await document.fonts.ready;
       
+      const word = 'build';
       const combos = [];
       for(let i = 0; i < fonts.length; i++){
         // Ensure each font is loaded
-        await document.fonts.load(fonts[i]);
-        const pts = sampleText('build', i);
-        combos.push({pts, surface: solidGold, word: 'build', font: fonts[i]});
+        const fontSpec = fonts[i];
+        try {
+          await document.fonts.load(fontSpec, word);
+        } catch (err) {
+          console.warn(`Failed loading font ${fontSpec}`, err);
+          continue;
+        }
+        
+        if (!document.fonts.check(fontSpec, word)) {
+          console.warn(`Skipping font ${fontSpec} missing glyphs for "${word}"`);
+          continue;
+        }
+
+        const { positions, count } = sampleText(word, fontSpec);
+        if (!count) {
+          console.warn(`Skipping font ${fontSpec} due to zero sampled particles`);
+          continue;
+        }
+        combos.push({pts: positions, surface: solidGold, word, font: fontSpec});
       }
       
+      if (!combos.length) {
+        const fallbackFont = '80px "Arial", sans-serif';
+        const { positions } = sampleText(word, fallbackFont);
+        combos.push({pts: positions, surface: solidGold, word, font: fallbackFont});
+      }
+
       return combos;
     }
     
