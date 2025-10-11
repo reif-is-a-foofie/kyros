@@ -178,17 +178,21 @@
       
       const step = 1;        // Sample each pixel exactly once
       const scale = 0.12;
+      const depthLayers = 4;
+      const depthStep = 0.8;  // Space between layers
       
-      // Sample only once per pixel - NO depth layers
+      // Sample with 4 depth layers for 3D effect
       for(let y = 0; y < height; y += step) {
         for(let x = 0; x < width; x += step) {
           const pixelIndex = (Math.floor(y) * width + Math.floor(x)) * 4;
           if(imageData.data[pixelIndex] > 128) {
-            pixels.push(
-              (x - width/2) * scale,
-              (height/2 - y) * scale,
-              0  // All particles at z=0
-            );
+            for(let z = 0; z < depthLayers; z++) {
+              pixels.push(
+                (x - width/2) * scale,
+                (height/2 - y) * scale,
+                (z - 1.5) * depthStep  // Center the layers around z=0
+              );
+            }
           }
         }
       }
@@ -347,7 +351,9 @@
     });
 
     function animate(t){
-      // No rotation - keep text facing camera for crisp rendering
+      // Subtle rotation to show 3D depth
+      instancedMesh.rotation.y = Math.sin(t * 0.0002) * 0.15;  // Reduced from 0.3
+      instancedMesh.rotation.x = Math.cos(t * 0.00015) * 0.08; // Reduced from 0.15
       
       // Slow camera pan
       const panSpeed = 0.0001;
