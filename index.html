@@ -165,9 +165,9 @@
       const imageData = ctx.getImageData(0, 0, width, height);
       const pixels = [];
       
-      const depthLayers = 4;
-      const depthStep = 0.15;
-      const step = 0.5;      // Much denser sampling
+      const depthLayers = 1;   // Single flat layer to avoid duplication
+      const depthStep = 0.0;   // No depth offset
+      const step = 0.5;        // Dense sampling
       const scale = 0.12;
       
       for(let y = 0; y < height; y += step) {
@@ -317,8 +317,7 @@
       camera.position.set(panX, panY, 200);
       camera.lookAt(0, 0, 0);
       
-      // Clear and render
-      renderer.clear();
+      // Render
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
