@@ -95,18 +95,18 @@
     }
     
     starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    const starMaterial = new THREE.PointsMaterial({size: 2, color: 0x000000, transparent: true, opacity: 0.3});
+    const starMaterial = new THREE.PointsMaterial({size: 2, color: 0x000000, transparent: true, opacity: 0.5});
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
     // Solid gold material - tuned for tight reflection
     const solidGold = new THREE.MeshPhysicalMaterial({
-      color: 0x000000,           // Black color
-      metalness: 0.1,            // Minimal metalness
-      roughness: 0.05,           // Slight roughness for realistic look
-      clearcoat: 1.0,            // Full clearcoat
-      clearcoatRoughness: 0.02,  // Slight clearcoat roughness
-      envMapIntensity: 2.5,      // Strong but not overwhelming reflection
+      color: 0x000000,           // Pure black color
+      metalness: 0.0,            // No metalness
+      roughness: 1.0,            // Maximum roughness - matte finish
+      clearcoat: 0.0,            // No clearcoat
+      clearcoatRoughness: 1.0,   // Maximum roughness
+      envMapIntensity: 0.0,      // No environment reflection
       ior: 0.17,                 // Gold's actual index of refraction
       reflectivity: 1.0,         // Maximum reflectivity
       transmission: 0.0,         // No transmission (solid metal)
