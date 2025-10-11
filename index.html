@@ -115,8 +115,8 @@
     });
 
     // Particle system
-    const maxPoints = 50000;
-    const sphereGeometry = new THREE.SphereGeometry(0.06, 8, 8);
+    const maxPoints = 80000;  // More particles for denser sampling
+    const sphereGeometry = new THREE.SphereGeometry(0.03, 6, 6);  // Smaller, tighter spheres
     const instancedMesh = new THREE.InstancedMesh(sphereGeometry, solidGold, maxPoints);
     scene.add(instancedMesh);
 
@@ -168,7 +168,7 @@
       
       const depthLayers = 4;
       const depthStep = 0.15;
-      const step = 1;
+      const step = 0.5;      // Much denser sampling
       const scale = 0.12;
       
       for(let y = 0; y < height; y += step) {
