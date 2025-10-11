@@ -247,14 +247,16 @@
           const pixelIndex = (Math.floor(y) * totalWidth + Math.floor(x)) * 4;
           if(imageData.data[pixelIndex] > 128) {
             for(let z = 0; z < depthLayers; z++) {
-              // Rotate 90 degrees: swap x/y and flip, position on left side
-              const rotatedX = -50 + (height/2 - y) * scale;  // Position far left
-              const rotatedY = (x - totalWidth/2) * scale;    // Vertical text
+              // Rotate 90 degrees clockwise and position on left
+              // x becomes -y (reads vertically), y becomes x (side by side)
+              const rotatedX = -35;  // Fixed position on left side
+              const rotatedY = (x - totalWidth/2) * scale;    // Vertical text runs top to bottom
+              const rotatedZ = (height/2 - y) * scale;         // Text lines separated in Z
               
               pixels.push(
                 rotatedX,
                 rotatedY,
-                (z - 1.5) * depthStep
+                rotatedZ + (z - 1.5) * depthStep
               );
             }
           }
