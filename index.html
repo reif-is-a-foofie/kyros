@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Build — 14 Fonts, Metallic Gold</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Build the change you wish to see in the world</title>
   <style>
-    html,body {margin:0;height:100%;background:#fff;overflow:hidden;}
-    canvas {display:block;cursor:pointer;}
+    html,body {margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;}
+    canvas {display:block;cursor:pointer;width:100%;height:100%;}
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +21,10 @@
     scene.background = new THREE.Color(0xffffff);
 
     const camera = new THREE.PerspectiveCamera(35, innerWidth/innerHeight, 0.1, 1000);
-    camera.position.z = 200;
+    
+    // Adjust camera distance based on screen size
+    const isMobile = window.innerWidth < 768;
+    camera.position.z = isMobile ? 300 : 200;
 
     const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(innerWidth, innerHeight);
@@ -110,43 +114,20 @@
     const tempPos = new THREE.Vector3();
     let currentTween = null;
 
-    // Fonts array for "build" - only great fonts (same size as rest)
-    const buildFonts = [
-      '40px "Barrio", cursive',
-      '40px "Fredoka One", cursive',
-      '40px "Grenze Gotisch", cursive',
-      '40px "Londrina Shadow", cursive',
-      '40px "Press Start 2P", monospace',
-      '40px "Rye", cursive',
-      '40px "Spicy Rice", cursive',
-      '40px "Trade Winds", cursive',
-      '40px "UnifrakturMaguntia", cursive',
-      '40px "Orbitron", monospace',
-      '40px "Righteous", cursive',
-      '40px "Alfa Slab One", cursive',
-      '40px "Bungee", cursive',
-      '40px "Rubik Wet Paint", cursive'
-    ];
-    
-    // Static font for the rest of the sentence
+    // Use same font for entire sentence - no morphing
     const staticFont = '40px "Helvetica Neue", "Arial", sans-serif';
 
-    // Sample full sentence with dynamic "build" word
-    function sampleSentence(buildFontSpec){
+    // Sample full sentence in static font
+    function sampleSentence(){
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      // Measure "build" in its font
-      ctx.font = buildFontSpec;
-      const buildWidth = ctx.measureText('build').width;
-      const buildHeight = 120;
+      const fullText = 'build the change you wish to see in the world.';
       
-      // Measure rest of sentence in static font
       ctx.font = staticFont;
-      const restText = ' the change you wish to see in the world.';
-      const restWidth = ctx.measureText(restText).width;
+      const textWidth = ctx.measureText(fullText).width;
       
-      const totalWidth = Math.ceil(buildWidth + restWidth) + 40;
+      const totalWidth = Math.ceil(textWidth) + 40;
       const height = 160;
       
       canvas.width = totalWidth;
@@ -156,16 +137,12 @@
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, totalWidth, height);
       
-      // Draw "build" in dynamic font
-      ctx.font = buildFontSpec;
+      // Draw full sentence in static font
+      ctx.font = staticFont;
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'left';
-      ctx.fillText('build', 20, height/2);
-      
-      // Draw rest of sentence in static font (aligned at same baseline)
-      ctx.font = staticFont;
-      ctx.fillText(restText, 20 + buildWidth, height/2); // Same baseline since both are 40px now
+      ctx.fillText(fullText, 20, height/2);
       
       const imageData = ctx.getImageData(0, 0, totalWidth, height);
       const pixels = [];
@@ -200,7 +177,7 @@
         out[i * 3 + 2] = pixels[sourceIndex + 2];
       }
       
-      console.log(`Font "${buildFontSpec}": ${textParticleCount} base particles, ${maxPoints} total (${Math.floor(maxPoints/textParticleCount)}x density)`);
+      console.log(`Static sentence: ${textParticleCount} base particles, ${maxPoints} total (${Math.floor(maxPoints/textParticleCount)}x density)`);
       
       return { positions: out, count: textParticleCount };
     }
@@ -272,41 +249,12 @@
       return { positions: out, count: textParticleCount };
     }
 
-    // Wait for fonts to load, then build combos
+    // Build static sentence (no morphing)
     async function buildCombos(){
-      // Wait for all fonts to load
       await document.fonts.ready;
       
-      const combos = [];
-      for(let i = 0; i < buildFonts.length; i++){
-        const fontSpec = buildFonts[i];
-        try {
-          await document.fonts.load(fontSpec, 'build');
-        } catch (err) {
-          console.warn(`Failed loading font ${fontSpec}`, err);
-          continue;
-        }
-        
-        if (!document.fonts.check(fontSpec, 'build')) {
-          console.warn(`Skipping font ${fontSpec} missing glyphs for "build"`);
-          continue;
-        }
-
-        const { positions, count } = sampleSentence(fontSpec);
-        if (!count) {
-          console.warn(`Skipping font ${fontSpec} due to zero sampled particles`);
-          continue;
-        }
-        combos.push({pts: positions, surface: solidGold, font: fontSpec});
-      }
-      
-      if (!combos.length) {
-        const fallbackFont = '80px "Arial", sans-serif';
-        const { positions } = sampleSentence(fallbackFont);
-        combos.push({pts: positions, surface: solidGold, font: fallbackFont});
-      }
-
-      return combos;
+      const { positions } = sampleSentence();
+      return [{pts: positions, surface: solidGold}];
     }
     
     // Initialize after fonts load
@@ -393,12 +341,7 @@
       });
     }
 
-    // Click to morph
-    document.addEventListener('click', () => {
-      morphIndex = (morphIndex + 1) % combos.length;
-      console.log(`Morphing to font ${morphIndex}: ${combos[morphIndex].font}`);
-      explodeThenMorph(morphIndex);
-    });
+    // Static text - no morphing
 
     function animate(t){
       // Almost imperceptible rotation to show subtle 3D depth
@@ -420,7 +363,9 @@
     animate();
 
     window.addEventListener('resize', () => {
+      const isMobile = window.innerWidth < 768;
       camera.aspect = innerWidth / innerHeight;
+      camera.position.z = isMobile ? 300 : 200;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
     });
