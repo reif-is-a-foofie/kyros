@@ -212,14 +212,14 @@
       const contactText = 'Build with us at hello@kyros.cc';
       
       // Smaller font for vertical side text
-      const sideFont = '20px "Helvetica Neue", "Arial", sans-serif';
+      const sideFont = '14px "Helvetica Neue", "Arial", sans-serif';
       
       ctx.font = sideFont;
       const companyWidth = ctx.measureText(companyName).width;
       const contactWidth = ctx.measureText(contactText).width;
       
       // Stack vertically with spacing
-      const width = 60;  // Narrow width for side placement
+      const width = 40;  // Narrower for smaller text
       const height = Math.ceil(Math.max(companyWidth, contactWidth)) + 40;
       
       canvas.width = width;
@@ -232,16 +232,16 @@
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
       
-      // Rotate 90 degrees and draw text
+      // Rotate 90 degrees and draw text closer together
       ctx.save();
-      ctx.translate(15, 20);
+      ctx.translate(12, 20);
       ctx.rotate(Math.PI / 2);
       ctx.font = sideFont;
       ctx.fillText(companyName, 0, 0);
       ctx.restore();
       
       ctx.save();
-      ctx.translate(40, 20);
+      ctx.translate(28, 20);
       ctx.rotate(Math.PI / 2);
       ctx.font = sideFont;
       ctx.fillText(contactText, 0, 0);
@@ -250,21 +250,21 @@
       const imageData = ctx.getImageData(0, 0, width, height);
       const pixels = [];
       
-      const step = 1;
+      const step = 0.5;  // Denser sampling for more solid look
       const scale = 0.12;
-      const depthLayers = 4;
-      const depthStep = 0.8;
+      const depthLayers = 6;  // More layers for solid appearance
+      const depthStep = 0.3;  // Tighter layers
       
       for(let y = 0; y < height; y += step) {
         for(let x = 0; x < width; x += step) {
           const pixelIndex = (Math.floor(y) * width + Math.floor(x)) * 4;
           if(imageData.data[pixelIndex] > 128) {
             for(let z = 0; z < depthLayers; z++) {
-              // Position on left side - already rotated in canvas
+              // Position on left side and move down
               pixels.push(
-                -40 + (x - width/2) * scale,  // X position on left
-                (y - height/2) * scale,        // Y position vertically
-                (z - 1.5) * depthStep
+                -40 + (x - width/2) * scale,   // X position on left
+                -15 + (y - height/2) * scale,  // Y position moved down
+                (z - 2.5) * depthStep          // Centered depth layers
               );
             }
           }
