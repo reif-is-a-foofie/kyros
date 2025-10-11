@@ -230,6 +230,9 @@
     // Initialize with first font
     basePositions.set(combos[0].pts);
     updatePositions(basePositions, dispersedOffsets, 0); // solid state
+    
+    console.log('Scene children:', scene.children.length);
+    console.log('InstancedMesh count:', scene.children.filter(c => c.isInstancedMesh).length);
 
     // Update positions function
     function updatePositions(center, offset, t){
