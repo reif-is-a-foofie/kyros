@@ -117,18 +117,27 @@
     // Use same font for entire sentence - no morphing
     const staticFont = '40px "Helvetica Neue", "Arial", sans-serif';
 
-    // Sample full sentence in static font
+    // Sample full sentence with company info
     function sampleSentence(){
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      const fullText = 'build the change you wish to see in the world.';
+      const mainText = 'build the change you wish to see in the world.';
+      const companyName = 'Kyros : an investment studio';
+      const contactText = 'Build with us at hello@kyros.cc';
       
+      // Measure main text
       ctx.font = staticFont;
-      const textWidth = ctx.measureText(fullText).width;
+      const mainWidth = ctx.measureText(mainText).width;
       
-      const totalWidth = Math.ceil(textWidth) + 40;
-      const height = 160;
+      // Measure company info (slightly smaller font)
+      const smallFont = '28px "Helvetica Neue", "Arial", sans-serif';
+      ctx.font = smallFont;
+      const companyWidth = ctx.measureText(companyName).width;
+      const contactWidth = ctx.measureText(contactText).width;
+      
+      const totalWidth = Math.ceil(Math.max(mainWidth, companyWidth, contactWidth)) + 40;
+      const height = 280;
       
       canvas.width = totalWidth;
       canvas.height = height;
@@ -137,12 +146,20 @@
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, totalWidth, height);
       
-      // Draw full sentence in static font
-      ctx.font = staticFont;
       ctx.fillStyle = 'white';
-      ctx.textBaseline = 'middle';
+      ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
-      ctx.fillText(fullText, 20, height/2);
+      
+      // Draw main sentence
+      ctx.font = staticFont;
+      ctx.fillText(mainText, 20, 30);
+      
+      // Draw company name (with extra spacing)
+      ctx.font = smallFont;
+      ctx.fillText(companyName, 20, 110);
+      
+      // Draw contact info
+      ctx.fillText(contactText, 20, 150);
       
       const imageData = ctx.getImageData(0, 0, totalWidth, height);
       const pixels = [];
