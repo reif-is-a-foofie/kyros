@@ -268,7 +268,20 @@
         ease: "power2.inOut",
         onUpdate: function(){
           const p = this.targets()[0].progress;
-          updatePositions(targetPositions, dispersedOffsets, 1 - p);
+          // Lerp directly from base to target
+          for(let i = 0; i < maxPoints; i++){
+            const s = i * 3;
+            tempPos.set(
+              THREE.MathUtils.lerp(basePositions[s], targetPositions[s], p),
+              THREE.MathUtils.lerp(basePositions[s+1], targetPositions[s+1], p),
+              THREE.MathUtils.lerp(basePositions[s+2], targetPositions[s+2], p)
+            );
+            matrix.setPosition(tempPos);
+            blurMesh.setMatrixAt(i, matrix);
+            sharpMesh.setMatrixAt(i, matrix);
+          }
+          blurMesh.instanceMatrix.needsUpdate = true;
+          sharpMesh.instanceMatrix.needsUpdate = true;
         },
         onComplete: function(){
           basePositions.set(targetPositions);
