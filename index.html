@@ -30,25 +30,25 @@
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
 
-    // Rich environment for realistic reflections
+    // Bright environment for strong reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     const envScene = new THREE.Scene();
-    envScene.background = new THREE.Color(0x2a2a2a);
+    envScene.background = new THREE.Color(0xffffff);
     
-    // Studio lighting setup
-    const studioLight1 = new THREE.DirectionalLight(0xffffff, 3);
+    // Bright studio lighting setup
+    const studioLight1 = new THREE.DirectionalLight(0xffffff, 8);
     studioLight1.position.set(10, 10, 5);
     envScene.add(studioLight1);
     
-    const studioLight2 = new THREE.DirectionalLight(0xffdd88, 1.5);
+    const studioLight2 = new THREE.DirectionalLight(0xffdd88, 4);
     studioLight2.position.set(-8, 6, -3);
     envScene.add(studioLight2);
     
-    const studioLight3 = new THREE.DirectionalLight(0x88aaff, 1);
+    const studioLight3 = new THREE.DirectionalLight(0x88aaff, 3);
     studioLight3.position.set(0, -5, 8);
     envScene.add(studioLight3);
     
-    const ambientFill = new THREE.AmbientLight(0x444444, 0.8);
+    const ambientFill = new THREE.AmbientLight(0xffffff, 2);
     envScene.add(ambientFill);
     
     scene.environment = pmremGenerator.fromScene(envScene).texture;
@@ -95,16 +95,16 @@
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // Realistic gold material
+    // Vibrant gold material
     const goldMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xffd700,           // Pure gold color
-      metalness: 0.95,           // Very metallic but not perfect
-      roughness: 0.15,           // Slight surface roughness for realism
-      clearcoat: 0.8,            // Moderate clearcoat
-      clearcoatRoughness: 0.1,   // Slight clearcoat roughness
-      envMapIntensity: 2.5,      // Subtle environment reflection
+      metalness: 0.9,            // Very metallic
+      roughness: 0.05,           // Very smooth for mirror-like reflections
+      clearcoat: 1.0,            // Full clearcoat
+      clearcoatRoughness: 0.02,  // Very smooth clearcoat
+      envMapIntensity: 8.0,      // Strong environment reflection
       ior: 0.17,                 // Gold's actual index of refraction
-      reflectivity: 0.9,         // High reflectivity
+      reflectivity: 1.0,         // Maximum reflectivity
       transmission: 0.0,         // No transmission (solid metal)
       thickness: 0.0,            // No thickness (solid metal)
       side: THREE.DoubleSide
@@ -112,7 +112,7 @@
 
     // Particle system
     const maxPoints = 30000;
-    const sphereGeometry = new THREE.SphereGeometry(0.08, 6, 6);
+    const sphereGeometry = new THREE.SphereGeometry(0.06, 8, 8);
     const instancedMesh = new THREE.InstancedMesh(sphereGeometry, goldMaterial, maxPoints);
     scene.add(instancedMesh);
 
@@ -160,9 +160,9 @@
       const pixels = [];
       
       const depthLayers = 4;
-      const depthStep = 0.3;
+      const depthStep = 0.15;
       const step = 1;
-      const scale = 0.15;
+      const scale = 0.12;
       
       for(let y = 0; y < height; y += step) {
         for(let x = 0; x < width; x += step) {
