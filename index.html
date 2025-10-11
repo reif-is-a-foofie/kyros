@@ -277,11 +277,9 @@
               THREE.MathUtils.lerp(basePositions[s+2], targetPositions[s+2], p)
             );
             matrix.setPosition(tempPos);
-            blurMesh.setMatrixAt(i, matrix);
-            sharpMesh.setMatrixAt(i, matrix);
+            instancedMesh.setMatrixAt(i, matrix);
           }
-          blurMesh.instanceMatrix.needsUpdate = true;
-          sharpMesh.instanceMatrix.needsUpdate = true;
+          instancedMesh.instanceMatrix.needsUpdate = true;
         },
         onComplete: function(){
           basePositions.set(targetPositions);
