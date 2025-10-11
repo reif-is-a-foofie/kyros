@@ -25,25 +25,57 @@
     const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(innerWidth, innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 2.0;
+    renderer.toneMappingExposure = 1.2;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
 
-    // Simple environment for reflections
+    // Rich environment for realistic reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     const envScene = new THREE.Scene();
-    envScene.background = new THREE.Color(0xcccccc);
-    envScene.add(new THREE.AmbientLight(0xffffff, 2));
+    envScene.background = new THREE.Color(0x2a2a2a);
+    
+    // Studio lighting setup
+    const studioLight1 = new THREE.DirectionalLight(0xffffff, 3);
+    studioLight1.position.set(10, 10, 5);
+    envScene.add(studioLight1);
+    
+    const studioLight2 = new THREE.DirectionalLight(0xffdd88, 1.5);
+    studioLight2.position.set(-8, 6, -3);
+    envScene.add(studioLight2);
+    
+    const studioLight3 = new THREE.DirectionalLight(0x88aaff, 1);
+    studioLight3.position.set(0, -5, 8);
+    envScene.add(studioLight3);
+    
+    const ambientFill = new THREE.AmbientLight(0x444444, 0.8);
+    envScene.add(ambientFill);
+    
     scene.environment = pmremGenerator.fromScene(envScene).texture;
     pmremGenerator.dispose();
 
-    // Lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 4.0);
-    keyLight.position.set(10, 15, 10);
+    // Realistic lighting setup
+    const warmAmbient = new THREE.AmbientLight(0xffdd88, 0.6);
+    scene.add(warmAmbient);
+    
+    const keyLight = new THREE.DirectionalLight(0xffdd88, 3.0);
+    keyLight.position.set(15, 20, 10);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.setScalar(2048);
+    keyLight.shadow.camera.near = 0.1;
+    keyLight.shadow.camera.far = 50;
+    keyLight.shadow.camera.left = -10;
+    keyLight.shadow.camera.right = 10;
+    keyLight.shadow.camera.top = 10;
+    keyLight.shadow.camera.bottom = -10;
     scene.add(keyLight);
     
-    const fillLight = new THREE.DirectionalLight(0x6688ff, 1.2);
-    fillLight.position.set(-8, 5, -8);
+    const rimLight = new THREE.DirectionalLight(0x88aaff, 1.5);
+    rimLight.position.set(-10, 5, -15);
+    scene.add(rimLight);
+    
+    const fillLight = new THREE.DirectionalLight(0xffaa66, 0.8);
+    fillLight.position.set(5, -10, 5);
     scene.add(fillLight);
 
     // Starfield
@@ -63,14 +95,18 @@
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // Gold material
+    // Realistic gold material
     const goldMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xd4af37,
-      metalness: 1.0,
-      roughness: 0,
-      clearcoat: 1,
-      clearcoatRoughness: 0,
-      envMapIntensity: 10.0,
+      color: 0xffd700,           // Pure gold color
+      metalness: 0.95,           // Very metallic but not perfect
+      roughness: 0.15,           // Slight surface roughness for realism
+      clearcoat: 0.8,            // Moderate clearcoat
+      clearcoatRoughness: 0.1,   // Slight clearcoat roughness
+      envMapIntensity: 2.5,      // Subtle environment reflection
+      ior: 0.17,                 // Gold's actual index of refraction
+      reflectivity: 0.9,         // High reflectivity
+      transmission: 0.0,         // No transmission (solid metal)
+      thickness: 0.0,            // No thickness (solid metal)
       side: THREE.DoubleSide
     });
 
