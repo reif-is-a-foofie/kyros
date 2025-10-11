@@ -1,147 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kyros — Investment Studio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Build — Metallic Gold</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      padding: 20px;
-    }
-
-    .gold-card {
-      background: linear-gradient(145deg, #f0ead6, #d9c89e);
-      border-radius: 10px;
-      padding: 60px 40px;
-      box-shadow:
-        inset 3px 3px 6px rgba(0, 0, 0, 0.25),
-        inset -3px -3px 6px rgba(255, 255, 255, 0.8),
-        0 20px 60px rgba(0, 0, 0, 0.5);
-      max-width: 800px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .gold-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-image: 
-        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
-        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-      pointer-events: none;
-      opacity: 0.3;
-    }
-
-    .gold-deboss {
-      font-family: "Cinzel", serif;
-      font-size: clamp(1.8rem, 5vw, 2.5rem);
-      font-weight: 700;
-      position: relative;
-      letter-spacing: 0.5px;
-      margin-bottom: 1.5rem;
-
-      background: linear-gradient(
-        120deg,
-        #b8860b 0%,
-        #f6e27a 20%,
-        #d4af37 40%,
-        #fff9c4 50%,
-        #c5a017 70%,
-        #8b7500 100%
-      );
-      background-size: 200% 200%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-
-      text-shadow:
-        1px 1px 1px rgba(255, 255, 255, 0.3),
-        -2px -2px 3px rgba(0, 0, 0, 0.4),
-        0 3px 6px rgba(0, 0, 0, 0.6);
-
-      animation: shimmer 3s ease-in-out infinite;
-    }
-
-    @keyframes shimmer {
-      0%, 100% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-    }
-
-    .gold-deboss::before {
-      content: attr(data-text);
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      z-index: -1;
-      background: rgba(0, 0, 0, 0.2);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: blur(1px);
-    }
-
-    .subtitle {
-      font-family: "Cinzel", serif;
-      font-size: clamp(1rem, 3vw, 1.3rem);
-      color: #5a4a2a;
-      margin-bottom: 2.5rem;
-      font-weight: 600;
-      letter-spacing: 1px;
-    }
-
-    .contact {
-      font-family: system-ui, -apple-system, sans-serif;
-      font-size: clamp(0.9rem, 2.5vw, 1rem);
-      color: #6a5a3a;
-      line-height: 1.6;
-    }
-
-    .contact a {
-      color: #b8860b;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
-
-    .contact a:hover {
-      color: #d4af37;
-    }
+    html,body {margin:0;height:100%;background:#000;overflow:hidden;}
+    canvas {display:block;}
   </style>
 </head>
 <body>
-  <div class="gold-card">
-    <h1 class="gold-deboss" data-text="Build the change you wish to see in the world.">
-      Build the change you wish to see in the world.
-    </h1>
-    <p class="subtitle">Kyros, an investment studio.</p>
-    <p class="contact">
-      Have an idea, question, connection, deal?<br>
-      Email us: <a href="mailto:hello@kyros.cc">hello@kyros.cc</a>
-    </p>
-  </div>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js';
+    import gsap from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    const camera = new THREE.PerspectiveCamera(35, innerWidth/innerHeight, 0.1, 1000);
+    camera.position.z = 280;
+
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 2.0;
+    document.body.appendChild(renderer.domElement);
+
+    // Simple environment for reflections
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    const envScene = new THREE.Scene();
+    envScene.background = new THREE.Color(0xcccccc);
+    envScene.add(new THREE.AmbientLight(0xffffff, 2));
+    scene.environment = pmremGenerator.fromScene(envScene).texture;
+    pmremGenerator.dispose();
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 4.0);
+    keyLight.position.set(10, 15, 10);
+    scene.add(keyLight);
+    
+    const fillLight = new THREE.DirectionalLight(0x6688ff, 1.2);
+    fillLight.position.set(-8, 5, -8);
+    scene.add(fillLight);
+
+    // Starfield
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 300;
+    const starPositions = new Float32Array(starCount * 3);
+    
+    for(let i = 0; i < starCount; i++){
+      const spread = 300;
+      starPositions[i * 3] = (Math.random() - 0.5) * spread;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * spread;
+      starPositions[i * 3 + 2] = -150 + Math.random() * 100;
+    }
+    
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starMaterial = new THREE.PointsMaterial({size: 2, color: 0xffffff, transparent: true, opacity: 0.8});
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    // Gold material
+    const goldMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xd4af37,
+      metalness: 1.0,
+      roughness: 0,
+      clearcoat: 1,
+      clearcoatRoughness: 0,
+      envMapIntensity: 10.0,
+      side: THREE.DoubleSide
+    });
+
+    // Particle system
+    const maxPoints = 30000;
+    const sphereGeometry = new THREE.SphereGeometry(0.13, 8, 8);
+    const instancedMesh = new THREE.InstancedMesh(sphereGeometry, goldMaterial, maxPoints);
+    scene.add(instancedMesh);
+
+    const positions = new Float32Array(maxPoints * 3);
+    const targetPositions = new Float32Array(maxPoints * 3);
+    const matrix = new THREE.Matrix4();
+    const tempPos = new THREE.Vector3();
+    let uProgress = 0;
+
+    // Sample text with 4 depth layers
+    function sampleText(word){
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.font = '80px Arial, sans-serif';
+      const metrics = ctx.measureText(word);
+      const width = Math.ceil(metrics.width) + 20;
+      const height = 100;
+      
+      canvas.width = width;
+      canvas.height = height;
+      ctx.font = '80px Arial, sans-serif';
+      ctx.fillStyle = 'white';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(word, 10, height/2);
+      
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const pixels = [];
+      
+      const depthLayers = 4;
+      const depthStep = 0.8;
+      const step = 2;
+      const scale = 0.25;
+      
+      for(let y = 0; y < height; y += step) {
+        for(let x = 0; x < width; x += step) {
+          const i = (y * width + x) * 4;
+          if(imageData.data[i] > 128) {
+            for(let z = 0; z < depthLayers; z++) {
+              pixels.push(
+                (x - width/2) * scale,
+                (height/2 - y) * scale,
+                (z - 1.5) * depthStep
+              );
+            }
+          }
+        }
+      }
+      
+      const out = new Float32Array(maxPoints * 3);
+      const textParticleCount = pixels.length / 3;
+      
+      for (let i = 0; i < maxPoints; i++) {
+        const sourceIndex = (i % textParticleCount) * 3;
+        out[i * 3] = pixels[sourceIndex];
+        out[i * 3 + 1] = pixels[sourceIndex + 1];
+        out[i * 3 + 2] = pixels[sourceIndex + 2];
+      }
+      
+      return out;
+    }
+
+    // Initialize
+    const pts = sampleText('build');
+    positions.set(pts);
+    targetPositions.set(pts);
+    
+    for(let i = 0; i < maxPoints; i++){
+      matrix.setPosition(positions[i*3], positions[i*3+1], positions[i*3+2]);
+      instancedMesh.setMatrixAt(i, matrix);
+    }
+    instancedMesh.instanceMatrix.needsUpdate = true;
+
+    function animate(t){
+      // Gentle rotation
+      instancedMesh.rotation.y = Math.sin(t * 0.0002) * 0.3;
+      instancedMesh.rotation.x = Math.cos(t * 0.00015) * 0.15;
+      
+      // Slow camera pan
+      const panSpeed = 0.0001;
+      const panX = Math.sin(t * panSpeed) * 25;
+      const panY = Math.cos(t * panSpeed * 0.7) * 15;
+      
+      camera.position.set(panX, panY, 280);
+      camera.lookAt(0, 0, 0);
+      
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
 </body>
 </html>
-
