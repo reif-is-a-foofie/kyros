@@ -268,21 +268,24 @@
         ease: "power2.inOut",
         onUpdate: function(){
           const p = this.targets()[0].progress;
-          // Lerp directly from base to target
+          // Lerp directly from base to target and update basePositions
           for(let i = 0; i < maxPoints; i++){
             const s = i * 3;
-            tempPos.set(
-              THREE.MathUtils.lerp(basePositions[s], targetPositions[s], p),
-              THREE.MathUtils.lerp(basePositions[s+1], targetPositions[s+1], p),
-              THREE.MathUtils.lerp(basePositions[s+2], targetPositions[s+2], p)
-            );
+            const newX = THREE.MathUtils.lerp(basePositions[s], targetPositions[s], p);
+            const newY = THREE.MathUtils.lerp(basePositions[s+1], targetPositions[s+1], p);
+            const newZ = THREE.MathUtils.lerp(basePositions[s+2], targetPositions[s+2], p);
+            
+            tempPos.set(newX, newY, newZ);
             matrix.setPosition(tempPos);
             instancedMesh.setMatrixAt(i, matrix);
           }
           instancedMesh.instanceMatrix.needsUpdate = true;
         },
         onComplete: function(){
-          basePositions.set(targetPositions);
+          // Copy final positions to basePositions for next morph
+          for(let i = 0; i < maxPoints * 3; i++){
+            basePositions[i] = targetPositions[i];
+          }
           currentTween = null;
           console.log(`Morph to font ${nextIndex} complete`);
         }
