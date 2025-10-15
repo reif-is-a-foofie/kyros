@@ -79,6 +79,10 @@
     let bubbles = [];
     let mouseX = 0;
     let mouseY = 0;
+    let pointerX = 0, pointerY = 0;
+    let pointerXOnPointerDown = 0, pointerYOnPointerDown = 0;
+    let targetRotationX = 0, targetRotationY = 0;
+    let targetRotationXOnPointerDown = 0, targetRotationYOnPointerDown = 0;
 
     function init() {
       console.log('🚀 Starting Three.js initialization...');
@@ -86,7 +90,7 @@
       
       // Camera positioned inside the bubble cloud for immersive parallax
       camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
-      camera.position.set(0, 0, 0);  // Center of the bubble field
+      camera.position.set(0, 0, 5);  // Moved back to avoid clipping
       console.log('✅ Camera created');
 
       // Scene with clean white background
@@ -95,15 +99,12 @@
       scene.fog = new THREE.FogExp2(0xffffff, 0.005); // Subtle white fog for depth
       console.log('✅ Scene created with white background');
       
-      // Load EXR environment map for metallic reflections only
-      const exrLoader = new EXRLoader();
-      exrLoader.load('machine_shop_01_4k.exr', function(texture) {
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = texture; // Keep environment for metallic reflections
-        // Don't set as background - keep white background
-      }, undefined, function(error) {
-        console.log('EXR loading failed, continuing without environment map:', error);
-      });
+      // Skip EXR loading for now - can cause blocking issues
+      console.log('⚠️ Skipping EXR environment map loading');
+
+      // Add ambient light for MeshPhysicalMaterial
+      scene.add(new THREE.AmbientLight(0xffffff, 1));
+      console.log('✅ Added ambient light for metallic materials');
 
       // Renderer (must be created first)
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -139,9 +140,8 @@
       
       for(let i = 0; i < bubbleCount; i++){
         const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
-        
+
         // Distribute metallic balls around text (responsive)
-        const isMobile = window.innerWidth < 768;
         const spreadX = isMobile ? 200 : 300;
         const spreadY = isMobile ? 150 : 200;
         const spreadZ = isMobile ? 200 : 300;
@@ -152,13 +152,12 @@
         // Some bubbles in front of text (positive Z), some behind (negative Z)
         const frontBubble = Math.random() < 0.3; // 30% chance to be in front
         if (frontBubble) {
-          bubble.position.z = Math.random() * 50 + 5; // 5 to 55 (in front of text at -10)
+          bubble.position.z = Math.random() * 50 + 10; // 10 to 60 (in front of text at -5)
         } else {
-          bubble.position.z = (Math.random() - 0.5) * spreadZ - 20; // Behind text
+          bubble.position.z = (Math.random() - 0.5) * spreadZ - 15; // Behind text
         }
         
         // Vary metallic ball sizes (responsive)
-        const isMobile = window.innerWidth < 768;
         const minSize = isMobile ? 2 : 3;
         const maxSize = isMobile ? 4 : 6;
         bubble.scale.setScalar(Math.random() * (maxSize - minSize) + minSize);
@@ -234,7 +233,7 @@
       const planeHeight = isMobile ? 4 : 6;
       
       textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material1);
-      textMesh1.position.set(0, 1, -10);  // Center text vertically
+      textMesh1.position.set(0, 1, -5);  // Center text vertically (relative to camera at Z=5)
       group.add(textMesh1);
       console.log('✅ Text mesh created and added to scene');
 
@@ -306,7 +305,6 @@
         bubble.rotation.z += userData.rotationSpeed * 0.3;
         
         // Recycle balls that go too high (responsive)
-        const isMobile = window.innerWidth < 768;
         const maxHeight = isMobile ? 150 : 200;
         const spreadX = isMobile ? 200 : 300;
         const spreadZ = isMobile ? 200 : 300;
@@ -318,9 +316,9 @@
           // Maintain front/back distribution when recycling
           const frontBubble = Math.random() < 0.3; // 30% chance to be in front
           if (frontBubble) {
-            bubble.position.z = Math.random() * 50 + 5; // 5 to 55 (in front of text)
+            bubble.position.z = Math.random() * 50 + 10; // 10 to 60 (in front of text)
           } else {
-            bubble.position.z = (Math.random() - 0.5) * spreadZ - 20; // Behind text
+            bubble.position.z = (Math.random() - 0.5) * spreadZ - 15; // Behind text
           }
           bubble.rotation.set(0, 0, 0);
         }
@@ -335,9 +333,9 @@
       // Smooth camera movement around text
       camera.position.x += (targetX - camera.position.x) * 0.08;
       camera.position.y += (targetY - camera.position.y) * 0.08;
-      camera.position.z = 0;  // Keep camera at same Z level
+      camera.position.z = 5;  // Keep camera at same Z level
       
-      camera.lookAt(0, 0, -10);  // Look at the text position
+      camera.lookAt(0, 0, -5);  // Look at the text position (adjusted for camera position)
       renderer.render(scene, camera);
     }
   </script>
