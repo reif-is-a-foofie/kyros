@@ -81,14 +81,18 @@
     let mouseY = 0;
 
     function init() {
+      console.log('🚀 Starting Three.js initialization...');
+      
       // Camera positioned inside the bubble cloud for immersive parallax
       camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
       camera.position.set(0, 0, 0);  // Center of the bubble field
+      console.log('✅ Camera created');
 
       // Scene with clean white background
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0xffffff); // Clean white background
       scene.fog = new THREE.FogExp2(0xffffff, 0.005); // Subtle white fog for depth
+      console.log('✅ Scene created with white background');
       
       // Load EXR environment map for metallic reflections only
       const exrLoader = new EXRLoader();
@@ -171,6 +175,7 @@
         bubbles.push(bubble);
         scene.add(bubble);
       }
+      console.log(`✅ Created ${bubbleCount} bubbles`);
 
       // Create initial text
       createText();
@@ -187,6 +192,7 @@
     }
 
     function createText() {
+      console.log('📝 Creating text...');
       if (textMesh1) group.remove(textMesh1);
 
       // Create canvas texture for main text (2 lines)
@@ -229,6 +235,7 @@
       textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material1);
       textMesh1.position.set(0, 1, -10);  // Center text vertically
       group.add(textMesh1);
+      console.log('✅ Text mesh created and added to scene');
 
     }
 
@@ -242,6 +249,7 @@
       
       // Recreate text with responsive sizing
       createText();
+      console.log('🎉 Three.js initialization complete!');
     }
 
     // Initialize after DOM is ready
@@ -276,6 +284,11 @@
     }
 
     function animate(t) {
+      // Only log once to avoid spam
+      if (!animate.logged) {
+        console.log('🎬 Animation loop started');
+        animate.logged = true;
+      }
       
       const time = (t || 0) * 0.0001;
       
