@@ -9,7 +9,7 @@ const errors = [];
 page.on('console', msg => logs.push(`${msg.type()}: ${msg.text()}`));
 page.on('pageerror', error => errors.push(error.message));
 
-await page.goto('http://localhost:8000', { waitUntil: 'networkidle0', timeout: 15000 });
+await page.goto('http://localhost:8001', { waitUntil: 'networkidle0', timeout: 15000 });
 await new Promise(r => setTimeout(r, 10000));
 
 console.log('=== Errors ===');

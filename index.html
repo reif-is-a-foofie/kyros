@@ -241,8 +241,8 @@
     let textOrbitRadius = 12;
     let earthRadius = 0;
     let sunLight;
-    let orbitSpeed = 0.009;
-    let earthRotationSpeed = 0.00275;
+    let orbitSpeed = 0.004; // Reduced for performance
+    let earthRotationSpeed = 0.0005; // Very slow, subtle Earth rotation
     let originalTextPositions = null; // Store original flat text positions
     
     // Multiple orbital objects
@@ -282,7 +282,7 @@
     }
 
     const loadingState = {
-      totalSteps: 3,
+      totalSteps: 3, // Star map, Earth, Text (font loading is part of text)
       completedSteps: 0,
       finished: false
     };
@@ -290,7 +290,8 @@
     const loadingFlags = {
       hdr: false,
       earth: false,
-      font: false
+      font: false,
+      text: false
     };
 
     function repaintScene() {
@@ -415,48 +416,37 @@
       scene.fog = new THREE.FogExp2(0x05060a, 0.00018); // Gentle haze to lift the blacks slightly
       console.log('✅ Scene created with realistic space background');
 
-      // Load space HDR environment map for reflected light
-      new RGBELoader().load('https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/1k/space_1k.exr', (hdr) => {
-        hdr.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = hdr;
-        console.log('✅ Space HDR environment map loaded');
-        if (!loadingFlags.hdr) {
-          loadingFlags.hdr = true;
-          markLoadingStep('Space environment ready');
-        }
-        repaintScene();
-      }, undefined, (error) => {
-        console.log('⚠️ Space HDR load failed, continuing with direct lights only:', error);
-        if (!loadingFlags.hdr) {
-          loadingFlags.hdr = true;
-          markLoadingStep('Space environment skipped');
-        }
-      });
+      // Create custom star map environment using existing starfield
+      // Starfield is created below after renderer initialization
+      if (!loadingFlags.hdr) {
+        loadingFlags.hdr = true;
+        markLoadingStep('Star map ready');
+      }
 
-      // Optimized 3-light setup for performance while maintaining cinematic quality
+      // Optimized 4-light setup with boosted intensity for performance while maintaining cinematic quality
       
-      // 1. Key sunlight - main directional light
-      const sunLight = new THREE.DirectionalLight(0xffffff, 3);
+      // 1. Key sunlight - main directional light (boosted intensity)
+      const sunLight = new THREE.DirectionalLight(0xffffff, 8); // Increased from 3 to 8
       sunLight.position.set(15, 12, 10);
       sunLight.target.position.set(0, 0, 0);
       sunLight.castShadow = false; // Disabled for performance
       scene.add(sunLight);
       scene.add(sunLight.target);
       
-      // 2. Ambient light for overall illumination
-      scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+      // 2. Ambient light for overall illumination (boosted)
+      scene.add(new THREE.AmbientLight(0xffffff, 0.4)); // Increased from 0.15 to 0.4
       
-      // 3. Rim light for edge definition
-      const rimLight = new THREE.DirectionalLight(0xd4e5ff, 2.5);
+      // 3. Rim light for edge definition (boosted)
+      const rimLight = new THREE.DirectionalLight(0xd4e5ff, 6); // Increased from 2.5 to 6
       rimLight.position.set(-6, -2, 14);
       scene.add(rimLight);
       
-      // 4. Text-specific light for readability
-      const textLight = new THREE.PointLight(0xfff8e7, 2, 25, 2);
+      // 4. Text-specific light for readability (boosted)
+      const textLight = new THREE.PointLight(0xfff8e7, 5, 30, 2); // Increased from 2 to 5, range from 25 to 30
       textLight.position.set(0, 0, 15);
       scene.add(textLight);
       
-      console.log('✅ Added optimized 4-light setup for performance');
+      console.log('✅ Added optimized 4-light setup with boosted intensity for performance');
 
       // Renderer (must be created first) - optimized for performance
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -531,9 +521,9 @@
       createStarfield();
       console.log('✅ Starfield created');
 
-      // Load Earth model and create text
+      // Load Earth model (text will be created after Earth loads)
       loadEarth();
-      createText();
+      // createText(); // Removed - text creation now happens in loadEarth() after model loads
 
       // Events
       document.addEventListener('pointerdown', onPointerDown);
@@ -554,25 +544,45 @@
       console.log('📝 Creating 3D bubble text with realistic physics...');
       if (textMesh1) group.remove(textMesh1);
 
+      // Add timeout fallback to prevent infinite loading
+      let fontLoaded = false;
+      const fontTimeout = setTimeout(() => {
+        if (!fontLoaded) {
+          console.log('⚠️ Font loading timeout - make sure you are running a web server (not opening file:// directly)');
+          console.log('⚠️ Using fallback text');
+          createFallbackText();
+          if (!loadingFlags.text) {
+            loadingFlags.text = true;
+            markLoadingStep('Text ready (timeout fallback)');
+          }
+        }
+      }, 5000); // 5 second timeout
+
       // Load font and create bubble text
       const loader = new FontLoader();
     // Load Universal Secondaries font (authentic Universal Studios look)
+    console.log('🔤 Loading Universal font...');
     loader.load('Universal Secondary Web_Regular.json', function(font) {
+      fontLoaded = true;
+      clearTimeout(fontTimeout);
+      console.log('✅ Universal font loaded successfully');
       
       // Create single line of text
       createSingleLineText(font);
-      if (!loadingFlags.font) {
-        loadingFlags.font = true;
-        markLoadingStep('Universal font ready');
+      if (!loadingFlags.text) {
+        loadingFlags.text = true;
+        markLoadingStep('Text ready');
       }
       
       // Bottom text font is now handled directly in CSS
     }, undefined, function(error) {
+      fontLoaded = true;
+      clearTimeout(fontTimeout);
       console.log('⚠️ Font load failed, using fallback text:', error);
       createFallbackText();
-      if (!loadingFlags.font) {
-        loadingFlags.font = true;
-        markLoadingStep('Fallback typography ready');
+      if (!loadingFlags.text) {
+        loadingFlags.text = true;
+        markLoadingStep('Text ready (fallback)');
       }
     });
     }
@@ -597,8 +607,8 @@
       if (!earthModel) return;
       earthModel.traverse((child) => {
         if (!child.isMesh) return;
-        child.castShadow = true;
-        child.receiveShadow = true;
+        child.castShadow = false; // Disabled for performance
+        child.receiveShadow = false; // Disabled for performance
         if (child.material) {
           child.material.needsUpdate = true;
         }
@@ -646,17 +656,12 @@
         const size = boundingBox.getSize(new THREE.Vector3());
         earthRadius = Math.max(size.x, size.y, size.z) / 2;
         
-        // Set text orbit radius using dynamic calculation
-        if (camera) {
-          const dynamicRadius = calculateDynamicOrbitRadius();
-          const safeRadius = calculateOcclusionRadius();
-          // Guarantee the text sits comfortably in front of Earth - tight margin
-          textOrbitRadius = Math.max(dynamicRadius, safeRadius) + earthRadius * 0.15;
-          console.log('🎯 Dynamic text orbit radius:', textOrbitRadius.toFixed(2), '(dynamic:', dynamicRadius.toFixed(2), ', safe:', safeRadius.toFixed(2), ')');
-        } else {
-          // If camera not ready, use dynamic calculation without camera factor
-          textOrbitRadius = Math.max(textOrbitRadius, calculateDynamicOrbitRadius());
-        }
+        console.log('🌍🌍🌍 EARTH RADIUS:', earthRadius);
+        console.log('🌍 Earth bounding box size:', size);
+        
+        // Simple, reliable text positioning - always visible
+        textOrbitRadius = earthRadius * 1.5; // 1.5x Earth radius - always visible
+        console.log('🎯 Simple text orbit radius:', textOrbitRadius.toFixed(2), '(1.5x Earth radius)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -664,8 +669,9 @@
         console.log('🌍 Text will orbit at distance:', textOrbitRadius, 'from Earth center');
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
-          // Use default orbit for better visibility
-          textOrbitRadius = Math.max(4.8, window.textArcMinRadius || 0);
+          earthRadius = 2; // Fallback radius
+          textOrbitRadius = earthRadius * 1.5; // Simple fallback - always visible
+          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2));
         }
         
       // Persist orbit radius globally for other systems
@@ -684,26 +690,40 @@
       bendTextGeometry(textGeometry, textOrbitRadius, 0); // Single line centered
 
       // Optimized gold material for performance while maintaining visual quality
-        const textMaterial = new THREE.MeshPhysicalMaterial({
-          color: 0xffd700,        // Warm gold
-          metalness: 0.8,         // Reduced for performance
-          roughness: 0.4,         // Simplified for performance
-          clearcoat: 0.5,         // Reduced for performance
-          clearcoatRoughness: 0.2, // Simplified for performance
-          envMapIntensity: 1.5,   // Reduced for performance
-          emissive: 0x442200,     // Warm gold emissive
-          emissiveIntensity: 0.4, // Reduced for performance
-          side: THREE.DoubleSide, // Ensure both sides are rendered
-          transparent: false,     // Ensure no transparency issues
-          opacity: 1.0           // Fully opaque
-        });
+      const textMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffd700,        // Warm gold
+        metalness: 0.9,         // High metalness for premium look
+        roughness: 0.2,         // Smooth surface for reflections
+        clearcoat: 0.8,         // Strong clearcoat for extra shine
+        clearcoatRoughness: 0.1, // Very smooth clearcoat
+        envMapIntensity: 2.5,   // Strong environment reflections
+        emissive: 0x553300,     // Rich golden emissive
+        emissiveIntensity: 0.6, // Enhanced glow
+        reflectivity: 1.0,      // Maximum reflectivity
+        sheen: 0.3,             // Subtle sheen effect
+        sheenRoughness: 0.2,    // Smooth sheen
+        side: THREE.DoubleSide, // Ensure both sides are rendered
+        transparent: false,     // Ensure no transparency issues
+        opacity: 1.0           // Fully opaque
+      });
 
         // Create single text mesh
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
         
-        // Enable shadows for 3D depth
-        textMesh.castShadow = true;
-        textMesh.receiveShadow = true;
+        // Disable shadows for performance
+        textMesh.castShadow = false;
+        textMesh.receiveShadow = false;
+        
+        // Debug: Log text positioning info
+        console.log('🎯 Headline text debug info:');
+        console.log('  - Text orbit radius:', textOrbitRadius.toFixed(2));
+        console.log('  - Earth radius:', earthRadius.toFixed(2));
+        console.log('  - Text position:', textMesh.position);
+        console.log('  - Text scale:', textMesh.scale);
+        console.log('  - Text material color:', textMaterial.color.getHexString());
+        console.log('  - Text material metalness:', textMaterial.metalness);
+        
+        // Text positioning is now handled by the simplified system above
         
         // Make text face outward from Earth
         textMesh.rotation.y = Math.PI;
@@ -733,6 +753,8 @@
         
         repaintScene();
         console.log('✅ 3D bubble text created with realistic physics');
+        console.log('✅ Text mesh added to scene at position:', textMesh.position);
+        console.log('✅ Scene now contains', scene.children.length, 'objects');
       
       // Start material protection loop
       startMaterialProtection();
@@ -792,8 +814,8 @@
       const screenHeight = window.innerHeight;
       const aspectRatio = screenWidth / screenHeight;
       
-      // Base radius calculation considering screen size - tight orbit
-      let baseRadius = earthRadius * 1.15; // Very tight orbit
+      // Base radius calculation considering screen size - tight but visible orbit
+      let baseRadius = earthRadius * 1.4; // Tight but visible orbit
 
       // Adjust for screen aspect ratio
       if (aspectRatio > 1.5) { // Wide screens
@@ -819,7 +841,7 @@
       
       // Ensure minimum and maximum bounds (also respect camera distance)
       const textArcMinRadius = window.textArcMinRadius || 0;
-      const minRadius = Math.max(earthRadius * 1.1, textArcMinRadius); // Very tight minimum
+      const minRadius = Math.max(earthRadius * 1.3, textArcMinRadius); // Tight but visible minimum
       const cameraDistance = camera ? camera.position.length() : 28;
       const cameraLimitedMax = cameraDistance - earthRadius - 2.4;
       const maxRadius = Math.max(minRadius + 0.18, Math.min(earthRadius * 1.8, cameraLimitedMax));
@@ -840,7 +862,7 @@
       const earthRadius = window.earthRadius;
       const cameraToEarthCenter = camera.position.distanceTo(earthWorldPosition);
       const textArcMinRadius = window.textArcMinRadius || 0;
-      const minimumVisibleRadius = Math.max(earthRadius * 1.6, textArcMinRadius);
+      const minimumVisibleRadius = Math.max(earthRadius * 1.4, textArcMinRadius);
       const cameraAllowance = Math.max(minimumVisibleRadius, cameraToEarthCenter - earthRadius - 2.6);
       const safeOcclusionRadius = Math.min(cameraAllowance, minimumVisibleRadius + earthRadius * 0.28);
       
@@ -947,20 +969,13 @@
     }
 
     function calculateOrbitRadiusForIndex(index, earthRadius) {
-      // Position objects at +/- 5% of headline text radius
-      const textRadius = window.textOrbitRadius || (earthRadius * 1.6);
-      const variation = textRadius * 0.05; // 5% variation
+      // Position objects between 1x and 1.25x the text orbit radius
+      const textRadius = window.textOrbitRadius || (earthRadius * 1.15);
+      const minRadius = textRadius * 1.0;   // 100% of text radius (same as text)
+      const maxRadius = textRadius * 1.25;  // 125% of text radius (outside text)
       
-      // Alternate between slightly inside and outside text radius for 5 objects
-      const positions = [
-        textRadius - variation,  // Pizza: 95% of text radius
-        textRadius + variation,  // Crystal: 105% of text radius  
-        textRadius - variation,  // Gameboy: 95% of text radius
-        textRadius + variation,  // K Object: 105% of text radius
-        textRadius - variation   // Tether: 95% of text radius
-      ];
-      
-      return positions[index] || textRadius;
+      // Random position between text orbit and 25% beyond it
+      return minRadius + Math.random() * (maxRadius - minRadius);
     }
 
     function startOrbitalSequence() {
@@ -1026,16 +1041,26 @@
              const earthSize = earthBox.getSize(new THREE.Vector3());
              return Math.max(earthSize.x, earthSize.y, earthSize.z) / 2;
            })() : 2; // Fallback radius
-           const orbitRadius = calculateOrbitRadiusForIndex(index, earthRadius);
            
-           const targetSize = earthRadius * 0.2; // 1/10 of Earth's diameter
-           const scale = targetSize / maxDimension;
+           // Ensure we have a valid earth radius
+           const safeEarthRadius = Math.max(earthRadius, 2);
+           const orbitRadius = calculateOrbitRadiusForIndex(index, safeEarthRadius);
+           
+           const targetSize = safeEarthRadius * 0.05; // 5% of Earth's radius
+           const scale = Math.max(targetSize / maxDimension, 0.1); // Ensure minimum scale
            model.scale.setScalar(scale);
            
-           console.log(`📏 Orbital object ${index + 1}: native size ${maxDimension.toFixed(2)}, scaled to ${(maxDimension * scale).toFixed(2)} (${((targetSize / earthRadius) * 100).toFixed(1)}% of Earth radius)`);
+           console.log(`📏 Orbital object ${index + 1}: native size ${maxDimension.toFixed(2)}, scaled to ${(maxDimension * scale).toFixed(2)} (${((targetSize / safeEarthRadius) * 100).toFixed(1)}% of Earth radius)`);
+           console.log(`🎯 Orbital object ${index + 1}: orbit radius ${orbitRadius.toFixed(2)}, angle ${(angle * 180 / Math.PI).toFixed(1)}°`);
            
-           // Position on orbit around Earth's center (0,0,0)
-           model.position.set(orbitRadius, 0, 0);
+            // Position at fixed angles around orbit for even spacing
+            const angleStep = (Math.PI * 2) / glbFiles.length;
+            const angle = index * angleStep;
+            model.position.set(
+              Math.cos(angle) * orbitRadius, 
+              0, 
+              Math.sin(angle) * orbitRadius
+            );
            
            // Center the model's origin for proper rotation around Earth
            model.position.add(box.getCenter(new THREE.Vector3()).multiplyScalar(-scale));
@@ -1052,22 +1077,47 @@
            model.userData.tumbleY = (Math.random() - 0.5) * 0.025;
            model.userData.tumbleZ = (Math.random() - 0.5) * 0.025;
            
-           // Store individual orbital speed (steady range for calm motion)
-           model.userData.orbitalSpeed = 0.18 + Math.random() * 0.2; // Steady speed range
+           // Store individual orbital speed (fast and varied)
+           model.userData.orbitalSpeed = 0.8 + Math.random() * 0.6; // Much faster speed range
            
            // Fix materials for orbital objects - ensure they're properly lit without washing out textures
            model.traverse((child) => {
              if (!child.isMesh) return;
 
-               child.castShadow = true;
-               child.receiveShadow = true;
+               child.castShadow = false; // Disabled for performance
+               child.receiveShadow = false; // Disabled for performance
                
              const materials = Array.isArray(child.material) ? child.material : [child.material];
              materials.forEach((material) => {
                if (!material) return;
 
-               if (material.map) {
-                 material.map.colorSpace = THREE.SRGBColorSpace;
+               // Special mirror-chrome golden material for K object (index 3)
+               if (index === 3) {
+                 material.color.set(0xffd700); // Golden base color
+                 material.metalness = 1.0; // Maximum metalness for mirror effect
+                 material.roughness = 0.05; // Near-perfect mirror surface
+                 material.clearcoat = 1.0; // Full clearcoat for extra shine
+                 material.clearcoatRoughness = 0.0; // Perfect clearcoat surface
+                 material.emissive.set(0x221100); // Subtle golden emissive
+                 material.emissiveIntensity = 0.2; // Reduced for mirror effect
+                 material.envMapIntensity = 3.0; // Strong environment reflections
+                 material.reflectivity = 1.0; // Maximum reflectivity
+                 material.sheen = 0.5; // Add sheen for extra mirror effect
+                 material.sheenRoughness = 0.1; // Smooth sheen
+                 
+                 // Ensure the material uses the scene environment for reflections
+                 if (scene.environment) {
+                   material.envMap = scene.environment;
+                 }
+                 
+                 // Force material update for immediate effect
+                 material.needsUpdate = true;
+                 console.log('✨ Applied mirror-chrome golden material to K object with enhanced reflections');
+               } else {
+                 // Standard material optimization for other objects
+                 if (material.map) {
+                   material.map.colorSpace = THREE.SRGBColorSpace;
+                 }
                }
 
                material.needsUpdate = true;
@@ -1081,21 +1131,24 @@
              }
            });
            
-           // Add to orbital group
-           orbitalGroup.add(model);
-           orbitalObjects.push(model);
-           
-           // Add orbital group directly to scene (not nested under Earth)
-           scene.add(orbitalGroup);
-           repaintScene();
-           
-           // Show bottom text notification for new orbital object
-           showBottomTextForOrbitalObject(index);
-           
-           console.log(`✅ Orbital object ${index + 1} added directly to scene (not nested under Earth)`);
-           
-           console.log(`✅ Orbital object ${index + 1} (${glbFile}) added to scene with enhanced lighting`);
-           console.log(`📊 Total orbital objects loaded: ${orbitalObjects.length}`);
+           try {
+             // Add to orbital group
+             orbitalGroup.add(model);
+             orbitalObjects.push(model);
+             
+             // Add orbital group directly to scene (not nested under Earth)
+             scene.add(orbitalGroup);
+             repaintScene();
+             
+             // Show bottom text notification for new orbital object
+             showBottomTextForOrbitalObject(index);
+             
+             console.log(`✅ Orbital object ${index + 1} added directly to scene (not nested under Earth)`);
+             console.log(`✅ Orbital object ${index + 1} (${glbFile}) added to scene with enhanced lighting`);
+             console.log(`📊 Total orbital objects loaded: ${orbitalObjects.length}`);
+           } catch (error) {
+             console.error(`❌ Error adding orbital object ${index + 1} to scene:`, error);
+           }
          }, function(progress) {
         console.log(`📊 Loading orbital object ${index + 1}:`, (progress.loaded / progress.total * 100) + '%');
       }, function(error) {
@@ -1164,7 +1217,21 @@
         // Recreate text now that Earth is loaded for proper radius calculation
         console.log('🔄 Recreating text with Earth model loaded');
         console.log('🌍 Earth radius before text recreation:', earthRadius);
+        
+        // Use fallback radius if Earth model didn't load properly
+        if (earthRadius === 0) {
+          window.earthRadius = 13.0; // Use known Earth radius as fallback
+          console.log('⚠️ Using fallback Earth radius:', window.earthRadius);
+        }
+        
+        // Clear existing text before recreating
+        if (textGroup) {
+          scene.remove(textGroup);
+          textGroup = null;
+        }
+        
         createText();
+        // Text will mark itself as loaded after font loads
         
         repaintScene();
       }, function(progress) {
@@ -1195,18 +1262,33 @@
         // Recreate text now that Earth is loaded for proper radius calculation
         console.log('🔄 Recreating text with Earth model loaded');
         console.log('🌍 Earth radius before text recreation:', earthRadius);
+        
+        // Use fallback radius if Earth model didn't load properly
+        if (earthRadius === 0) {
+          window.earthRadius = 13.0; // Use known Earth radius as fallback
+          console.log('⚠️ Using fallback Earth radius:', window.earthRadius);
+        }
+        
+        // Clear existing text before recreating
+        if (textGroup) {
+          scene.remove(textGroup);
+          textGroup = null;
+        }
+        
         createText();
+        // Text will mark itself as loaded after font loads
         
         repaintScene();
-        }, function(progress) {
-          console.log('📊 GLTF loading progress:', (progress.loaded / progress.total * 100) + '%');
+      }, function(progress) {
+        console.log('📊 GLTF loading progress:', (progress.loaded / progress.total * 100) + '%');
         }, function(error2) {
           console.log('⚠️ Earth GLTF also failed:', error2);
-          console.log('❌ No Earth model could be loaded');
+          console.log('❌ No Earth model could be loaded - site cannot initialize');
           if (!loadingFlags.earth) {
             loadingFlags.earth = true;
             markLoadingStep('Earth model unavailable');
           }
+          // Site fails if Earth loading fails - no fallback
         });
       });
     }
