@@ -670,7 +670,7 @@
           size: isMobile ? 0.5 : 0.8,    // Smaller text for tighter orbit
           depth: 0.6,                    // Reduced depth for tighter fit
           curveSegments: 16,             // Fewer segments for tighter curve
-          letterSpacing: -0.15,          // Tighter letter spacing for better readability
+          letterSpacing: -0.3,           // Ultra-tight letter spacing for maximum compression
           bevelEnabled: true,            // Subtle bevels
           bevelThickness: 0.08,          // Thinner bevels
           bevelSize: 0.04,               // Smaller bevels
@@ -700,9 +700,9 @@
         // Position text so front face sits exactly at Earth surface
         // Account for bend curvature - text extends further out due to curvature
         const textDepth = 0.6; // Must match depth in TextGeometry  
-        const bendOffset = 2.0; // Even tighter for maximum compression
+        const bendOffset = 2.5; // Ultra-tight for maximum compression
         textOrbitRadius = earthRadius - textDepth - bendOffset; // Subtract depth and bend offset
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(maximum compression)');
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(ultra-tight compression)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -713,9 +713,9 @@
           earthRadius = 2; // Fallback radius
           // Position text so front face sits exactly at Earth surface
           const textDepth = 0.6;
-          const bendOffset = 2.0; // Even tighter for maximum compression
+          const bendOffset = 2.5; // Ultra-tight for maximum compression
           textOrbitRadius = earthRadius - textDepth - bendOffset;
-          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(maximum compression)');
+          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(ultra-tight compression)');
         }
         
       // Persist orbit radius globally for other systems
