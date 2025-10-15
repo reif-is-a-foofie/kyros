@@ -556,7 +556,7 @@
             markLoadingStep('Text ready (timeout fallback)');
           }
         }
-      }, 5000); // 5 second timeout
+      }, 2000); // 2 second timeout
 
       // Load font and create bubble text
       const loader = new FontLoader();
@@ -1230,7 +1230,9 @@
           textGroup = null;
         }
         
+        console.log('🎨 Calling createText() now that Earth is loaded...');
         createText();
+        console.log('🎨 createText() called, waiting for font to load...');
         // Text will mark itself as loaded after font loads
         
         repaintScene();
@@ -1275,7 +1277,9 @@
           textGroup = null;
         }
         
+        console.log('🎨 Calling createText() now that Earth is loaded...');
         createText();
+        console.log('🎨 createText() called, waiting for font to load...');
         // Text will mark itself as loaded after font loads
         
         repaintScene();
