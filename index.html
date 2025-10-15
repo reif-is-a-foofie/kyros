@@ -87,16 +87,17 @@
       camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
       camera.position.set(0, 0, 0);  // Center of the bubble field
 
-      // Scene with atmospheric fog for depth
+      // Scene with clean white background
       scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x000000, 0.01); // Dark fog for depth
+      scene.background = new THREE.Color(0xffffff); // Clean white background
+      scene.fog = new THREE.FogExp2(0xffffff, 0.005); // Subtle white fog for depth
       
-      // Load EXR environment map
+      // Load EXR environment map for metallic reflections only
       const exrLoader = new EXRLoader();
       exrLoader.load('machine_shop_01_4k.exr', function(texture) {
         texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = texture;
-        scene.background = texture;
+        scene.environment = texture; // Keep environment for metallic reflections
+        // Don't set as background - keep white background
       });
 
       // Renderer (must be created first)
@@ -121,14 +122,14 @@
       const bubbleCount = 60;
       const bubbleGeometry = new THREE.SphereGeometry(1, 32, 32);
       const bubbleMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xcccccc,
-        metalness: 0.95,
-        roughness: 0.05,
+        color: 0xdddddd,
+        metalness: 0.9,
+        roughness: 0.1,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.05,
-        envMapIntensity: 2.0,
+        clearcoatRoughness: 0.1,
+        envMapIntensity: 1.5,
         transparent: true,
-        opacity: 0.9
+        opacity: 0.8
       });
       
       for(let i = 0; i < bubbleCount; i++){
@@ -142,7 +143,14 @@
         
         bubble.position.x = (Math.random() - 0.5) * spreadX;
         bubble.position.y = (Math.random() - 0.5) * spreadY - 50;
-        bubble.position.z = (Math.random() - 0.5) * spreadZ;
+        
+        // Some bubbles in front of text (positive Z), some behind (negative Z)
+        const frontBubble = Math.random() < 0.3; // 30% chance to be in front
+        if (frontBubble) {
+          bubble.position.z = Math.random() * 50 + 5; // 5 to 55 (in front of text at -10)
+        } else {
+          bubble.position.z = (Math.random() - 0.5) * spreadZ - 20; // Behind text
+        }
         
         // Vary metallic ball sizes (responsive)
         const isMobile = window.innerWidth < 768;
@@ -289,7 +297,14 @@
         if (bubble.position.y > maxHeight) {
           bubble.position.y = userData.startY;
           bubble.position.x = (Math.random() - 0.5) * spreadX;
-          bubble.position.z = (Math.random() - 0.5) * spreadZ;
+          
+          // Maintain front/back distribution when recycling
+          const frontBubble = Math.random() < 0.3; // 30% chance to be in front
+          if (frontBubble) {
+            bubble.position.z = Math.random() * 50 + 5; // 5 to 55 (in front of text)
+          } else {
+            bubble.position.z = (Math.random() - 0.5) * spreadZ - 20; // Behind text
+          }
           bubble.rotation.set(0, 0, 0);
         }
       });
