@@ -97,10 +97,10 @@
     let orbitalObjects = [];
     let orbitalGroups = [];
     let glbFiles = [
-      'tether_usdt.glb', 
-      'crystal_stone_rock.glb', 
-      'gameboy_classic.glb', 
-      'pizza.glb'
+      'orbital_objects/tether_usdt.glb', 
+      'orbital_objects/crystal_stone_rock.glb', 
+      'orbital_objects/gameboy_classic.glb', 
+      'orbital_objects/pizza.glb'
     ]; // Orbital objects around Earth
     let currentOrbitIndex = 0;
     let orbitalSpeedMultiplier = 0.5;
@@ -134,8 +134,8 @@
 
       // Scene with realistic deep space background
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x000000); // Deep black space background
-      scene.fog = new THREE.FogExp2(0x000000, 0.0005); // Very subtle fog for depth
+      scene.background = new THREE.Color(0x1a1a2e); // Dark blue space background instead of pure black
+      scene.fog = new THREE.FogExp2(0x1a1a2e, 0.0003); // Lighter fog for better visibility
       console.log('✅ Scene created with realistic space background');
       
       // Load space HDR environment map
@@ -147,8 +147,8 @@
         console.log('⚠️ Space HDR load failed, using fallback:', error);
       });
 
-      // Add brighter ambient lighting
-      scene.add(new THREE.AmbientLight(0xffffff, 1.0)); // Brighter for better visibility
+      // Add much brighter ambient lighting
+      scene.add(new THREE.AmbientLight(0xffffff, 1.5)); // Much brighter for better visibility
       
       // Add bright directional light from user's right side (closer)
       const sunLight = new THREE.DirectionalLight(0xffffff, 3.0); // Brighter and closer
@@ -193,7 +193,7 @@
       // Fix lighting and color accuracy with Universal Studios bloom
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 0.9; // Reduced exposure to restore neutral colors
+      renderer.toneMappingExposure = 1.5; // Increased exposure for brighter scene
       
       document.body.appendChild(renderer.domElement);
 
