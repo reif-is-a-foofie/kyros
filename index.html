@@ -1,524 +1,375 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Build the change you wish to see in the world</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kyros</title>
   <style>
-    html,body {margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;}
-    canvas {display:block;cursor:pointer;width:100%;height:100%;}
+    body { margin: 0; overflow: hidden; font-family: 'Helvetica Neue', Arial, sans-serif; }
+    canvas { display: block; }
+    #links {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: white;
+      font-size: 14px;
+      z-index: 10;
+    }
+    #links a {
+      color: white;
+      text-decoration: none;
+      margin: 0 5px;
+    }
+    #links a:hover {
+      text-decoration: underline;
+    }
   </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barrio:wght@400&family=Fredoka+One:wght@400&family=Grenze+Gotisch:wght@700&family=Londrina+Shadow:wght@400&family=Press+Start+2P&family=Rye:wght@400&family=Spicy+Rice&family=Trade+Winds:wght@400&family=UnifrakturMaguntia:wght@400&family=Orbitron:wght@700&family=Righteous:wght@400&family=Alfa+Slab+One:wght@400&family=Bungee:wght@400&family=Rubik+Wet+Paint:wght@400&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div id="links">
+    Kyros investment studio / <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> / <a href="https://calendly.com" target="_blank">Pitch us</a>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+
   <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js';
-    import gsap from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm';
+    import * as THREE from 'three';
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
+    let camera, scene, renderer;
+    let textMesh1, textMesh2, textMesh3;
+    let group;
+    let targetRotationX = 0;
+    let targetRotationY = 0;
+    let targetRotationXOnPointerDown = 0;
+    let targetRotationYOnPointerDown = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+    let pointerXOnPointerDown = 0;
+    let pointerYOnPointerDown = 0;
+    let windowHalfX = window.innerWidth / 2;
+    let windowHalfY = window.innerHeight / 2;
+    let currentComboIndex = 0;
+    let isTransitioning = false;
 
-    const camera = new THREE.PerspectiveCamera(35, innerWidth/innerHeight, 0.1, 1000);
-    
-    // Adjust camera distance based on screen size
-    const isMobile = window.innerWidth < 768;
-    camera.position.z = isMobile ? 300 : 200;
-
-    const renderer = new THREE.WebGLRenderer({antialias:true});
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.8;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.autoClear = true;  // Ensure buffer clears every frame
-    document.body.appendChild(renderer.domElement);
-
-    // Bright environment for strong reflections
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    const envScene = new THREE.Scene();
-    envScene.background = new THREE.Color(0xffffff);
-    
-    // Ultra-bright studio lighting setup for strong reflections
-    const studioLight1 = new THREE.DirectionalLight(0xffffff, 15);
-    studioLight1.position.set(10, 10, 5);
-    envScene.add(studioLight1);
-    
-    const studioLight2 = new THREE.DirectionalLight(0xffdd88, 12);
-    studioLight2.position.set(-8, 6, -3);
-    envScene.add(studioLight2);
-    
-    const studioLight3 = new THREE.DirectionalLight(0x88aaff, 10);
-    studioLight3.position.set(0, -5, 8);
-    envScene.add(studioLight3);
-    
-    const studioLight4 = new THREE.DirectionalLight(0xff6666, 8);
-    studioLight4.position.set(5, -8, -5);
-    envScene.add(studioLight4);
-    
-    const ambientFill = new THREE.AmbientLight(0xffffff, 5);
-    envScene.add(ambientFill);
-    
-    scene.environment = pmremGenerator.fromScene(envScene).texture;
-    pmremGenerator.dispose();
-
-    // Realistic lighting setup
-    const warmAmbient = new THREE.AmbientLight(0xffdd88, 0.6);
-    scene.add(warmAmbient);
-    
-    const keyLight = new THREE.DirectionalLight(0xffdd88, 3.0);
-    keyLight.position.set(15, 20, 10);
-    keyLight.castShadow = true;
-    keyLight.shadow.mapSize.setScalar(2048);
-    keyLight.shadow.camera.near = 0.1;
-    keyLight.shadow.camera.far = 50;
-    keyLight.shadow.camera.left = -10;
-    keyLight.shadow.camera.right = 10;
-    keyLight.shadow.camera.top = 10;
-    keyLight.shadow.camera.bottom = -10;
-    scene.add(keyLight);
-    
-    const rimLight = new THREE.DirectionalLight(0x88aaff, 1.5);
-    rimLight.position.set(-10, 5, -15);
-    scene.add(rimLight);
-    
-    const fillLight = new THREE.DirectionalLight(0xffaa66, 0.8);
-    fillLight.position.set(5, -10, 5);
-    scene.add(fillLight);
-
-    // No starfield - clean background
-
-    // Very dark emerald green material
-    const solidGold = new THREE.MeshStandardMaterial({
-      color: 0x013220,           // Very dark forest green
-      metalness: 0.0,            // No metalness
-      roughness: 1.0,            // Maximum roughness - matte finish
-      emissive: 0x000000,        // No emission
-      side: THREE.DoubleSide,
-      flatShading: true          // Flat shading for solid look
-    });
-
-    // Particle system for morphing main text
-    const maxPoints = 80000;  // More particles for denser sampling
-    const sphereGeometry = new THREE.SphereGeometry(0.04, 6, 6);  // Slightly larger spheres for darker fill
-    const instancedMesh = new THREE.InstancedMesh(sphereGeometry, solidGold, maxPoints);
-    scene.add(instancedMesh);
-    
-    // Separate particle system for static company info
-    const staticMaxPoints = 40000;
-    const staticInstancedMesh = new THREE.InstancedMesh(sphereGeometry, solidGold, staticMaxPoints);
-    scene.add(staticInstancedMesh);
-
-    // Three position arrays for clean control
-    const basePositions = new Float32Array(maxPoints * 3);     // current word shape
-    const dispersedOffsets = new Float32Array(maxPoints * 3);  // random explosion offsets
-    const targetPositions = new Float32Array(maxPoints * 3);   // next word shape
-    
-    const matrix = new THREE.Matrix4();
-    const tempPos = new THREE.Vector3();
-    let currentTween = null;
-
-    // Fonts for main text morphing
-    const buildFonts = [
-      '40px "Barrio", cursive',
-      '40px "Fredoka One", cursive',
-      '40px "Grenze Gotisch", cursive',
-      '40px "Londrina Shadow", cursive',
-      '40px "Press Start 2P", monospace',
-      '40px "Rye", cursive',
-      '40px "Spicy Rice", cursive',
-      '40px "Trade Winds", cursive',
-      '40px "UnifrakturMaguntia", cursive',
-      '40px "Orbitron", monospace',
-      '40px "Righteous", cursive',
-      '40px "Alfa Slab One", cursive',
-      '40px "Bungee", cursive',
-      '40px "Rubik Wet Paint", cursive'
+    // Font and material combinations
+    const fonts = [
+      {
+        url: 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/fonts/helvetiker_bold.typeface.json',
+        size: 40,
+        depth: 8,  // Reduced from 20 to 8
+        bevel: 1,  // Reduced from 2 to 1
+        // Responsive sizes
+        mobileSize: 20,
+        mobileDepth: 4,
+        mobileBevel: 0.5
+      }
     ];
+
+    const matcapFiles = [
+      'matcaps/chrome.png',
+      'matcaps/gold.png',
+      'matcaps/copper.png',
+      'matcaps/colorful.png',
+      'matcaps/metal.png',
+      'matcaps/silver.png',
+      'matcaps/red-plastic.png',
+      'matcaps/green-plastic.png',
+      'matcaps/leather.png',
+      'matcaps/purple-pearl.png',
+      'matcaps/dark-metal.png',
+      'matcaps/blue-metal.png',
+      'matcaps/ceramic.png',
+      'matcaps/olive.png',
+      'matcaps/orange-gold.png',
+      'matcaps/wood.png',
+      'matcaps/gunmetal.png',
+      'matcaps/bronze.png',
+      'matcaps/brass.png',
+      'matcaps/rust.png'
+    ];
+
+    let loadedFonts = [];
+    let loadedMatcaps = [];
+    let currentMatcapIndex = 0;
+    let bubbles = [];
     
-    const staticFont = '40px "Helvetica Neue", "Arial", sans-serif';
-    const smallFont = '28px "Helvetica Neue", "Arial", sans-serif';
+    let mouseX = 0;
+    let mouseY = 0;
 
-    // Sample only main text (morphing)
-    function sampleMainText(mainFontSpec){
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      const mainText = 'build the change you wish to see in the world.';
-      
-      ctx.font = mainFontSpec;
-      const mainWidth = ctx.measureText(mainText).width;
-      
-      const totalWidth = Math.ceil(mainWidth) + 40;
-      const height = 100;
-      
-      canvas.width = totalWidth;
-      canvas.height = height;
-      
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, totalWidth, height);
-      
-      ctx.fillStyle = 'white';
-      ctx.textBaseline = 'top';
-      ctx.textAlign = 'left';
-      ctx.font = mainFontSpec;
-      ctx.fillText(mainText, 20, 20);
-      
-      const imageData = ctx.getImageData(0, 0, totalWidth, height);
-      const pixels = [];
-      
-      const step = 1;
-      const scale = 0.12;
-      const depthLayers = 4;
-      const depthStep = 0.8;
-      
-      for(let y = 0; y < height; y += step) {
-        for(let x = 0; x < totalWidth; x += step) {
-          const pixelIndex = (Math.floor(y) * totalWidth + Math.floor(x)) * 4;
-          if(imageData.data[pixelIndex] > 128) {
-            for(let z = 0; z < depthLayers; z++) {
-              pixels.push(
-                (x - totalWidth/2) * scale,
-                (height/2 - y) * scale,
-                (z - 1.5) * depthStep
-              );
-            }
-          }
-        }
-      }
-      
-      const out = new Float32Array(maxPoints * 3);
-      const textParticleCount = pixels.length / 3;
-      
-      for (let i = 0; i < maxPoints; i++) {
-        const sourceIndex = (i % textParticleCount) * 3;
-        out[i * 3] = pixels[sourceIndex];
-        out[i * 3 + 1] = pixels[sourceIndex + 1];
-        out[i * 3 + 2] = pixels[sourceIndex + 2];
-      }
-      
-      console.log(`Main text: ${textParticleCount} base particles, ${maxPoints} total (${Math.floor(maxPoints/textParticleCount)}x density)`);
-      
-      return { positions: out, count: textParticleCount };
-    }
-    
-    // Sample static company info (vertical on left side)
-    function sampleCompanyInfo(){
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      const companyName = 'Kyros : an investment studio';
-      const contactText = 'Build with us at hello@kyros.cc';
-      
-      // Smaller font for vertical side text
-      const sideFont = '14px "Helvetica Neue", "Arial", sans-serif';
-      
-      ctx.font = sideFont;
-      const companyWidth = ctx.measureText(companyName).width;
-      const contactWidth = ctx.measureText(contactText).width;
-      
-      // Stack vertically with spacing
-      const width = 40;  // Narrower for smaller text
-      const height = Math.ceil(Math.max(companyWidth, contactWidth)) + 40;
-      
-      canvas.width = width;
-      canvas.height = height;
-      
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, width, height);
-      
-      ctx.fillStyle = 'white';
-      ctx.textBaseline = 'top';
-      ctx.textAlign = 'left';
-      
-      // Rotate 90 degrees and draw text closer together
-      ctx.save();
-      ctx.translate(12, 20);
-      ctx.rotate(Math.PI / 2);
-      ctx.font = sideFont;
-      ctx.fillText(companyName, 0, 0);
-      ctx.restore();
-      
-      ctx.save();
-      ctx.translate(28, 20);
-      ctx.rotate(Math.PI / 2);
-      ctx.font = sideFont;
-      ctx.fillText(contactText, 0, 0);
-      ctx.restore();
-      
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const pixels = [];
-      
-      const step = 0.5;  // Denser sampling for more solid look
-      const scale = 0.12;
-      const depthLayers = 6;  // More layers for solid appearance
-      const depthStep = 0.3;  // Tighter layers
-      
-      for(let y = 0; y < height; y += step) {
-        for(let x = 0; x < width; x += step) {
-          const pixelIndex = (Math.floor(y) * width + Math.floor(x)) * 4;
-          if(imageData.data[pixelIndex] > 128) {
-            for(let z = 0; z < depthLayers; z++) {
-              // Position on left side and move down
-              pixels.push(
-                -40 + (x - width/2) * scale,   // X position on left
-                -15 + (y - height/2) * scale,  // Y position moved down
-                (z - 2.5) * depthStep          // Centered depth layers
-              );
-            }
-          }
-        }
-      }
-      
-      const out = new Float32Array(staticMaxPoints * 3);
-      const textParticleCount = pixels.length / 3;
-      
-      for (let i = 0; i < staticMaxPoints; i++) {
-        const sourceIndex = (i % textParticleCount) * 3;
-        out[i * 3] = pixels[sourceIndex];
-        out[i * 3 + 1] = pixels[sourceIndex + 1];
-        out[i * 3 + 2] = pixels[sourceIndex + 2];
-      }
-      
-      console.log(`Company info: ${textParticleCount} base particles, ${staticMaxPoints} total`);
-      
-      return { positions: out, count: textParticleCount };
-    }
+    init();
 
-    // Old sampleText function (keeping for reference, but not used)
-    function sampleText(word, fontSpec){
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      ctx.font = fontSpec;
-      
-      const letterSpacing = 12;
-      const letters = [...word];
-      const letterWidths = letters.map(letter => ctx.measureText(letter).width);
-      const totalLetterWidth = letterWidths.reduce((sum, w) => sum + w, 0);
-      const spacingWidth = Math.max(0, letters.length - 1) * letterSpacing;
-      const width = Math.ceil(totalLetterWidth + spacingWidth) + 20;
-      const height = 120;
-      
-      canvas.width = width;
-      canvas.height = height;
-      ctx.font = fontSpec;
-      ctx.fillStyle = 'white';
-      ctx.textBaseline = 'middle';
-      ctx.textAlign = 'left';
-      
-      let cursorX = 10;
-      for (let i = 0; i < letters.length; i++) {
-        ctx.fillText(letters[i], cursorX, height/2);
-        cursorX += letterWidths[i] + letterSpacing;
-      }
-      
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const pixels = [];
-      
-      const step = 1;        // Sample each pixel exactly once
-      const scale = 0.12;
-      const depthLayers = 4;
-      const depthStep = 0.8;  // Space between layers
-      
-      // Sample with 4 depth layers for 3D effect
-      for(let y = 0; y < height; y += step) {
-        for(let x = 0; x < width; x += step) {
-          const pixelIndex = (Math.floor(y) * width + Math.floor(x)) * 4;
-          if(imageData.data[pixelIndex] > 128) {
-            for(let z = 0; z < depthLayers; z++) {
-              pixels.push(
-                (x - width/2) * scale,
-                (height/2 - y) * scale,
-                (z - 1.5) * depthStep  // Center the layers around z=0
-              );
-            }
-          }
-        }
-      }
-      
-      const out = new Float32Array(maxPoints * 3);
-      const textParticleCount = pixels.length / 3;
-      
-      // Always use all maxPoints - distribute across layers for density
-      for (let i = 0; i < maxPoints; i++) {
-        const sourceIndex = (i % textParticleCount) * 3;
-        out[i * 3] = pixels[sourceIndex];
-        out[i * 3 + 1] = pixels[sourceIndex + 1];
-        out[i * 3 + 2] = pixels[sourceIndex + 2];
-      }
-      
-      console.log(`Font "${fontSpec}": ${textParticleCount} base particles, ${maxPoints} total (${Math.floor(maxPoints/textParticleCount)}x density)`);
-      
-      return { positions: out, count: textParticleCount };
-    }
+    async function init() {
+      // Camera
+      camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
+      camera.position.set(0, 200, 800);
 
-    // Build combos with morphing main text
-    async function buildCombos(){
-      await document.fonts.ready;
+      // Scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      // Renderer (must be created first)
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setAnimationLoop(animate);
+      document.body.appendChild(renderer.domElement);
+
+      // Lights
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight.position.set(0, 0, 1).normalize();
+      scene.add(dirLight);
+
+      const pointLight = new THREE.PointLight(0xffffff, 4.5, 0, 0);
+      pointLight.position.set(0, 100, 90);
+      scene.add(pointLight);
+
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+      scene.add(ambientLight);
+
+      // Group
+      group = new THREE.Group();
+      group.position.y = 0;
+      scene.add(group);
+
+      // Create fewer but more realistic bubbles
+      const bubbleCount = 15;  // Fewer for performance but better quality
+      const bubbleGeometry = new THREE.SphereGeometry(1, 24, 24);  // Higher quality
+      const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.2,
+        metalness: 0,
+        roughness: 0.1,
+        transmission: 0.95,
+        thickness: 0.5,
+        clearcoat: 1,
+        clearcoatRoughness: 0,
+        ior: 1.33  // Water refraction
+      });
       
-      const combos = [];
-      for(let i = 0; i < buildFonts.length; i++){
-        const fontSpec = buildFonts[i];
-        try {
-          await document.fonts.load(fontSpec, 'build');
-        } catch (err) {
-          console.warn(`Failed loading font ${fontSpec}`, err);
-          continue;
-        }
+      for(let i = 0; i < bubbleCount; i++){
+        const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone());
         
-        const { positions, count } = sampleMainText(fontSpec);
-        if (!count) {
-          console.warn(`Skipping font ${fontSpec} due to zero sampled particles`);
-          continue;
+        // Position bubbles in a sphere around origin (text center)
+        // Some will be between camera and text (foreground)
+        const radius = Math.random() * 600 + 200;  // 200-800 units from center
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        
+        bubble.position.x = radius * Math.sin(phi) * Math.cos(theta);
+        bubble.position.y = radius * Math.sin(phi) * Math.sin(theta);
+        bubble.position.z = radius * Math.cos(phi);  // This puts some in front of text (positive z)
+        
+        // Larger bubbles when closer to camera
+        const distanceToCamera = Math.abs(bubble.position.z - 800);
+        bubble.scale.setScalar(THREE.MathUtils.mapLinear(distanceToCamera, 0, 1400, 15, 3));
+        
+        // Store animation params
+        bubble.userData.radius = radius;
+        bubble.userData.theta = theta;
+        bubble.userData.phi = phi;
+        bubble.userData.speed = Math.random() * 0.3 + 0.2;
+        bubble.userData.offset = i;
+        
+        bubbles.push(bubble);
+        scene.add(bubble);
+      }
+
+      // Load matcap textures
+      const textureLoader = new THREE.TextureLoader();
+      for (const matcapFile of matcapFiles) {
+        try {
+          const texture = await new Promise((resolve, reject) => {
+            textureLoader.load(matcapFile, resolve, undefined, reject);
+          });
+          loadedMatcaps.push(texture);
+        } catch (err) {
+          console.warn('Failed to load matcap:', matcapFile, err);
         }
-        combos.push({pts: positions, surface: solidGold, font: fontSpec});
-      }
-      
-      if (!combos.length) {
-        const { positions } = sampleMainText(staticFont);
-        combos.push({pts: positions, surface: solidGold, font: staticFont});
       }
 
-      return combos;
-    }
-    
-    // Initialize after fonts load
-    const combos = await buildCombos();
-    
-    // Initialize static company info (never changes)
-    const companyInfo = sampleCompanyInfo();
-    const staticMatrix = new THREE.Matrix4();
-    const staticTempPos = new THREE.Vector3();
-    
-    // Set up static company info particles
-    for(let i = 0; i < staticMaxPoints; i++){
-      const s = i * 3;
-      staticTempPos.set(
-        companyInfo.positions[s],
-        companyInfo.positions[s + 1],
-        companyInfo.positions[s + 2]
-      );
-      staticMatrix.identity();
-      staticMatrix.setPosition(staticTempPos);
-      staticInstancedMesh.setMatrixAt(i, staticMatrix);
-    }
-    staticInstancedMesh.instanceMatrix.needsUpdate = true;
-
-    // Generate explosion vectors once
-    for(let i = 0; i < maxPoints; i++){
-      dispersedOffsets[i*3] = (Math.random() - 0.5) * 60;
-      dispersedOffsets[i*3+1] = (Math.random() - 0.5) * 60;
-      dispersedOffsets[i*3+2] = (Math.random() - 0.5) * 60;
-    }
-
-    // Initialize with first font
-    basePositions.set(combos[0].pts);
-    updatePositions(basePositions, dispersedOffsets, 0); // solid state
-    
-    console.log('Scene children:', scene.children.length);
-    console.log('InstancedMesh count:', scene.children.filter(c => c.isInstancedMesh).length);
-
-    // Update positions function
-    function updatePositions(center, offset, t){
-      for(let i = 0; i < maxPoints; i++){
-        const s = i * 3;
-        tempPos.set(
-          center[s] + offset[s] * t,
-          center[s+1] + offset[s+1] * t,
-          center[s+2] + offset[s+2] * t
-        );
-        matrix.identity();  // Reset matrix to identity first
-        matrix.setPosition(tempPos);
-        instancedMesh.setMatrixAt(i, matrix);
+      // Load all fonts
+      const loader = new FontLoader();
+      for (const fontConfig of fonts) {
+        try {
+          const font = await new Promise((resolve, reject) => {
+            loader.load(fontConfig.url, resolve, undefined, reject);
+          });
+          loadedFonts.push({ font, config: fontConfig });
+        } catch (err) {
+          console.warn('Failed to load font:', fontConfig.url, err);
+        }
       }
-      instancedMesh.instanceMatrix.needsUpdate = true;
+
+      if (loadedFonts.length === 0) {
+        console.error('No fonts loaded');
+        return;
+      }
+
+      // Create initial text
+      createText(loadedFonts[0].font, loadedFonts[0].config, loadedMatcaps[0]);
+
+      // Events
+      document.addEventListener('pointerdown', onPointerDown);
+      document.addEventListener('click', changeColor);
+      document.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('resize', onWindowResize);
+    }
+    
+    function onMouseMove(event) {
+      mouseX = (event.clientX - windowHalfX) / 100;
+      mouseY = (event.clientY - windowHalfY) / 100;
     }
 
-    // Morphing functionality - explode then reform
-    let morphIndex = 0;
-    const morphState = { progress: 0 };
-    
-    function explodeThenMorph(nextIndex){
-      // Kill any existing animation
-      if(currentTween) {
-        currentTween.kill();
-      }
+    function createText(font, fontConfig, matcapTexture) {
+      // Clear existing
+      if (textMesh1) group.remove(textMesh1);
+      if (textMesh2) group.remove(textMesh2);
+
+      const material = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
+
+      // Responsive sizing based on window width
+      const isMobile = window.innerWidth < 768;
+      const size = isMobile ? fontConfig.mobileSize : fontConfig.size;
+      const depth = isMobile ? fontConfig.mobileDepth : fontConfig.depth;
+      const bevel = isMobile ? fontConfig.mobileBevel : fontConfig.bevel;
+
+      // Main text line 1
+      const textGeo1 = new TextGeometry('build the change you wish', {
+        font: font,
+        size: size,
+        depth: depth,
+        curveSegments: 4,
+        bevelThickness: bevel,
+        bevelSize: bevel * 0.75,
+        bevelEnabled: true
+      });
+      textGeo1.computeBoundingBox();
+      const centerOffset1 = -0.5 * (textGeo1.boundingBox.max.x - textGeo1.boundingBox.min.x);
       
-      const c = combos[nextIndex];
-      targetPositions.set(c.pts);
+      textMesh1 = new THREE.Mesh(textGeo1, material);
+      textMesh1.position.set(centerOffset1, 20, 0);
+      group.add(textMesh1);
+
+      // Main text line 2
+      const textGeo2 = new TextGeometry('to see in the world', {
+        font: font,
+        size: size,
+        depth: depth,
+        curveSegments: 4,
+        bevelThickness: bevel,
+        bevelSize: bevel * 0.75,
+        bevelEnabled: true
+      });
+      textGeo2.computeBoundingBox();
+      const centerOffset2 = -0.5 * (textGeo2.boundingBox.max.x - textGeo2.boundingBox.min.x);
       
-      console.log(`Starting smooth morph to font ${nextIndex}`);
-      console.log('Base positions sample:', basePositions[0], basePositions[1], basePositions[2]);
-      console.log('Target positions sample:', targetPositions[0], targetPositions[1], targetPositions[2]);
+      textMesh2 = new THREE.Mesh(textGeo2, material.clone());
+      textMesh2.position.set(centerOffset2, -40, 0);
+      group.add(textMesh2);
+    }
+
+    function changeColor() {
+      currentMatcapIndex = (currentMatcapIndex + 1) % loadedMatcaps.length;
+      const matcapTexture = loadedMatcaps[currentMatcapIndex];
       
-      // Reset progress
-      morphState.progress = 0;
-      
-      // Direct smooth transition without explosion
-      currentTween = gsap.to(morphState, {
-        progress: 1,
-        duration: 10,
-        ease: "power2.inOut",
-        onUpdate: function(){
-          const p = morphState.progress;
-          // Lerp directly from base to target and update basePositions
-          for(let i = 0; i < maxPoints; i++){
-            const s = i * 3;
-            const newX = THREE.MathUtils.lerp(basePositions[s], targetPositions[s], p);
-            const newY = THREE.MathUtils.lerp(basePositions[s+1], targetPositions[s+1], p);
-            const newZ = THREE.MathUtils.lerp(basePositions[s+2], targetPositions[s+2], p);
-            
-            tempPos.set(newX, newY, newZ);
-            matrix.setPosition(tempPos);
-            instancedMesh.setMatrixAt(i, matrix);
-          }
-          instancedMesh.instanceMatrix.needsUpdate = true;
-        },
-        onComplete: function(){
-          // Copy final positions to basePositions for next morph
-          for(let i = 0; i < maxPoints * 3; i++){
-            basePositions[i] = targetPositions[i];
-          }
-          currentTween = null;
-          console.log(`Morph to font ${nextIndex} complete`);
+      // Update all text mesh materials with new matcap
+      [textMesh1, textMesh2].forEach(mesh => {
+        if (mesh) {
+          mesh.material.matcap = matcapTexture;
+          mesh.material.needsUpdate = true;
         }
       });
     }
 
-    // Click to morph main text
-    document.addEventListener('click', () => {
-      morphIndex = (morphIndex + 1) % combos.length;
-      console.log(`Morphing to font ${morphIndex}: ${combos[morphIndex].font}`);
-      explodeThenMorph(morphIndex);
-    });
-
-    function animate(t){
-      // Almost imperceptible rotation to show subtle 3D depth
-      instancedMesh.rotation.y = Math.sin(t * 0.0001) * 0.02;  // Super subtle
-      instancedMesh.rotation.x = Math.cos(t * 0.00008) * 0.01; // Almost non-existent
-      
-      // Slow camera pan
-      const panSpeed = 0.0001;
-      const panX = Math.sin(t * panSpeed) * 25;
-      const panY = Math.cos(t * panSpeed * 0.7) * 15;
-      
-      camera.position.set(panX, panY, 200);
-      camera.lookAt(0, 0, 0);
-      
-      // Render
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    }
-    animate();
-
-    window.addEventListener('resize', () => {
-      const isMobile = window.innerWidth < 768;
-      camera.aspect = innerWidth / innerHeight;
-      camera.position.z = isMobile ? 300 : 200;
+    function onWindowResize() {
+      windowHalfX = window.innerWidth / 2;
+      windowHalfY = window.innerHeight / 2;
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-    });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      
+      // Recreate text with responsive sizing
+      if (loadedFonts.length > 0 && loadedMatcaps.length > 0) {
+        const fontData = loadedFonts[0];
+        createText(fontData.font, fontData.config, loadedMatcaps[currentMatcapIndex]);
+      }
+    }
+
+    function onPointerDown(event) {
+      if (event.isPrimary === false) return;
+      pointerXOnPointerDown = event.clientX - windowHalfX;
+      pointerYOnPointerDown = event.clientY - windowHalfY;
+      targetRotationXOnPointerDown = targetRotationX;
+      targetRotationYOnPointerDown = targetRotationY;
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    }
+
+    function onPointerMove(event) {
+      if (event.isPrimary === false) return;
+      pointerX = event.clientX - windowHalfX;
+      pointerY = event.clientY - windowHalfY;
+      targetRotationY = targetRotationYOnPointerDown + (pointerX - pointerXOnPointerDown) * 0.02;
+      targetRotationX = targetRotationXOnPointerDown + (pointerY - pointerYOnPointerDown) * 0.02;
+      
+      // Clamp rotations to keep text readable
+      targetRotationY = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, targetRotationY)); // ±60°
+      targetRotationX = Math.max(-Math.PI / 6, Math.min(Math.PI / 6, targetRotationX)); // ±30°
+    }
+
+    function onPointerUp(event) {
+      if (event.isPrimary === false) return;
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+    }
+
+    function animate(t) {
+      const time = (t || 0) * 0.0001;
+      
+      // Animate bubbles in orbital patterns around origin
+      bubbles.forEach((bubble, i) => {
+        const userData = bubble.userData;
+        
+        // Orbit around center in 3D
+        const t = time * userData.speed + userData.offset;
+        const theta = userData.theta + t * 0.5;
+        const phi = userData.phi + Math.sin(t * 0.3) * 0.3;
+        
+        bubble.position.x = userData.radius * Math.sin(phi) * Math.cos(theta);
+        bubble.position.y = userData.radius * Math.sin(phi) * Math.sin(theta);
+        bubble.position.z = userData.radius * Math.cos(phi);
+      });
+      
+      // Combine auto-pan with mouse follow
+      const slowTime = time * 0.1;
+      const autoPanX = Math.sin(slowTime) * 30;
+      const autoPanY = Math.sin(slowTime * 1.5) * 20;
+      
+      // Target position combines auto-pan and mouse (10x amplification)
+      const targetX = autoPanX + mouseX * 10;
+      const targetY = 200 + autoPanY - mouseY * 10;
+      
+      // Smooth camera follow (faster response)
+      camera.position.x += (targetX - camera.position.x) * 0.1;
+      camera.position.y += (targetY - camera.position.y) * 0.1;
+      
+      group.rotation.y += (targetRotationY - group.rotation.y) * 0.05;
+      group.rotation.x += (targetRotationX - group.rotation.x) * 0.05;
+      camera.lookAt(0, 0, 0);
+      renderer.render(scene, camera);
+    }
   </script>
 </body>
 </html>
