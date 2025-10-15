@@ -1118,7 +1118,7 @@
                  material.roughness = 0.2; // Slightly rougher for better visibility
                  material.clearcoat = 1.0; // Full clearcoat for shine
                  material.clearcoatRoughness = 0.1; // Smooth clearcoat
-                 material.emissive.set(0xffaa00); // Bright golden emissive for visibility
+                 material.emissive.set(0x2040a0); // Royal blue emissive for visibility
                  material.emissiveIntensity = 0.8; // Strong emissive to brighten object
                  material.envMapIntensity = 3.0; // Strong environment reflections
                  material.reflectivity = 1.0; // Maximum reflectivity
@@ -1418,8 +1418,8 @@
         twinklePhase[i] = Math.random() * Math.PI * 2;
         twinkleAmplitude[i] = 0.25 + Math.random() * 0.35;
         
-        // Subtle size variation
-        starSizes[i] = 1.5 + Math.random() * 2.5; // 1.5 - 4.0
+        // More varied star sizes for visual interest
+        starSizes[i] = 1.0 + Math.random() * 3.5; // 1.0 - 4.5 (smaller min, larger max)
       }
       
       starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
