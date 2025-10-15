@@ -168,7 +168,7 @@
       const material1 = new THREE.MeshBasicMaterial({ map: texture1, transparent: true });
       
       textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(8, 2), material1);
-      textMesh1.position.set(0, 40, 0);
+      textMesh1.position.set(0, 0, -5);  // Move text in front of camera
       group.add(textMesh1);
 
       // Create canvas texture for subtitle
@@ -187,7 +187,7 @@
       const material2 = new THREE.MeshBasicMaterial({ map: texture2, transparent: true });
       
       textMesh2 = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), material2);
-      textMesh2.position.set(0, -40, 0);
+      textMesh2.position.set(0, -2, -5);  // Move subtitle below main text
       group.add(textMesh2);
     }
 
@@ -277,7 +277,7 @@
       camera.position.y += (targetY - camera.position.y) * 0.05;
       camera.position.z = 0;  // Keep camera in center of bubble field
       
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(0, 0, -5);  // Look at the text position
       renderer.render(scene, camera);
     }
   </script>
