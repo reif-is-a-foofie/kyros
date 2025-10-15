@@ -286,6 +286,14 @@
       completedSteps: 0,
       finished: false
     };
+    
+    // Emergency timeout - if loading takes more than 10 seconds, force completion
+    setTimeout(() => {
+      if (!loadingState.finished) {
+        console.log('🚨 Emergency timeout - forcing loading completion after 10 seconds');
+        finishLoadingSequence();
+      }
+    }, 10000);
 
     const loadingFlags = {
       hdr: false,
