@@ -80,7 +80,7 @@
       
       // Load EXR environment map
       const exrLoader = new EXRLoader();
-      exrLoader.load('studio_small_02_4k.exr', function(texture) {
+      exrLoader.load('machine_shop_01_4k.exr', function(texture) {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         scene.environment = texture;
         scene.background = texture;
@@ -160,25 +160,32 @@
     function createText() {
       if (textMesh1) group.remove(textMesh1);
 
-      // Create canvas texture for main text (much faster than 3D geometry)
+      // Create canvas texture for main text (2 lines)
       const canvas1 = document.createElement('canvas');
       const ctx1 = canvas1.getContext('2d');
-      canvas1.width = 800;
-      canvas1.height = 200;
+      canvas1.width = 1000;
+      canvas1.height = 300;
       
       // Responsive font size
       const isMobile = window.innerWidth < 768;
-      const fontSize = isMobile ? 24 : 48;
+      const fontSize = isMobile ? 20 : 36;
+      const lineHeight = fontSize * 1.2;
       
       ctx1.font = `bold ${fontSize}px Helvetica`;
       ctx1.fillStyle = '#2d5a27'; // Emerald green
       ctx1.textAlign = 'center';
-      ctx1.fillText('build the change you wish to see in the world', 400, 120);
+      
+      // Split text into 2 lines
+      const line1 = 'build the change you wish to see';
+      const line2 = 'in the world';
+      
+      ctx1.fillText(line1, 500, 120);
+      ctx1.fillText(line2, 500, 120 + lineHeight);
       
       const texture1 = new THREE.CanvasTexture(canvas1);
       const material1 = new THREE.MeshBasicMaterial({ map: texture1, transparent: true });
       
-      textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(16, 4), material1);
+      textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(20, 6), material1);
       textMesh1.position.set(0, 1, -10);  // Center text vertically
       group.add(textMesh1);
 
@@ -252,8 +259,8 @@
       // Text stays pinned to center - no rotation
       
       // Move camera around the fixed text
-      const targetX = -mouseX * 8;  // Camera moves around text
-      const targetY = mouseY * 8;   // Camera moves around text
+      const targetX = -mouseX * 2;  // Camera moves around text
+      const targetY = mouseY * 2;   // Camera moves around text
       
       // Smooth camera movement around text
       camera.position.x += (targetX - camera.position.x) * 0.08;
