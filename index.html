@@ -263,8 +263,8 @@
       // Load Universal Secondaries font (authentic Universal Studios look)
       loader.load('Universal Secondary Web_Regular.json', function(font) {
         
-        // Create two lines of text for better readability
-        createTwoLineText(font);
+        // Create single line of text
+        createSingleLineText(font);
       }, undefined, function(error) {
         console.log('⚠️ Font load failed, using fallback text:', error);
         createFallbackText();
@@ -366,13 +366,12 @@
         group.rotation.x = Math.PI / 8;  // Slight X-axis tilt
         group.rotation.z = Math.PI / 12; // Slight Z-axis tilt
         
-        // Add both curved text lines to orbital group
-        group.add(textMesh1);
-        group.add(textMesh2);
+        // Add curved text to orbital group
+        group.add(textMesh);
         
-        // Store reference to both meshes
-        window.textMesh1 = textMesh1;
-        window.textMesh2 = textMesh2;
+        // Store reference to text mesh
+        window.textMesh1 = textMesh;
+        window.textMesh2 = textMesh; // Keep for compatibility
         
         // Keep text orbit flat (no tilt) - aligned with Earth's equator
         group.rotation.x = 0; // No tilt on X-axis
