@@ -130,53 +130,38 @@
       group.position.y = 0;
       scene.add(group);
 
-      // Create volumetric 3D bubble field with camera inside
-      const bubbleCount = 150;
-      const bubbleGeometry = new THREE.SphereGeometry(1, 16, 16);
-      const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+      // Create simple 3D bubble field with camera inside
+      const bubbleCount = 100;
+      const bubbleGeometry = new THREE.SphereGeometry(1, 12, 12);
+      const bubbleMaterial = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
-        opacity: 0.15,
-        metalness: 0,
-        roughness: 0.1,
-        transmission: 0.8,
-        thickness: 0.3,
-        clearcoat: 1,
-        clearcoatRoughness: 0,
-        ior: 1.33,
-        depthWrite: false  // Prevent depth conflicts
+        opacity: 0.2,
+        depthWrite: false
       });
       
-      // Use InstancedMesh for performance (one draw call)
-      const instancedBubbles = new THREE.InstancedMesh(bubbleGeometry, bubbleMaterial, bubbleCount);
-      const matrix = new THREE.Matrix4();
-      
       for(let i = 0; i < bubbleCount; i++){
+        const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone());
+        
         // Distribute in full 3D volume around camera
-        const x = (Math.random() - 0.5) * 800;
-        const y = (Math.random() - 0.5) * 600 - 300;  // Start below camera
-        const z = (Math.random() - 0.5) * 1000;       // Full depth range
+        bubble.position.x = (Math.random() - 0.5) * 600;
+        bubble.position.y = (Math.random() - 0.5) * 400 - 200;  // Start below camera
+        bubble.position.z = (Math.random() - 0.5) * 800;       // Full depth range
         
         // Vary bubble sizes for natural look
-        const scale = Math.random() * 25 + 10;
-        
-        matrix.setPosition(x, y, z);
-        matrix.scale(new THREE.Vector3(scale, scale, scale));
-        instancedBubbles.setMatrixAt(i, matrix);
+        bubble.scale.setScalar(Math.random() * 20 + 8);
         
         // Store animation data
-        instancedBubbles.userData = instancedBubbles.userData || [];
-        instancedBubbles.userData[i] = {
-          speed: Math.random() * 0.8 + 0.3,
-          wobbleSpeed: Math.random() * 0.3 + 0.2,
-          wobbleAmount: Math.random() * 15 + 5,
-          startY: y
+        bubble.userData = {
+          speed: Math.random() * 0.5 + 0.2,
+          wobbleSpeed: Math.random() * 0.2 + 0.1,
+          wobbleAmount: Math.random() * 10 + 5,
+          startY: bubble.position.y
         };
+        
+        bubbles.push(bubble);
+        scene.add(bubble);
       }
-      
-      instancedBubbles.instanceMatrix.needsUpdate = true;
-      scene.add(instancedBubbles);
-      bubbles.push(instancedBubbles);
 
       // Load matcap textures
       const textureLoader = new THREE.TextureLoader();
@@ -319,37 +304,22 @@
       
       const time = (t || 0) * 0.0001;
       
-      // Animate instanced bubbles with volumetric movement
-      bubbles.forEach((instancedMesh) => {
-        const matrix = new THREE.Matrix4();
-        const position = new THREE.Vector3();
-        const scale = new THREE.Vector3();
+      // Animate bubbles with simple volumetric movement
+      bubbles.forEach((bubble) => {
+        const userData = bubble.userData;
         
-        for(let i = 0; i < instancedMesh.count; i++){
-          instancedMesh.getMatrixAt(i, matrix);
-          matrix.decompose(position, new THREE.Quaternion(), scale);
-          
-          const userData = instancedMesh.userData[i];
-          
-          // Float upward in world space
-          position.y += userData.speed;
-          
-          // Subtle wobble for natural movement
-          position.x += Math.sin(time * userData.wobbleSpeed) * userData.wobbleAmount * 0.005;
-          
-          // Recycle bubbles that go too high
-          if (position.y > 400) {
-            position.y = userData.startY;
-            position.x = (Math.random() - 0.5) * 800;
-            position.z = (Math.random() - 0.5) * 1000;
-          }
-          
-          // Update matrix
-          matrix.compose(position, new THREE.Quaternion(), scale);
-          instancedMesh.setMatrixAt(i, matrix);
+        // Float upward in world space
+        bubble.position.y += userData.speed;
+        
+        // Subtle wobble for natural movement
+        bubble.position.x += Math.sin(time * userData.wobbleSpeed) * userData.wobbleAmount * 0.01;
+        
+        // Recycle bubbles that go too high
+        if (bubble.position.y > 300) {
+          bubble.position.y = userData.startY;
+          bubble.position.x = (Math.random() - 0.5) * 600;
+          bubble.position.z = (Math.random() - 0.5) * 800;
         }
-        
-        instancedMesh.instanceMatrix.needsUpdate = true;
       });
       
       // Automatic text movement (gentle rotation)
