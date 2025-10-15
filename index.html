@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kyros</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     html, body {
       margin: 0;
@@ -11,7 +12,7 @@
       overflow: hidden;
       height: 100%;
       width: 100%;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-family: 'Orbitron', 'Helvetica Neue', Arial, sans-serif;
     }
     canvas {
       display: block;
@@ -24,29 +25,32 @@
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
-      color: black;
-      font-size: 12px;
+      color: white;
+      font-size: 18px;
       z-index: 10;
       white-space: nowrap;
-      padding: 0 10px;
+      padding: 0 15px;
+      text-shadow: 0 0 8px rgba(0,0,0,0.9);
+      font-weight: 500;
     }
     @media (max-width: 768px) {
       #links {
-        font-size: 10px;
+        font-size: 16px;
         bottom: 15px;
-        padding: 0 5px;
+        padding: 0 10px;
       }
     }
     @media (max-width: 480px) {
       #links {
-        font-size: 9px;
+        font-size: 14px;
         bottom: 10px;
       }
     }
     #links a {
-      color: black;
+      color: white;
       text-decoration: none;
-      margin: 0 3px;
+      margin: 0 5px;
+      text-shadow: 0 0 8px rgba(0,0,0,0.9);
     }
     #links a:hover {
       text-decoration: underline;
@@ -55,7 +59,7 @@
 </head>
 <body>
   <div id="links">
-    Kyros investment studio / <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> / <a href="https://calendly.com" target="_blank">Pitch us</a>
+    Kyros investment studio / <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> / <a href="https://calendly.com/reif-kyros/30min" target="_blank">Pitch us</a>
   </div>
 
   <script type="importmap">
@@ -70,9 +74,14 @@
   <script type="module">
     import * as THREE from 'three';
     import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     let camera, scene, renderer;
     let textMesh1;
+    let earthModel;
     let group;
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
@@ -83,34 +92,67 @@
     let pointerXOnPointerDown = 0, pointerYOnPointerDown = 0;
     let targetRotationX = 0, targetRotationY = 0;
     let targetRotationXOnPointerDown = 0, targetRotationYOnPointerDown = 0;
+    let isPointerDown = false;
+    let isMobile = window.innerWidth < 768;
+    let isSmallMobile = window.innerWidth < 480;
+    let orbitTime = 0;
+
+    function updateResponsiveFlags() {
+      isMobile = window.innerWidth < 768;
+      isSmallMobile = window.innerWidth < 480;
+    }
 
     function init() {
       console.log('🚀 Starting Three.js initialization...');
       document.title = 'Kyros - Initializing';
       
-      // Camera positioned inside the bubble cloud for immersive parallax
-      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
-      camera.position.set(0, 0, 5);  // Moved back to avoid clipping
+      // Camera positioned to see entire Earth and orbiting text
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000); // Wider FOV
+      camera.position.set(0, 0, 30);  // Even further back to see full scene
       console.log('✅ Camera created');
 
-      // Scene with clean white background
+      // Scene with realistic deep space background
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xffffff); // Clean white background
-      scene.fog = new THREE.FogExp2(0xffffff, 0.005); // Subtle white fog for depth
-      console.log('✅ Scene created with white background');
+      scene.background = new THREE.Color(0x000000); // Deep black space background
+      scene.fog = new THREE.FogExp2(0x000000, 0.0005); // Very subtle fog for depth
+      console.log('✅ Scene created with realistic space background');
       
-      // Skip EXR loading for now - can cause blocking issues
-      console.log('⚠️ Skipping EXR environment map loading');
+      // Load space HDR environment map
+      new RGBELoader().load('https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/1k/space_1k.exr', (hdr) => {
+        hdr.mapping = THREE.EquirectangularReflectionMapping;
+        scene.environment = hdr;
+        console.log('✅ Space HDR environment map loaded');
+      }, undefined, function(error) {
+        console.log('⚠️ Space HDR load failed, using fallback:', error);
+      });
 
-      // Add ambient light for MeshPhysicalMaterial
-      scene.add(new THREE.AmbientLight(0xffffff, 1));
-      console.log('✅ Added ambient light for metallic materials');
+      // Add warm ambient lighting
+      scene.add(new THREE.AmbientLight(0x404040, 0.2)); // Dim ambient light
+      
+      // Add warm yellow sun-like directional light with shadows (behind camera)
+      const sunLight = new THREE.DirectionalLight(0xffff88, 2.0); // Pure yellow sun (no green)
+      sunLight.position.set(0, 0, 30); // Behind the camera, illuminating the scene
+      sunLight.target.position.set(0, 0, 0); // Point at the Earth
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 2048;
+      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.camera.near = 0.5;
+      sunLight.shadow.camera.far = 50;
+      sunLight.shadow.camera.left = -20;
+      sunLight.shadow.camera.right = 20;
+      sunLight.shadow.camera.top = 20;
+      sunLight.shadow.camera.bottom = -20;
+      scene.add(sunLight);
+      scene.add(sunLight.target); // Add target to scene
+      
+      console.log('✅ Added space lighting');
 
       // Renderer (must be created first)
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = false;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       document.body.appendChild(renderer.domElement);
 
       // Set up animation loop
@@ -119,65 +161,19 @@
       // No dynamic lighting for performance
 
 
-      // Group
+      // Create orbital system - parent group rotates around Earth
       group = new THREE.Group();
-      group.position.y = 0;
+      group.position.set(0, 0, 0);
       scene.add(group);
 
-      // Create metallic ball bubbles
-      const bubbleCount = 60;
-      const bubbleGeometry = new THREE.SphereGeometry(1, 32, 32);
-      const bubbleMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xdddddd,
-        metalness: 0.9,
-        roughness: 0.1,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.1,
-        envMapIntensity: 1.5,
-        transparent: true,
-        opacity: 0.8
-      });
-      
-      for(let i = 0; i < bubbleCount; i++){
-        const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
+      updateResponsiveFlags();
 
-        // Distribute metallic balls around text (responsive)
-        const spreadX = isMobile ? 200 : 300;
-        const spreadY = isMobile ? 150 : 200;
-        const spreadZ = isMobile ? 200 : 300;
-        
-        bubble.position.x = (Math.random() - 0.5) * spreadX;
-        bubble.position.y = (Math.random() - 0.5) * spreadY - 50;
-        
-        // Some bubbles in front of text (positive Z), some behind (negative Z)
-        const frontBubble = Math.random() < 0.3; // 30% chance to be in front
-        if (frontBubble) {
-          bubble.position.z = Math.random() * 50 + 10; // 10 to 60 (in front of text at -5)
-        } else {
-          bubble.position.z = (Math.random() - 0.5) * spreadZ - 15; // Behind text
-        }
-        
-        // Vary metallic ball sizes (responsive)
-        const minSize = isMobile ? 2 : 3;
-        const maxSize = isMobile ? 4 : 6;
-        bubble.scale.setScalar(Math.random() * (maxSize - minSize) + minSize);
-        
-        // Simple soap bubble appearance (no complex shaders)
-        
-        // Store animation data for metallic balls
-        bubble.userData = {
-          speed: Math.random() * 0.3 + 0.1,
-          rotationSpeed: Math.random() * 0.02 + 0.01,
-          startY: bubble.position.y,
-          size: bubble.scale.x
-        };
-        
-        bubbles.push(bubble);
-        scene.add(bubble);
-      }
-      console.log(`✅ Created ${bubbleCount} bubbles`);
+      // Create simple starfield background
+      createStarfield();
+      console.log('✅ Starfield created');
 
-      // Create initial text
+      // Load Earth model and create text
+      loadEarth();
       createText();
 
       // Events
@@ -192,51 +188,236 @@
     }
 
     function createText() {
-      console.log('📝 Creating text...');
+      console.log('📝 Creating 3D bubble text with realistic physics...');
       if (textMesh1) group.remove(textMesh1);
 
-      // Create canvas texture for main text (2 lines)
-      const canvas1 = document.createElement('canvas');
-      const ctx1 = canvas1.getContext('2d');
-      canvas1.width = 1000;
-      canvas1.height = 300;
-      
-      // Responsive font size and canvas
-      const isMobile = window.innerWidth < 768;
-      const isSmallMobile = window.innerWidth < 480;
-      const fontSize = isSmallMobile ? 16 : (isMobile ? 24 : 36);
-      const lineHeight = fontSize * 1.2;
-      
-      // Adjust canvas size for mobile
-      canvas1.width = isMobile ? 600 : 1000;
-      canvas1.height = isMobile ? 200 : 300;
-      
-      ctx1.font = `bold ${fontSize}px Helvetica`;
-      ctx1.fillStyle = '#2d5a27'; // Emerald green
-      ctx1.textAlign = 'center';
-      
-      // Split text into 2 lines
-      const line1 = 'build the change you wish to see';
-      const line2 = 'in the world';
-      
-      const centerX = canvas1.width / 2;
-      const centerY = canvas1.height / 2;
-      
-      ctx1.fillText(line1, centerX, centerY - lineHeight/2);
-      ctx1.fillText(line2, centerX, centerY + lineHeight/2);
-      
-      const texture1 = new THREE.CanvasTexture(canvas1);
-      const material1 = new THREE.MeshBasicMaterial({ map: texture1, transparent: true });
-      
-      // Responsive text plane size
-      const planeWidth = isMobile ? 12 : 20;
-      const planeHeight = isMobile ? 4 : 6;
-      
-      textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material1);
-      textMesh1.position.set(0, 1, -5);  // Center text vertically (relative to camera at Z=5)
-      group.add(textMesh1);
-      console.log('✅ Text mesh created and added to scene');
+      // Load font and create bubble text
+      const loader = new FontLoader();
+      // Try to load local Orbitron font (Bank Gothic lookalike) - fallback to Helvetiker
+      loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+        
+        // Create text geometry with more depth
+        const textGeometry = new TextGeometry('build the change you wish to see in the world', {
+          font: font,
+          size: isMobile ? 0.6 : 0.8,
+          height: 0.8,              // Increased depth for 3D effect
+          curveSegments: 16,
+          bevelEnabled: true,
+          bevelThickness: 0.15,     // More pronounced bevel
+          bevelSize: 0.08,          // Larger bevel
+          bevelSegments: 8          // Smoother bevel
+        });
+        
+        textGeometry.computeBoundingBox();
+        textGeometry.center();
+        
+        // Calculate Earth circumference from actual loaded model
+        let earthRadius = 2; // Default fallback
+        let textOrbitRadius = 8; // Default fallback
+        
+        if (earthModel) {
+          // Get actual Earth bounding box
+          earthModel.updateMatrixWorld();
+          const boundingBox = new THREE.Box3().setFromObject(earthModel);
+          const size = boundingBox.getSize(new THREE.Vector3());
+          earthRadius = Math.max(size.x, size.y, size.z) / 2;
+          
+          // Calculate circumference and set text orbit radius with clear offset
+          const earthCircumference = 2 * Math.PI * earthRadius;
+          textOrbitRadius = earthRadius + (earthCircumference * 0.25); // 25% of circumference above Earth for clear visibility
+          
+          console.log('🌍 Earth radius calculated:', earthRadius);
+          console.log('🌍 Earth circumference:', earthCircumference);
+          console.log('🌍 Text orbit radius:', textOrbitRadius);
+        } else {
+          console.log('⚠️ Earth model not loaded yet, using default radius');
+          // Use larger default orbit for better visibility
+          textOrbitRadius = 12;
+        }
+        
+        // Bend text geometry to curve around Earth like Universal Studios (facing outward)
+        const pos = textGeometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const x = pos.getX(i);
+          const y = pos.getY(i);
+          const angle = x / textOrbitRadius;
+          const newX = Math.sin(angle) * textOrbitRadius;
+          const newZ = Math.cos(angle) * textOrbitRadius; // Remove negative offset - wrap outside
+          pos.setX(i, newX);
+          pos.setZ(i, newZ);
+        }
+        pos.needsUpdate = true;
+        textGeometry.computeVertexNormals();
 
+        // Create Universal Studios-style metallic gold material with maximum reflections
+        const textMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0xffd700,        // Gold color
+          metalness: 1.0,         // Maximum metalness
+          roughness: 0.0,         // Mirror-like surface
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.0,
+          envMapIntensity: 5.0,   // Maximum environment reflections
+          emissive: 0x332200,     // Subtle gold glow
+          emissiveIntensity: 0.3
+        });
+
+        // Create the mesh
+        textMesh1 = new THREE.Mesh(textGeometry, textMaterial);
+        
+        // Position curved text at Earth's center level (same as Earth)
+        textMesh1.position.set(0, 0, 0);
+        
+        // Make text face outward from Earth
+        textMesh1.rotation.y = Math.PI;
+        
+        // Add curved text to orbital group
+        group.add(textMesh1);
+        console.log('✅ 3D bubble text created with realistic physics');
+      }, undefined, function(error) {
+        console.log('⚠️ Font load failed, using fallback text:', error);
+        createFallbackText();
+      });
+    }
+
+    function createFallbackText() {
+      // Fallback canvas text if font fails
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = isMobile ? 800 : 1200;
+      canvas.height = isMobile ? 200 : 300;
+      
+      const fontSize = isMobile ? 20 : 28;
+      const lineHeight = fontSize * 1.3;
+      
+      ctx.font = `bold ${fontSize}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#9fd6ff';
+      
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      
+      ctx.fillText('build the change you wish to see', centerX, centerY - lineHeight/2);
+      ctx.fillText('in the world', centerX, centerY + lineHeight/2);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+      
+      const planeWidth = isMobile ? 16 : 24;
+      const planeHeight = isMobile ? 5 : 7;
+      
+      textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material);
+      textMesh1.position.set(0, 0, 0);
+      textMesh1.rotation.y = Math.PI;
+      group.add(textMesh1);
+      console.log('✅ Fallback text created');
+    }
+
+    function loadEarth() {
+      console.log('🌍 Loading Earth model...');
+      const loader = new GLTFLoader();
+      
+      // Try GLB first
+      console.log('🔍 Attempting to load earth.glb...');
+      loader.load('earth.glb', function(gltf) {
+        console.log('✅ Earth GLB loaded successfully');
+        earthModel = gltf.scene;
+        
+        // Keep original materials from GLTF - don't override them
+        earthModel.scale.setScalar(2);
+        earthModel.position.set(0, 0, 0);
+        
+        // Add Earth directly to scene (not in rotating group)
+        scene.add(earthModel);
+        console.log('✅ Earth GLB model loaded with original materials');
+      }, function(progress) {
+        console.log('📊 GLB loading progress:', (progress.loaded / progress.total * 100) + '%');
+      }, function(error) {
+        console.log('⚠️ Earth GLB load failed:', error);
+        
+        // Reset loader path and try GLTF
+        loader.setPath('earth_gltf/');
+        console.log('🔍 Attempting to load GLTF from earth_gltf/scene.gltf...');
+        loader.load('scene.gltf', function(gltf) {
+          console.log('✅ Earth GLTF loaded successfully');
+          earthModel = gltf.scene;
+          
+          // Keep original materials from GLTF - don't override them
+          earthModel.scale.setScalar(2);
+          earthModel.position.set(0, 0, 0);
+          
+          // Add Earth directly to scene (not in rotating group)
+          scene.add(earthModel);
+          console.log('✅ Earth GLTF model loaded with original materials');
+        }, function(progress) {
+          console.log('📊 GLTF loading progress:', (progress.loaded / progress.total * 100) + '%');
+        }, function(error2) {
+          console.log('⚠️ Earth GLTF also failed:', error2);
+          console.log('❌ No Earth model could be loaded');
+        });
+      });
+    }
+
+
+    function createStarfield() {
+      // Create realistic starfield background
+      const starGeometry = new THREE.BufferGeometry();
+      const starCount = 2000;
+      const starPositions = new Float32Array(starCount * 3);
+      const starColors = new Float32Array(starCount * 3);
+      const starSizes = new Float32Array(starCount);
+      
+      for (let i = 0; i < starCount; i++) {
+        const i3 = i * 3;
+        
+        // Random positions in a sphere
+        const radius = Math.random() * 1000 + 500;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(Math.random() * 2 - 1);
+        
+        starPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+        starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+        starPositions[i3 + 2] = radius * Math.cos(phi);
+        
+        // Varied star colors (mostly white/blue, some yellow/red)
+        const colorVariation = Math.random();
+        if (colorVariation < 0.7) {
+          // White/blue stars
+          starColors[i3] = 0.9 + Math.random() * 0.1;
+          starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
+          starColors[i3 + 2] = 1.0;
+        } else if (colorVariation < 0.9) {
+          // Yellow stars
+          starColors[i3] = 1.0;
+          starColors[i3 + 1] = 0.8 + Math.random() * 0.2;
+          starColors[i3 + 2] = 0.6 + Math.random() * 0.2;
+        } else {
+          // Red stars
+          starColors[i3] = 1.0;
+          starColors[i3 + 1] = 0.6 + Math.random() * 0.2;
+          starColors[i3 + 2] = 0.4 + Math.random() * 0.2;
+        }
+        
+        // Varied star sizes
+        starSizes[i] = Math.random() * 3 + 1;
+      }
+      
+      starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+      starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+      starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
+      
+      const starMaterial = new THREE.PointsMaterial({
+        size: 1,
+        transparent: true,
+        opacity: 0.9,
+        vertexColors: true,
+        sizeAttenuation: false,
+        alphaTest: 0.1
+      });
+      
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      scene.add(stars);
+      console.log('✅ Realistic starfield created with', starCount, 'varied stars');
     }
 
 
@@ -246,6 +427,7 @@
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      updateResponsiveFlags();
       
       // Recreate text with responsive sizing
       createText();
@@ -257,6 +439,7 @@
 
     function onPointerDown(event) {
       if (event.isPrimary === false) return;
+      isPointerDown = true;
       pointerXOnPointerDown = event.clientX - windowHalfX;
       pointerYOnPointerDown = event.clientY - windowHalfY;
       targetRotationXOnPointerDown = targetRotationX;
@@ -272,13 +455,14 @@
       targetRotationY = targetRotationYOnPointerDown + (pointerX - pointerXOnPointerDown) * 0.02;
       targetRotationX = targetRotationXOnPointerDown + (pointerY - pointerYOnPointerDown) * 0.02;
       
-      // Clamp rotations to keep text readable
-      targetRotationY = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, targetRotationY)); // ±60°
-      targetRotationX = Math.max(-Math.PI / 6, Math.min(Math.PI / 6, targetRotationX)); // ±30°
+      // Clamp rotations to keep text readable - tighter range for better bubble density
+      targetRotationY = Math.max(-Math.PI / 6, Math.min(Math.PI / 6, targetRotationY)); // ±30°
+      targetRotationX = Math.max(-Math.PI / 8, Math.min(Math.PI / 8, targetRotationX)); // ±22.5°
     }
 
     function onPointerUp(event) {
       if (event.isPrimary === false) return;
+      isPointerDown = false;
       document.removeEventListener('pointermove', onPointerMove);
       document.removeEventListener('pointerup', onPointerUp);
     }
@@ -292,50 +476,27 @@
       
       const time = (t || 0) * 0.0001;
       
-      // Animate metallic balls
-      bubbles.forEach((bubble) => {
-        const userData = bubble.userData;
-        
-        // Float upward
-        bubble.position.y += userData.speed;
-        
-        // Rotate for metallic reflections
-        bubble.rotation.x += userData.rotationSpeed;
-        bubble.rotation.y += userData.rotationSpeed * 0.7;
-        bubble.rotation.z += userData.rotationSpeed * 0.3;
-        
-        // Recycle balls that go too high (responsive)
-        const maxHeight = isMobile ? 150 : 200;
-        const spreadX = isMobile ? 200 : 300;
-        const spreadZ = isMobile ? 200 : 300;
-        
-        if (bubble.position.y > maxHeight) {
-          bubble.position.y = userData.startY;
-          bubble.position.x = (Math.random() - 0.5) * spreadX;
-          
-          // Maintain front/back distribution when recycling
-          const frontBubble = Math.random() < 0.3; // 30% chance to be in front
-          if (frontBubble) {
-            bubble.position.z = Math.random() * 50 + 10; // 10 to 60 (in front of text)
-          } else {
-            bubble.position.z = (Math.random() - 0.5) * spreadZ - 15; // Behind text
-          }
-          bubble.rotation.set(0, 0, 0);
-        }
-      });
+      // Orbital animation - rotate the entire group around Y-axis (like Universal Studios)
+      group.rotation.y -= 0.003; // Reverse direction so text reads right to left
       
-      // Text stays pinned to center - no rotation
+      // Earth stays stationary - no rotation
       
-      // Move camera around the fixed text
-      const targetX = -mouseX * 2;  // Camera moves around text
-      const targetY = mouseY * 2;   // Camera moves around text
+      // Curved text doesn't need to face camera - it's already oriented outward
       
-      // Smooth camera movement around text
+      // Click-to-pan camera controls (only when pointer is down)
+      let targetX = 0, targetY = 0;
+      if (isPointerDown) {
+        targetX = -mouseX * 0.8;  // Reduced sensitivity
+        targetY = mouseY * 0.8;   // Reduced sensitivity
+      }
+      
+      // Smooth camera movement around the orbital system
       camera.position.x += (targetX - camera.position.x) * 0.08;
       camera.position.y += (targetY - camera.position.y) * 0.08;
-      camera.position.z = 5;  // Keep camera at same Z level
+      camera.position.z = 30; // Keep camera far back to see entire Earth and text orbit
       
-      camera.lookAt(0, 0, -5);  // Look at the text position (adjusted for camera position)
+      // Always look at the orbital center
+      camera.lookAt(0, 0, 0);
       renderer.render(scene, camera);
     }
   </script>
