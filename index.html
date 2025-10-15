@@ -58,7 +58,7 @@
     import * as THREE from 'three';
 
     let camera, scene, renderer;
-    let textMesh1, textMesh2;
+    let textMesh1;
     let group;
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
@@ -147,7 +147,6 @@
 
     function createText() {
       if (textMesh1) group.remove(textMesh1);
-      if (textMesh2) group.remove(textMesh2);
 
       // Create canvas texture for main text (much faster than 3D geometry)
       const canvas1 = document.createElement('canvas');
@@ -171,24 +170,6 @@
       textMesh1.position.set(0, 1, -10);  // Center text vertically
       group.add(textMesh1);
 
-      // Create canvas texture for subtitle
-      const canvas2 = document.createElement('canvas');
-      const ctx2 = canvas2.getContext('2d');
-      canvas2.width = 400;
-      canvas2.height = 100;
-      
-      const subtitleSize = isMobile ? 16 : 24;
-      ctx2.font = `bold ${subtitleSize}px Helvetica`;
-      ctx2.fillStyle = '#2d5a27';
-      ctx2.textAlign = 'center';
-      ctx2.fillText('Kyros investment studio', 200, 60);
-      
-      const texture2 = new THREE.CanvasTexture(canvas2);
-      const material2 = new THREE.MeshBasicMaterial({ map: texture2, transparent: true });
-      
-      textMesh2 = new THREE.Mesh(new THREE.PlaneGeometry(8, 2), material2);
-      textMesh2.position.set(0, -2, -10);  // Center subtitle below main text
-      group.add(textMesh2);
     }
 
 
