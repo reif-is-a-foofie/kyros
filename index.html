@@ -250,11 +250,12 @@
     let orbitalGroups = [];
     let glbFiles = [
       'pizza/scene.gltf',
+      'donut_2.0/scene.gltf',
       'orbital_objects/crystal_stone_rock.glb', 
       'orbital_objects/gameboy_classic.glb', 
       'orbital_objects/2f322dab13694f6db1fb4795ff209171.glb',
       'orbital_objects/tether_usdt.glb'
-    ]; // Orbital objects around Earth - ordered: pizza (GLTF) → crystal → gameboy → K → tether
+    ]; // Orbital objects around Earth - ordered: pizza → donut → crystal → gameboy → K → tether
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
     let bubbles = [];
@@ -414,6 +415,7 @@
     function showBottomTextForOrbitalObject(objectIndex) {
       const announcements = [
         'PIZZA ENTERED ORBIT',
+        'DONUT ENTERED ORBIT',
         'CRYSTAL STONE ENTERED ORBIT', 
         'GAME BOY CLASSIC ENTERED ORBIT',
         'K OBJECT ENTERED ORBIT',
@@ -548,18 +550,22 @@
     }
     
     function onPointerMove(event) {
-      if (!isPanning || !earthModel) return;
+      if (!isPanning || !camera) return;
       
       const deltaX = event.clientX - panStartX;
       const deltaY = event.clientY - panStartY;
       
-      // Convert screen movement to world space movement
+      // Convert screen movement to camera movement
       // Scale down the movement for subtle panning
       earthPanX += deltaX * panSensitivity * 0.01;
       earthPanY -= deltaY * panSensitivity * 0.01; // Invert Y for natural feel
       
-      // Apply panning to Earth model only
-      earthModel.position.set(earthPanX, earthPanY, earthPanZ);
+      // Apply panning to camera position
+      camera.position.x += earthPanX;
+      camera.position.y += earthPanY;
+      
+      // Keep camera looking at center
+      camera.lookAt(0, 0, 0);
       
       // Update start position for next frame
       panStartX = event.clientX;
@@ -686,9 +692,9 @@
         // Position text so front face sits exactly at Earth surface
         // Account for bend curvature - text extends further out due to curvature
         const textDepth = 0.6; // Must match depth in TextGeometry  
-        const bendOffset = 1.5; // Increased for tighter curve compression
+        const bendOffset = 2.0; // Even tighter for maximum compression
         textOrbitRadius = earthRadius - textDepth - bendOffset; // Subtract depth and bend offset
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(tighter curve for better compression)');
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(maximum compression)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -699,9 +705,9 @@
           earthRadius = 2; // Fallback radius
           // Position text so front face sits exactly at Earth surface
           const textDepth = 0.6;
-          const bendOffset = 1.5; // Increased for tighter curve compression
+          const bendOffset = 2.0; // Even tighter for maximum compression
           textOrbitRadius = earthRadius - textDepth - bendOffset;
-          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(tighter curve)');
+          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(maximum compression)');
         }
         
       // Persist orbit radius globally for other systems
@@ -768,6 +774,18 @@
         
         // Add curved text to orbital group
         group.add(textMesh);
+        
+        // Add bright front spotlight for text shadows and visibility
+        const frontLight = new THREE.SpotLight(0xffffff, 10, 60, Math.PI / 4, 0.2, 1);
+        frontLight.position.set(0, 0, textOrbitRadius + 8); // Position well in front of text
+        frontLight.target.position.set(0, 0, 0); // Point at center/Earth
+        frontLight.castShadow = true; // Enable shadow casting for dramatic text shadows
+        frontLight.shadow.mapSize.width = 2048; // High quality shadows
+        frontLight.shadow.mapSize.height = 2048;
+        frontLight.shadow.camera.near = 0.5;
+        frontLight.shadow.camera.far = 50;
+        scene.add(frontLight);
+        scene.add(frontLight.target);
         
         // Store reference to text mesh
         window.textMesh1 = textMesh;
@@ -991,15 +1009,15 @@
     }
 
     function calculateOrbitRadiusForIndex(index, earthRadius) {
-      // Start at 10% beyond Earth radius, then apply spacing
-      const baseRadius = earthRadius * 1.1; // 10% beyond Earth
-      const maxRadius = earthRadius * 1.35; // Maximum orbit radius
+      // Start closer to Earth - minimum 1.75x Earth radius
+      const baseRadius = earthRadius * 1.75; // 1.75x Earth radius - closer to Earth
+      const maxRadius = earthRadius * 3.0; // Maximum orbit radius - reduced range
       const orbitRange = maxRadius - baseRadius;
       
       // Each object gets a specific offset to prevent collisions
-      const baseOffset = orbitRange / 5; // Divide range into 5 segments
+      const baseOffset = orbitRange / 6; // Divide range into 6 segments for 6 objects
       const objectOffset = index * baseOffset; // Offset based on index
-      const randomVariation = (Math.random() - 0.5) * baseOffset * 0.3; // Small random variation (±15%)
+      const randomVariation = (Math.random() - 0.5) * baseOffset * 0.3; // Moderate random variation (±15%)
       
       // Calculate orbit radius with offset and variation
       return baseRadius + objectOffset + randomVariation;
@@ -1484,7 +1502,19 @@
         twinkleAmplitude[i] = 0.25 + Math.random() * 0.35;
         
         // Subtle size variation
-        starSizes[i] = 1.5 + Math.random() * 2.5; // 1.5 - 4.0
+        // Size stars based on distance for realistic depth perception
+        let starSize;
+        if (i < starCount * 0.3) {
+          // Close stars: larger and more prominent
+          starSize = 2.5 + Math.random() * 4.0; // 2.5 - 6.5
+        } else if (i < starCount * 0.7) {
+          // Medium stars: moderate size
+          starSize = 1.5 + Math.random() * 3.0; // 1.5 - 4.5
+        } else {
+          // Far stars: smaller points
+          starSize = 0.8 + Math.random() * 2.0; // 0.8 - 2.8
+        }
+        starSizes[i] = starSize;
       }
       
       starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
@@ -1585,11 +1615,19 @@
       if (earthModel) {
         earthModel.rotation.y += earthRotationSpeed; // Use control variable
         
-        // Snap back to original position when not panning
+        // Snap camera back to original position when not panning
         if (!isPanning) {
-          earthPanX += (0 - earthPanX) * snapBackSpeed;
-          earthPanY += (0 - earthPanY) * snapBackSpeed;
-          earthModel.position.set(earthPanX, earthPanY, earthPanZ);
+          const targetCameraX = 0;
+          const targetCameraY = 0;
+          const currentCameraZ = camera.position.z;
+          
+          // Smoothly return camera to center position
+          camera.position.x += (targetCameraX - camera.position.x) * snapBackSpeed;
+          camera.position.y += (targetCameraY - camera.position.y) * snapBackSpeed;
+          camera.position.z = currentCameraZ; // Keep Z position unchanged
+          
+          // Always look at center
+          camera.lookAt(0, 0, 0);
         }
       }
       
