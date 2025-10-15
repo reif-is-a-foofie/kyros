@@ -100,7 +100,7 @@
       const bubbleMaterial = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
-        opacity: 0.3,
+        opacity: 0.6,  // More visible
         depthWrite: false
       });
       
@@ -108,12 +108,12 @@
         const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone());
         
         // Distribute in full 3D volume around camera
-        bubble.position.x = (Math.random() - 0.5) * 600;
-        bubble.position.y = (Math.random() - 0.5) * 400 - 200;  // Start below camera
-        bubble.position.z = (Math.random() - 0.5) * 800;       // Full depth range
+        bubble.position.x = (Math.random() - 0.5) * 400;
+        bubble.position.y = (Math.random() - 0.5) * 300 - 100;  // Start below camera
+        bubble.position.z = (Math.random() - 0.5) * 400;       // Closer to camera
         
         // Vary bubble sizes for natural look
-        bubble.scale.setScalar(Math.random() * 15 + 6);
+        bubble.scale.setScalar(Math.random() * 8 + 4);  // Smaller, more visible
         
         // Simple soap bubble appearance (no complex shaders)
         
@@ -168,7 +168,7 @@
       const material1 = new THREE.MeshBasicMaterial({ map: texture1, transparent: true });
       
       textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(16, 4), material1);
-      textMesh1.position.set(0, 0, -10);  // Move text further in front
+      textMesh1.position.set(0, 1, -10);  // Center text vertically
       group.add(textMesh1);
 
       // Create canvas texture for subtitle
@@ -187,7 +187,7 @@
       const material2 = new THREE.MeshBasicMaterial({ map: texture2, transparent: true });
       
       textMesh2 = new THREE.Mesh(new THREE.PlaneGeometry(8, 2), material2);
-      textMesh2.position.set(0, -3, -10);  // Move subtitle below main text
+      textMesh2.position.set(0, -2, -10);  // Center subtitle below main text
       group.add(textMesh2);
     }
 
