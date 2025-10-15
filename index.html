@@ -275,6 +275,20 @@
     let nextOrbitalIndex = 0;
     let cachedFont = null;
     let textMaterial = null;
+    
+    // Earth panning controls
+    let earthPanX = 0;
+    let earthPanY = 0;
+    let earthPanZ = 0;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let panSensitivity = 0.5;
+    
+    // Message queue system
+    let messageQueue = [];
+    let isMessageShowing = false;
+    let messageTimeout = null;
 
     function updateResponsiveFlags() {
       isMobile = window.innerWidth < 768;
@@ -349,26 +363,24 @@
       }, 1800);
     }
 
-    function showBottomTextForOrbitalObject(objectIndex) {
+    function addMessageToQueue(message) {
+      messageQueue.push(message);
+      processMessageQueue();
+    }
+    
+    function processMessageQueue() {
+      if (isMessageShowing || messageQueue.length === 0) return;
+      
+      isMessageShowing = true;
+      const message = messageQueue.shift();
+      showMessage(message);
+    }
+    
+    function showMessage(message) {
       const banner = document.getElementById('military-banner');
       const content = document.getElementById('banner-content');
       
       if (!banner || !content) return;
-      
-      const announcements = [
-        'PIZZA ENTERED ORBIT',
-        'CRYSTAL STONE ENTERED ORBIT', 
-        'GAME BOY CLASSIC ENTERED ORBIT',
-        'K OBJECT ENTERED ORBIT',
-        'TETHER USDT ENTERED ORBIT'
-      ];
-      
-      const message = announcements[objectIndex] || `OBJECT ${objectIndex + 1} ENTERED ORBIT`;
-      
-      // Clear any existing timeouts
-      if (window.orbitalTextTimeout) {
-        clearTimeout(window.orbitalTextTimeout);
-      }
       
       // Show the banner
       banner.classList.add('show');
@@ -383,15 +395,32 @@
           charIndex++;
           setTimeout(typeChar, 30); // Faster typing for announcements
         } else {
-          // Hide after 10 seconds
-          window.orbitalTextTimeout = setTimeout(() => {
+          // Hide after 10 seconds, then wait 2 seconds before next message
+          messageTimeout = setTimeout(() => {
             banner.classList.remove('show');
+            setTimeout(() => {
+              isMessageShowing = false;
+              processMessageQueue(); // Process next message in queue
+            }, 2000); // 2 second pause between messages
           }, 10000);
         }
       }
       
       typeChar();
       console.log(`🚀 ${message}`);
+    }
+    
+    function showBottomTextForOrbitalObject(objectIndex) {
+      const announcements = [
+        'PIZZA ENTERED ORBIT',
+        'CRYSTAL STONE ENTERED ORBIT', 
+        'GAME BOY CLASSIC ENTERED ORBIT',
+        'K OBJECT ENTERED ORBIT',
+        'TETHER USDT ENTERED ORBIT'
+      ];
+      
+      const message = announcements[objectIndex] || `OBJECT ${objectIndex + 1} ENTERED ORBIT`;
+      addMessageToQueue(message);
     }
 
     function init() {
@@ -497,7 +526,8 @@
 
       // Events
       document.addEventListener('pointerdown', onPointerDown);
-      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
       window.addEventListener('resize', onWindowResize);
       
       // Handle screen orientation change for mobile devices
@@ -1732,46 +1762,6 @@
           isHovering = false;
           // Resume hiding after a short delay
           setTimeout(() => {
-            if (!isHovering) {
-              hideBanner();
-            }
-          }, 1000);
-          console.log('🖱️ Left clickable link - resuming banner');
-        }
-      });
-      
-        // Start the sequence
-        showBanner();
-        
-        // Add glitch effect to random characters
-        setInterval(() => {
-          if (Math.random() < 0.1) { // 10% chance
-            const text = content.textContent;
-            if (text.length > 0) {
-              const randomIndex = Math.floor(Math.random() * text.length);
-              const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-              const randomChar = chars[Math.floor(Math.random() * chars.length)];
-              
-              const newText = text.substring(0, randomIndex) + randomChar + text.substring(randomIndex + 1);
-              content.textContent = newText;
-              
-              // Restore original after brief moment
-              setTimeout(() => {
-                if (content.textContent === newText) {
-                  content.textContent = text;
-                }
-              }, 100);
-            }
-          }
-        }, 200);
-      }
-      
-      console.log('🎖️ Military banner sequence started with 10-second cursor delay');
-    }
-  </script>
-</body>
-</html>
-
             if (!isHovering) {
               hideBanner();
             }
