@@ -290,17 +290,17 @@
     function createSingleLineText(font) {
       const text = "build the change you wish to see in the world.";
       
-      // Create clean Universal Studios-style text geometry
-      const textGeometry = new TextGeometry(text, {
-        font: font,
-        size: isMobile ? 0.8 : 1.2,    // Clean size
-        height: 0.4,                   // Clean, not chunky
-        curveSegments: 20,             // Smooth curves
-        bevelEnabled: true,            // Subtle bevels
-        bevelThickness: 0.05,          // Thin bevels
-        bevelSize: 0.03,               // Small bevels
-        bevelSegments: 5               // Clean bevels
-      });
+        // Create clean Universal Studios-style text geometry with more depth
+        const textGeometry = new TextGeometry(text, {
+          font: font,
+          size: isMobile ? 0.8 : 1.2,    // Clean size
+          depth: 0.8,                    // More depth for 3D effect
+          curveSegments: 20,             // Smooth curves
+          bevelEnabled: true,            // Subtle bevels
+          bevelThickness: 0.1,           // Thicker bevels for depth
+          bevelSize: 0.05,               // Larger bevels
+          bevelSegments: 8               // More bevel segments for smoothness
+        });
       
       textGeometry.computeBoundingBox();
       textGeometry.center();
@@ -453,9 +453,11 @@
     }
 
     function startOrbitalSequence() {
+      console.log('🛰️ Starting orbital sequence with', glbFiles.length, 'objects');
       // Introduce orbital objects one by one with increasing delays
       for (let i = 0; i < glbFiles.length; i++) {
         setTimeout(() => {
+          console.log('🚀 Creating orbital object', i + 1, 'of', glbFiles.length);
           createOrbitalObject(i, 8 + (i * 3)); // Offset orbits: 8, 11, 14, 17
         }, 2000 + (i * 1500)); // 2s, 3.5s, 5s, 6.5s delays
       }
@@ -480,8 +482,10 @@
       const loader = new GLTFLoader();
       const glbFile = glbFiles[index];
       
-         loader.load(glbFile, function(gltf) {
-           const model = gltf.scene.clone();
+      console.log('📁 Loading GLB file:', glbFile);
+      loader.load(glbFile, function(gltf) {
+        console.log('✅ GLB file loaded successfully:', glbFile);
+        const model = gltf.scene.clone();
            
            // Calculate proper scale based on object's native dimensions
            const box = new THREE.Box3().setFromObject(model);
