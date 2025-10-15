@@ -659,9 +659,10 @@
         console.log('🌍🌍🌍 EARTH RADIUS:', earthRadius);
         console.log('🌍 Earth bounding box size:', size);
         
-        // TEST: Set text orbit radius to EXACTLY Earth radius to find offset
-        textOrbitRadius = earthRadius; // Should position text ON Earth surface
-        console.log('🎯 TEST - Text orbit radius set to EXACTLY Earth radius:', textOrbitRadius.toFixed(2));
+        // Position text so front face sits exactly at Earth surface
+        const textDepth = 0.6; // Must match depth in TextGeometry
+        textOrbitRadius = earthRadius - (textDepth / 2); // Subtract half depth so front face is at Earth surface
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -670,9 +671,10 @@
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
           earthRadius = 2; // Fallback radius
-          // TEST: Set to exactly Earth radius
-          textOrbitRadius = earthRadius;
-          console.log('🎯 TEST - Fallback text orbit radius set to EXACTLY Earth radius:', textOrbitRadius.toFixed(2));
+          // Position text so front face sits exactly at Earth surface
+          const textDepth = 0.6;
+          textOrbitRadius = earthRadius - (textDepth / 2);
+          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface)');
         }
         
       // Persist orbit radius globally for other systems
@@ -1105,10 +1107,8 @@
                  }
                  material.emissiveIntensity = 0.0;
                  
-                 // Remove color override - let texture show through
-                 if (material.color) {
-                   material.color.set(0xffffff); // White allows texture to show through
-                 }
+                 // DON'T override color - preserve original material color for textures
+                 // The color should multiply with the texture, not replace it
                  
                  // Set realistic pizza material properties
                  material.roughness = 0.9; // Very matte surface
@@ -1124,10 +1124,21 @@
                  if (material.map) {
                    material.map.colorSpace = THREE.SRGBColorSpace;
                    material.map.needsUpdate = true;
+                   console.log('🍕 Pizza has texture map - ensuring it displays');
+                 } else {
+                   console.log('⚠️ Pizza has NO texture map - applying solid color');
+                   // DON'T enable vertex colors - use solid color instead
+                   material.vertexColors = false;
+                   // Set a bright pizza-like color
+                   material.color.set(0xff9966); // Bright orange pizza color
+                   // Add slight emissive to make it visible
+                   material.emissive.set(0x442211);
+                   material.emissiveIntensity = 0.3;
+                   console.log('🍕 Applied bright pizza color:', material.color.getHex().toString(16));
                  }
                  
                  material.needsUpdate = true;
-                 console.log('🍕 Pizza material aggressively fixed - color:', material.color.getHex().toString(16));
+                 console.log('🍕 Pizza material fixed - original color:', material.color.getHex().toString(16));
                  return; // Skip other material processing for pizza
                }
 
