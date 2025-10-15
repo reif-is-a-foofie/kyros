@@ -145,7 +145,7 @@
       
       // Camera positioned to see entire Earth and orbiting text
       camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000); // Wider FOV
-      camera.position.set(0, 0, 30);  // Even further back to see full scene
+      camera.position.set(0, 0, 18);  // Closer to Earth to fill 80% of screen
       console.log('✅ Camera created');
 
       // Scene with realistic deep space background
@@ -916,10 +916,10 @@
         targetY = mouseY * 0.8;   // Reduced sensitivity
       }
       
-      // Smooth camera movement around the orbital system
+        // Smooth camera movement around the orbital system
       camera.position.x += (targetX - camera.position.x) * 0.08;
       camera.position.y += (targetY - camera.position.y) * 0.08;
-      camera.position.z = 30; // Keep camera far back to see entire Earth and text orbit
+        camera.position.z = 18; // Keep camera closer to fill 80% of screen with Earth
       
       // Always look at the orbital center
       camera.lookAt(0, 0, 0);
