@@ -910,20 +910,20 @@
       // Always look at the orbital center
       camera.lookAt(0, 0, 0);
       
-        // Animate star twinkling with more dynamic patterns
+        // Animate star twinkling with more dynamic patterns (never disappear)
         if (window.stars && window.starColors) {
           const colors = window.stars.geometry.attributes.color.array;
           const time = (t || 0) * 0.002; // Faster animation
           
           for (let i = 0; i < window.starColors.length; i += 3) {
             const starIndex = i / 3;
-            // Different twinkle patterns for variety
-            const pattern1 = Math.sin(time * 3 + starIndex * 0.2) * 0.4 + 0.6; // 0.2 to 1.0
-            const pattern2 = Math.sin(time * 5 + starIndex * 0.15) * 0.3 + 0.7; // 0.4 to 1.0
-            const pattern3 = Math.sin(time * 2 + starIndex * 0.3) * 0.5 + 0.5; // 0.0 to 1.0
+            // Different twinkle patterns for variety - always keep minimum brightness
+            const pattern1 = Math.sin(time * 3 + starIndex * 0.2) * 0.3 + 0.7; // 0.4 to 1.0
+            const pattern2 = Math.sin(time * 5 + starIndex * 0.15) * 0.2 + 0.8; // 0.6 to 1.0
+            const pattern3 = Math.sin(time * 2 + starIndex * 0.3) * 0.4 + 0.6; // 0.2 to 1.0
             
-            // Mix different patterns for each star
-            const twinkle = (pattern1 + pattern2 + pattern3) / 3;
+            // Mix different patterns for each star - ensure minimum 0.4 brightness
+            const twinkle = Math.max(0.4, (pattern1 + pattern2 + pattern3) / 3);
             
             // Add occasional bright flashes
             const flash = Math.random() > 0.98 ? 1.5 : 1.0;
