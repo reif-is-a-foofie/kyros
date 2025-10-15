@@ -723,6 +723,27 @@
     }
 
 
+    // Create circular star texture
+    function createStarTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const context = canvas.getContext('2d');
+      
+      // Create radial gradient for circular star
+      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+      gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.4)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 64, 64);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      return texture;
+    }
+
     function createStarfield() {
       // Create dramatic starfield background
       const starGeometry = new THREE.BufferGeometry();
@@ -770,15 +791,17 @@
       starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
       starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
       
-      const starMaterial = new THREE.PointsMaterial({
-        size: 4,              // Much larger stars for dramatic effect
-        transparent: true,
-        opacity: 1.0,         // Fully opaque for maximum brightness
-        vertexColors: true,
-        sizeAttenuation: false,
-        alphaTest: 0.1,
-        blending: THREE.AdditiveBlending // Makes stars circular and glow
-      });
+        const starMaterial = new THREE.PointsMaterial({
+          size: 6,              // Larger stars for better visibility
+          transparent: true,
+          opacity: 1.0,         // Fully opaque for maximum brightness
+          vertexColors: true,
+          sizeAttenuation: false,
+          alphaTest: 0.1,
+          blending: THREE.AdditiveBlending, // Makes stars circular and glow
+          map: createStarTexture(), // Custom circular star texture
+          depthWrite: false     // Prevent z-fighting
+        });
       
       const stars = new THREE.Points(starGeometry, starMaterial);
       scene.add(stars);
@@ -887,19 +910,30 @@
       // Always look at the orbital center
       camera.lookAt(0, 0, 0);
       
-      // Animate star twinkling
-      if (window.stars && window.starColors) {
-        const colors = window.stars.geometry.attributes.color.array;
-        const time = (t || 0) * 0.001;
-        
-        for (let i = 0; i < window.starColors.length; i += 3) {
-          const twinkle = Math.sin(time * 2 + i * 0.1) * 0.3 + 0.7; // 0.4 to 1.0 brightness
-          colors[i] = window.starColors[i] * twinkle;     // Red
-          colors[i + 1] = window.starColors[i + 1] * twinkle; // Green
-          colors[i + 2] = window.starColors[i + 2] * twinkle; // Blue
+        // Animate star twinkling with more dynamic patterns
+        if (window.stars && window.starColors) {
+          const colors = window.stars.geometry.attributes.color.array;
+          const time = (t || 0) * 0.002; // Faster animation
+          
+          for (let i = 0; i < window.starColors.length; i += 3) {
+            const starIndex = i / 3;
+            // Different twinkle patterns for variety
+            const pattern1 = Math.sin(time * 3 + starIndex * 0.2) * 0.4 + 0.6; // 0.2 to 1.0
+            const pattern2 = Math.sin(time * 5 + starIndex * 0.15) * 0.3 + 0.7; // 0.4 to 1.0
+            const pattern3 = Math.sin(time * 2 + starIndex * 0.3) * 0.5 + 0.5; // 0.0 to 1.0
+            
+            // Mix different patterns for each star
+            const twinkle = (pattern1 + pattern2 + pattern3) / 3;
+            
+            // Add occasional bright flashes
+            const flash = Math.random() > 0.98 ? 1.5 : 1.0;
+            
+            colors[i] = window.starColors[i] * twinkle * flash;     // Red
+            colors[i + 1] = window.starColors[i + 1] * twinkle * flash; // Green
+            colors[i + 2] = window.starColors[i + 2] * twinkle * flash; // Blue
+          }
+          window.stars.geometry.attributes.color.needsUpdate = true;
         }
-        window.stars.geometry.attributes.color.needsUpdate = true;
-      }
       
       renderer.render(scene, camera);
     }
