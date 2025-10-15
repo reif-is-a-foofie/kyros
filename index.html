@@ -561,8 +561,6 @@
       const deltaX = event.clientX - panStartX;
       const deltaY = event.clientY - panStartY;
       
-      console.log('🖱️ Panning:', { deltaX, deltaY, cameraPos: camera.position });
-      
       // Convert screen movement to camera movement
       // Scale down the movement for subtle panning
       const cameraDeltaX = deltaX * panSensitivity * 0.01;
@@ -1559,9 +1557,7 @@
       scene.add(stars);
       repaintScene();
       
-      console.log('⭐ Stars added to scene:', stars);
-      console.log('⭐ Star count:', starCount);
-      console.log('⭐ Star material size:', starMaterial.size);
+      console.log('⭐ Stars added to scene - count:', starCount, 'size:', starMaterial.size);
       
       // Add twinkling animation
       window.stars = stars; // Store reference for animation
