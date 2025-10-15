@@ -659,9 +659,10 @@
         console.log('🌍🌍🌍 EARTH RADIUS:', earthRadius);
         console.log('🌍 Earth bounding box size:', size);
         
-        // Text orbit radius set to 1.01x Earth radius
-        textOrbitRadius = earthRadius * 1.01;
-        console.log('🎯 Text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 1.01)');
+        // Text orbit radius set to 1.01x Earth radius, adjusted for text depth
+        const textDepth = 0.6; // Must match depth in TextGeometry
+        textOrbitRadius = (earthRadius * 1.01) - (textDepth / 2); // Subtract half depth so front face is at 1.01×
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(adjusted for depth, front face at EarthRadius × 1.01)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -670,8 +671,9 @@
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
           earthRadius = 2; // Fallback radius
-          textOrbitRadius = earthRadius * 1.01; // EarthRadius × 1.01
-          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 1.01)');
+          const textDepth = 0.6; // Must match depth in TextGeometry
+          textOrbitRadius = (earthRadius * 1.01) - (textDepth / 2); // Adjusted for depth
+          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(adjusted for depth)');
         }
         
       // Persist orbit radius globally for other systems
@@ -957,13 +959,18 @@
     }
 
     function calculateOrbitRadiusForIndex(index, earthRadius) {
-      // Position objects between 1x and 1.25x the text orbit radius
-      const textRadius = window.textOrbitRadius || (earthRadius * 1.15);
-      const minRadius = textRadius * 1.0;   // 100% of text radius (same as text)
-      const maxRadius = textRadius * 1.25;  // 125% of text radius (outside text)
+      // Start at 10% beyond Earth radius, then apply spacing
+      const baseRadius = earthRadius * 1.1; // 10% beyond Earth
+      const maxRadius = earthRadius * 1.35; // Maximum orbit radius
+      const orbitRange = maxRadius - baseRadius;
       
-      // Random position between text orbit and 25% beyond it
-      return minRadius + Math.random() * (maxRadius - minRadius);
+      // Each object gets a specific offset to prevent collisions
+      const baseOffset = orbitRange / 5; // Divide range into 5 segments
+      const objectOffset = index * baseOffset; // Offset based on index
+      const randomVariation = (Math.random() - 0.5) * baseOffset * 0.3; // Small random variation (±15%)
+      
+      // Calculate orbit radius with offset and variation
+      return baseRadius + objectOffset + randomVariation;
     }
 
     function startOrbitalSequence() {
@@ -1033,15 +1040,16 @@
            const size = box.getSize(new THREE.Vector3());
            const maxDimension = Math.max(size.x, size.y, size.z);
            
-           // Scale objects relative to Earth's radius for consistent presence
-           const earthRadius = earthModel ? (() => {
+           // Use global Earth radius for consistent scaling
+           const earthRadius = window.earthRadius || (earthModel ? (() => {
              const earthBox = new THREE.Box3().setFromObject(earthModel);
              const earthSize = earthBox.getSize(new THREE.Vector3());
              return Math.max(earthSize.x, earthSize.y, earthSize.z) / 2;
-           })() : 2; // Fallback radius
+           })() : 13); // Use 13 as fallback to match actual Earth size
            
            // Ensure we have a valid earth radius
-           const safeEarthRadius = Math.max(earthRadius, 2);
+           const safeEarthRadius = Math.max(earthRadius, 13);
+           console.log(`🌍 Using Earth radius ${safeEarthRadius.toFixed(2)} for orbital object ${index + 1} scaling`);
            const orbitRadius = calculateOrbitRadiusForIndex(index, safeEarthRadius);
            
            // Make pizza smaller than other objects
@@ -1092,37 +1100,51 @@
 
                // Pizza-specific material fix - restore natural colors
                if (glbFile.toLowerCase().includes('pizza')) {
-                 // Kill emissive properties that cause white appearance
-                 material.emissive?.set(0x000000);
+                 // Kill all properties that cause white appearance
+                 if (material.emissive) {
+                   material.emissive.set(0x000000);
+                 }
                  material.emissiveIntensity = 0.0;
                  
-                 // Set realistic pizza material properties
-                 material.roughness = 0.8; // Matte surface
-                 material.metalness = 0.0; // Non-metallic
+                 // Remove color override - let texture show through
+                 if (material.color) {
+                   material.color.set(0xffffff); // White allows texture to show through
+                 }
                  
-                 // Ensure texture maps are preserved
+                 // Set realistic pizza material properties
+                 material.roughness = 0.9; // Very matte surface
+                 material.metalness = 0.0; // Non-metallic
+                 material.transparent = false;
+                 material.opacity = 1.0;
+                 
+                 // Remove problematic maps
+                 material.alphaMap = null;
+                 material.emissiveMap = null;
+                 
+                 // Ensure texture maps are preserved and displayed
                  if (material.map) {
                    material.map.colorSpace = THREE.SRGBColorSpace;
+                   material.map.needsUpdate = true;
                  }
                  
                  material.needsUpdate = true;
-                 console.log('🍕 Pizza material fixed during loading');
+                 console.log('🍕 Pizza material aggressively fixed - color:', material.color.getHex().toString(16));
                  return; // Skip other material processing for pizza
                }
 
-               // Special mirror-chrome golden material for K object (index 3)
+               // Special bright golden material for K object (index 3)
                if (index === 3) {
-                 material.color.set(0xffd700); // Golden base color
-                 material.metalness = 1.0; // Maximum metalness for mirror effect
-                 material.roughness = 0.05; // Near-perfect mirror surface
-                 material.clearcoat = 1.0; // Full clearcoat for extra shine
-                 material.clearcoatRoughness = 0.0; // Perfect clearcoat surface
-                 material.emissive.set(0x221100); // Subtle golden emissive
-                 material.emissiveIntensity = 0.2; // Reduced for mirror effect
+                 material.color.set(0xffd700); // Bright golden base color
+                 material.metalness = 1.0; // 100% metalness - fully metallic
+                 material.roughness = 0.2; // Slightly rougher for better visibility
+                 material.clearcoat = 1.0; // Full clearcoat for shine
+                 material.clearcoatRoughness = 0.1; // Smooth clearcoat
+                 material.emissive.set(0xffaa00); // Bright golden emissive for visibility
+                 material.emissiveIntensity = 0.8; // Strong emissive to brighten object
                  material.envMapIntensity = 3.0; // Strong environment reflections
                  material.reflectivity = 1.0; // Maximum reflectivity
-                 material.sheen = 0.5; // Add sheen for extra mirror effect
-                 material.sheenRoughness = 0.1; // Smooth sheen
+                 material.sheen = 0.5; // Add sheen for extra shine
+                 material.sheenRoughness = 0.2; // Smooth sheen
                  
                  // Ensure the material uses the scene environment for reflections
                  if (scene.environment) {
@@ -1131,7 +1153,7 @@
                  
                  // Force material update for immediate effect
                  material.needsUpdate = true;
-                 console.log('✨ Applied mirror-chrome golden material to K object with enhanced reflections');
+                 console.log('✨ Applied bright golden material to K object with enhanced visibility');
                } else {
                  // Standard material optimization for other objects
                  if (material.map) {
