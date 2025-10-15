@@ -208,50 +208,43 @@
     }
 
     function createText(font, fontConfig, matcapTexture) {
-      // Clear existing
       if (textMesh1) group.remove(textMesh1);
       if (textMesh2) group.remove(textMesh2);
 
-      const material = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
-
-      // Responsive sizing based on window width
-      const isMobile = window.innerWidth < 768;
-      const size = isMobile ? fontConfig.mobileSize : fontConfig.size;
-      const depth = isMobile ? fontConfig.mobileDepth : fontConfig.depth;
-      const bevel = isMobile ? fontConfig.mobileBevel : fontConfig.bevel;
-
-      // Main text line 1
-      const textGeo1 = new TextGeometry('build the change you wish', {
-        font: font,
-        size: size,
-        depth: depth,
-        curveSegments: 4,
-        bevelThickness: bevel,
-        bevelSize: bevel * 0.75,
-        bevelEnabled: true
-      });
-      textGeo1.computeBoundingBox();
-      const centerOffset1 = -0.5 * (textGeo1.boundingBox.max.x - textGeo1.boundingBox.min.x);
+      // Create canvas texture for main text (much faster than 3D geometry)
+      const canvas1 = document.createElement('canvas');
+      const ctx1 = canvas1.getContext('2d');
+      canvas1.width = 800;
+      canvas1.height = 200;
       
-      textMesh1 = new THREE.Mesh(textGeo1, material);
-      textMesh1.position.set(centerOffset1, 20, 0);
+      ctx1.font = `bold ${fontConfig.size * 2}px Helvetica`;
+      ctx1.fillStyle = '#2d5a27'; // Emerald green
+      ctx1.textAlign = 'center';
+      ctx1.fillText('build the change you wish to see in the world', 400, 120);
+      
+      const texture1 = new THREE.CanvasTexture(canvas1);
+      const material1 = new THREE.MeshBasicMaterial({ map: texture1, transparent: true });
+      
+      textMesh1 = new THREE.Mesh(new THREE.PlaneGeometry(8, 2), material1);
+      textMesh1.position.set(0, 40, 0);
       group.add(textMesh1);
 
-      // Main text line 2
-      const textGeo2 = new TextGeometry('to see in the world', {
-        font: font,
-        size: size,
-        depth: depth,
-        curveSegments: 4,
-        bevelThickness: bevel,
-        bevelSize: bevel * 0.75,
-        bevelEnabled: true
-      });
-      textGeo2.computeBoundingBox();
-      const centerOffset2 = -0.5 * (textGeo2.boundingBox.max.x - textGeo2.boundingBox.min.x);
+      // Create canvas texture for subtitle
+      const canvas2 = document.createElement('canvas');
+      const ctx2 = canvas2.getContext('2d');
+      canvas2.width = 400;
+      canvas2.height = 100;
       
-      textMesh2 = new THREE.Mesh(textGeo2, material.clone());
-      textMesh2.position.set(centerOffset2, -40, 0);
+      ctx2.font = `bold ${fontConfig.size}px Helvetica`;
+      ctx2.fillStyle = '#2d5a27';
+      ctx2.textAlign = 'center';
+      ctx2.fillText('Kyros investment studio', 200, 60);
+      
+      const texture2 = new THREE.CanvasTexture(canvas2);
+      const material2 = new THREE.MeshBasicMaterial({ map: texture2, transparent: true });
+      
+      textMesh2 = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), material2);
+      textMesh2.position.set(0, -40, 0);
       group.add(textMesh2);
     }
 
