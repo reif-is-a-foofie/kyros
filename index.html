@@ -525,6 +525,12 @@
       // Create simple starfield background
       createStarfield();
       console.log('✅ Starfield created');
+      
+      // Show stars immediately when ready
+      if (!loadingFlags.hdr) {
+        loadingFlags.hdr = true;
+        markLoadingStep('Star map ready');
+      }
 
       // Load Earth model (text will be created after Earth loads)
       loadEarth();
@@ -557,12 +563,12 @@
       
       // Convert screen movement to camera movement
       // Scale down the movement for subtle panning
-      earthPanX += deltaX * panSensitivity * 0.01;
-      earthPanY -= deltaY * panSensitivity * 0.01; // Invert Y for natural feel
+      const cameraDeltaX = deltaX * panSensitivity * 0.01;
+      const cameraDeltaY = -deltaY * panSensitivity * 0.01; // Invert Y for natural feel
       
       // Apply panning to camera position
-      camera.position.x += earthPanX;
-      camera.position.y += earthPanY;
+      camera.position.x += cameraDeltaX;
+      camera.position.y += cameraDeltaY;
       
       // Keep camera looking at center
       camera.lookAt(0, 0, 0);
@@ -606,6 +612,8 @@
       
       // Create single line of text
       createSingleLineText(font);
+      
+      // Show text immediately when created
       if (!loadingFlags.text) {
         loadingFlags.text = true;
         markLoadingStep('Text ready');
@@ -1307,6 +1315,8 @@
         // Add Earth directly to scene (not in rotating group)
         scene.add(earthModel);
         console.log('✅ Earth GLB model loaded with original materials');
+        
+        // Show Earth immediately when loaded
         if (!loadingFlags.earth) {
           loadingFlags.earth = true;
           markLoadingStep('Earth model ready');
@@ -1354,6 +1364,8 @@
           // Add Earth directly to scene (not in rotating group)
           scene.add(earthModel);
           console.log('✅ Earth GLTF model loaded with original materials');
+          
+          // Show Earth immediately when loaded
           if (!loadingFlags.earth) {
             loadingFlags.earth = true;
             markLoadingStep('Earth model ready');
