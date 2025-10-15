@@ -111,8 +111,8 @@
 
       // Scene with atmospheric fog for depth
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xffffff);
-      scene.fog = new THREE.FogExp2(0xffffff, 0.02);  // Subtle depth fading
+      scene.background = new THREE.Color(0xf0f8ff);  // Light blue background
+      scene.fog = new THREE.FogExp2(0xf0f8ff, 0.015);  // Subtle depth fading
 
       // Renderer (must be created first)
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -130,13 +130,20 @@
       group.position.y = 0;
       scene.add(group);
 
-      // Create simple 3D bubble field with camera inside
-      const bubbleCount = 100;
-      const bubbleGeometry = new THREE.SphereGeometry(1, 12, 12);
-      const bubbleMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
+      // Create hyper-realistic soap bubbles with thin-film interference
+      const bubbleCount = 80;
+      const bubbleGeometry = new THREE.SphereGeometry(1, 16, 16);
+      const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+        transmission: 1.0,          // glass-like transparency
+        thickness: 0.02,            // thin film thickness
+        roughness: 0.05,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.2,
+        envMapIntensity: 2.0,
+        reflectivity: 1.0,
         transparent: true,
-        opacity: 0.2,
+        ior: 1.33,                  // water/soap refractive index
+        color: new THREE.Color(0x7f5aff), // purple base
         depthWrite: false
       });
       
@@ -149,14 +156,29 @@
         bubble.position.z = (Math.random() - 0.5) * 800;       // Full depth range
         
         // Vary bubble sizes for natural look
-        bubble.scale.setScalar(Math.random() * 20 + 8);
+        bubble.scale.setScalar(Math.random() * 15 + 6);
+        
+        // Add thin-film interference shader
+        bubble.material.onBeforeCompile = (shader) => {
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <dithering_fragment>',
+            `
+            vec3 viewDir = normalize(vViewPosition);
+            float f = pow(1.0 - abs(dot(normalize(vNormal), viewDir)), 2.0);
+            vec3 iridescent = mix(vec3(0.4,0.2,1.0), vec3(0.2,0.8,1.0), f);
+            gl_FragColor.rgb += iridescent * 0.4;
+            #include <dithering_fragment>
+            `
+          );
+        };
         
         // Store animation data
         bubble.userData = {
-          speed: Math.random() * 0.5 + 0.2,
-          wobbleSpeed: Math.random() * 0.2 + 0.1,
-          wobbleAmount: Math.random() * 10 + 5,
-          startY: bubble.position.y
+          speed: Math.random() * 0.4 + 0.1,
+          wobbleSpeed: Math.random() * 0.15 + 0.05,
+          wobbleAmount: Math.random() * 8 + 3,
+          startY: bubble.position.y,
+          rotationSpeed: Math.random() * 0.02 + 0.01
         };
         
         bubbles.push(bubble);
@@ -304,7 +326,7 @@
       
       const time = (t || 0) * 0.0001;
       
-      // Animate bubbles with simple volumetric movement
+      // Animate bubbles with realistic physics
       bubbles.forEach((bubble) => {
         const userData = bubble.userData;
         
@@ -312,13 +334,20 @@
         bubble.position.y += userData.speed;
         
         // Subtle wobble for natural movement
-        bubble.position.x += Math.sin(time * userData.wobbleSpeed) * userData.wobbleAmount * 0.01;
+        bubble.position.x += Math.sin(time * userData.wobbleSpeed) * userData.wobbleAmount * 0.008;
+        bubble.position.z += Math.cos(time * userData.wobbleSpeed * 1.3) * userData.wobbleAmount * 0.005;
+        
+        // Gentle rotation for dynamic reflections
+        bubble.rotation.x += userData.rotationSpeed;
+        bubble.rotation.y += userData.rotationSpeed * 0.7;
+        bubble.rotation.z += userData.rotationSpeed * 0.3;
         
         // Recycle bubbles that go too high
         if (bubble.position.y > 300) {
           bubble.position.y = userData.startY;
           bubble.position.x = (Math.random() - 0.5) * 600;
           bubble.position.z = (Math.random() - 0.5) * 800;
+          bubble.rotation.set(0, 0, 0); // Reset rotation
         }
       });
       
