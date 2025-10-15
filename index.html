@@ -122,24 +122,7 @@
         // Vary bubble sizes for natural look
         bubble.scale.setScalar(Math.random() * 15 + 6);
         
-        // Add realistic soap bubble interference
-        bubble.material.onBeforeCompile = (shader) => {
-          shader.fragmentShader = shader.fragmentShader.replace(
-            '#include <dithering_fragment>',
-            `
-            vec3 viewDir = normalize(vViewPosition);
-            float fresnel = pow(1.0 - abs(dot(normalize(vNormal), viewDir)), 1.5);
-            float interference = sin(fresnel * 20.0 + time * 2.0) * 0.5 + 0.5;
-            vec3 soapColors = mix(
-              mix(vec3(1.0,0.8,0.9), vec3(0.8,0.9,1.0), interference),
-              mix(vec3(0.9,1.0,0.8), vec3(1.0,0.9,0.8), interference * 0.7),
-              fresnel
-            );
-            gl_FragColor.rgb = mix(gl_FragColor.rgb, soapColors, 0.3);
-            #include <dithering_fragment>
-            `
-          );
-        };
+        // Simple soap bubble appearance (no complex shaders)
         
         // Store animation data for realistic bubble physics
         bubble.userData = {
