@@ -85,7 +85,7 @@
       bottom: 20px;
       left: 24px;
       font-family: 'Share Tech Mono', 'Courier New', monospace;
-      font-size: 36px;
+      font-size: 30.6px; /* 15% smaller than 36px */
       color: #ffd700;
       text-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700;
       z-index: 1000;
@@ -460,7 +460,8 @@
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1)); // Clamped to 1 for performance
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = false; // Disabled for performance
+      renderer.shadowMap.enabled = true; // Enabled for text shadows
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
       renderer.physicallyCorrectLights = true;
       
       // Optimized color and tone mapping
@@ -624,9 +625,9 @@
         // Position text so front face sits exactly at Earth surface
         // Account for bend curvature - text extends further out due to curvature
         const textDepth = 0.6; // Must match depth in TextGeometry  
-        const bendOffset = 0.8; // Estimated offset due to bend curvature
+        const bendOffset = 1.5; // Increased for tighter curve compression
         textOrbitRadius = earthRadius - textDepth - bendOffset; // Subtract depth and bend offset
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface, accounting for depth + bend)');
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(tighter curve for better compression)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -637,9 +638,9 @@
           earthRadius = 2; // Fallback radius
           // Position text so front face sits exactly at Earth surface
           const textDepth = 0.6;
-          const bendOffset = 0.8; // Estimated offset due to bend curvature
+          const bendOffset = 1.5; // Increased for tighter curve compression
           textOrbitRadius = earthRadius - textDepth - bendOffset;
-          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface)');
+          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(tighter curve)');
         }
         
       // Persist orbit radius globally for other systems
@@ -682,8 +683,8 @@
         // Create single text mesh
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
         
-        // Disable shadows for performance
-        textMesh.castShadow = false;
+        // Enable shadow casting for dramatic effect
+        textMesh.castShadow = true;
         textMesh.receiveShadow = false;
         
         // Debug: Log text positioning info
