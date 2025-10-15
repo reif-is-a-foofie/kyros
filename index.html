@@ -56,7 +56,6 @@
 
   <script type="module">
     import * as THREE from 'three';
-    import { ParallaxBarrierEffect } from 'three/examples/jsm/effects/ParallaxBarrierEffect.js';
 
     let camera, scene, renderer;
     let textMesh1;
@@ -86,9 +85,8 @@
       renderer.shadowMap.enabled = false;
       document.body.appendChild(renderer.domElement);
 
-      // Add ParallaxBarrierEffect for stereoscopic 3D bubbles
-      const effect = new ParallaxBarrierEffect(renderer);
-      effect.setSize(window.innerWidth, window.innerHeight);
+      // Set up animation loop
+      renderer.setAnimationLoop(animate);
 
       // No dynamic lighting for performance
 
@@ -98,32 +96,32 @@
       group.position.y = 0;
       scene.add(group);
 
-      // Create parallax barrier bubbles (like the Three.js example)
-      const bubbleCount = 100;
-      const bubbleGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+      // Create simple floating bubbles
+      const bubbleCount = 50;
+      const bubbleGeometry = new THREE.SphereGeometry(1, 16, 16);
       const bubbleMaterial = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.7,
         depthWrite: false
       });
       
       for(let i = 0; i < bubbleCount; i++){
         const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone());
         
-        // Distribute bubbles in 3D space (like parallax barrier example)
-        bubble.position.x = (Math.random() - 0.5) * 20;
-        bubble.position.y = (Math.random() - 0.5) * 20;
-        bubble.position.z = (Math.random() - 0.5) * 20;
+        // Distribute bubbles around text
+        bubble.position.x = (Math.random() - 0.5) * 400;
+        bubble.position.y = (Math.random() - 0.5) * 300 - 100;
+        bubble.position.z = (Math.random() - 0.5) * 400;
         
         // Vary bubble sizes for natural look
-        bubble.scale.setScalar(Math.random() * 0.5 + 0.3);
+        bubble.scale.setScalar(Math.random() * 8 + 4);
         
         // Simple soap bubble appearance (no complex shaders)
         
-        // Store animation data for parallax barrier bubbles
+        // Store animation data
         bubble.userData = {
-          speed: Math.random() * 0.02 + 0.01,  // Slow floating
+          speed: Math.random() * 0.5 + 0.2,
           startY: bubble.position.y,
           size: bubble.scale.x
         };
@@ -217,7 +215,7 @@
       
       const time = (t || 0) * 0.0001;
       
-      // Animate bubbles with parallax barrier effect (like Three.js example)
+      // Animate bubbles
       bubbles.forEach((bubble) => {
         const userData = bubble.userData;
         
@@ -225,10 +223,10 @@
         bubble.position.y += userData.speed;
         
         // Recycle bubbles that go too high
-        if (bubble.position.y > 10) {
+        if (bubble.position.y > 300) {
           bubble.position.y = userData.startY;
-          bubble.position.x = (Math.random() - 0.5) * 20;
-          bubble.position.z = (Math.random() - 0.5) * 20;
+          bubble.position.x = (Math.random() - 0.5) * 400;
+          bubble.position.z = (Math.random() - 0.5) * 400;
         }
       });
       
@@ -244,7 +242,7 @@
       camera.position.z = 0;  // Keep camera in center of bubble field
       
       camera.lookAt(0, 0, -10);  // Look at the text position
-      effect.render(scene, camera);  // Use parallax barrier effect
+      renderer.render(scene, camera);
     }
   </script>
 </body>
