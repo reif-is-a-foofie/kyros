@@ -97,17 +97,10 @@
       // Create realistic soap bubbles
       const bubbleCount = 60;
       const bubbleGeometry = new THREE.SphereGeometry(1, 20, 20);
-      const bubbleMaterial = new THREE.MeshPhysicalMaterial({
-        transmission: 0.95,         // soap bubble transparency
-        thickness: 0.01,            // very thin film
-        roughness: 0.0,             // perfectly smooth
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.0,
-        envMapIntensity: 1.5,
-        reflectivity: 0.9,
+      const bubbleMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
         transparent: true,
-        ior: 1.33,                  // water refractive index
-        color: new THREE.Color(0xffffff), // white base
+        opacity: 0.3,
         depthWrite: false
       });
       
