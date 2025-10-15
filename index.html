@@ -147,12 +147,12 @@
         console.log('⚠️ Space HDR load failed, using fallback:', error);
       });
 
-      // Add balanced ambient lighting
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5)); // Reduced for realism
+      // Add brighter ambient lighting
+      scene.add(new THREE.AmbientLight(0xffffff, 1.0)); // Brighter for better visibility
       
-      // Add balanced directional light from user's right side
-      const sunLight = new THREE.DirectionalLight(0xffffff, 2.2); // Reduced for realism
-      sunLight.position.set(25, 5, 15); // To the user's right side
+      // Add bright directional light from user's right side (closer)
+      const sunLight = new THREE.DirectionalLight(0xffffff, 3.0); // Brighter and closer
+      sunLight.position.set(15, 5, 10); // Much closer to scene
       sunLight.target.position.set(0, 0, 0); // Point at the Earth
       sunLight.castShadow = true;
       sunLight.shadow.mapSize.width = 4096; // Higher resolution shadows
@@ -166,19 +166,19 @@
       scene.add(sunLight);
       scene.add(sunLight.target);
       
-      // Add balanced rim light behind Earth
-      const rimLight = new THREE.PointLight(0xffffff, 1.5, 50);
-      rimLight.position.set(0, 0, -20); // Behind Earth
-      scene.add(rimLight);
+      // Add bright light directly behind Earth for better illumination
+      const backLight = new THREE.PointLight(0xffffff, 4.0, 30);
+      backLight.position.set(0, 0, -15); // Closer behind Earth
+      scene.add(backLight);
       
       // Add Universal Studios-style rim light
       const rimLight2 = new THREE.PointLight(0x88aaff, 2.0, 50);
       rimLight2.position.set(-10, 5, -10);
       scene.add(rimLight2);
       
-      // Add cool fill light for contrast and color balance
-      const fillLight = new THREE.DirectionalLight(0x88aaff, 0.4);
-      fillLight.position.set(-25, -10, -20);
+      // Add cool fill light for contrast and color balance (closer)
+      const fillLight = new THREE.DirectionalLight(0x88aaff, 0.8);
+      fillLight.position.set(-15, -5, -10);
       scene.add(fillLight);
       
       console.log('✅ Added space lighting');
