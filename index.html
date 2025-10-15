@@ -5,8 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kyros</title>
   <style>
-    body { margin: 0; overflow: hidden; font-family: 'Helvetica Neue', Arial, sans-serif; }
-    canvas { display: block; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
     #links {
       position: fixed;
       bottom: 20px;
@@ -94,8 +105,8 @@
     init();
 
     async function init() {
-      // Camera
-      camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
+      // Camera with better FOV for mobile
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
       camera.position.set(0, 200, 800);
 
       // Scene
@@ -104,7 +115,7 @@
 
       // Renderer (must be created first)
       renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setAnimationLoop(animate);
       document.body.appendChild(renderer.domElement);
