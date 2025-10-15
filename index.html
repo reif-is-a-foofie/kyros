@@ -133,7 +133,7 @@
       });
       
       for(let i = 0; i < bubbleCount; i++){
-        const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone());
+        const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
         
         // Distribute metallic balls around text (responsive)
         const isMobile = window.innerWidth < 768;
