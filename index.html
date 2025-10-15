@@ -94,20 +94,20 @@
       group.position.y = 0;
       scene.add(group);
 
-      // Create hyper-realistic soap bubbles with thin-film interference
-      const bubbleCount = 80;
-      const bubbleGeometry = new THREE.SphereGeometry(1, 16, 16);
+      // Create realistic soap bubbles
+      const bubbleCount = 60;
+      const bubbleGeometry = new THREE.SphereGeometry(1, 20, 20);
       const bubbleMaterial = new THREE.MeshPhysicalMaterial({
-        transmission: 1.0,          // glass-like transparency
-        thickness: 0.02,            // thin film thickness
-        roughness: 0.05,
+        transmission: 0.95,         // soap bubble transparency
+        thickness: 0.01,            // very thin film
+        roughness: 0.0,             // perfectly smooth
         clearcoat: 1.0,
-        clearcoatRoughness: 0.2,
-        envMapIntensity: 2.0,
-        reflectivity: 1.0,
+        clearcoatRoughness: 0.0,
+        envMapIntensity: 1.5,
+        reflectivity: 0.9,
         transparent: true,
-        ior: 1.33,                  // water/soap refractive index
-        color: new THREE.Color(0x7f5aff), // purple base
+        ior: 1.33,                  // water refractive index
+        color: new THREE.Color(0xffffff), // white base
         depthWrite: false
       });
       
@@ -122,27 +122,33 @@
         // Vary bubble sizes for natural look
         bubble.scale.setScalar(Math.random() * 15 + 6);
         
-        // Add thin-film interference shader
+        // Add realistic soap bubble interference
         bubble.material.onBeforeCompile = (shader) => {
           shader.fragmentShader = shader.fragmentShader.replace(
             '#include <dithering_fragment>',
             `
             vec3 viewDir = normalize(vViewPosition);
-            float f = pow(1.0 - abs(dot(normalize(vNormal), viewDir)), 2.0);
-            vec3 iridescent = mix(vec3(0.4,0.2,1.0), vec3(0.2,0.8,1.0), f);
-            gl_FragColor.rgb += iridescent * 0.4;
+            float fresnel = pow(1.0 - abs(dot(normalize(vNormal), viewDir)), 1.5);
+            float interference = sin(fresnel * 20.0 + time * 2.0) * 0.5 + 0.5;
+            vec3 soapColors = mix(
+              mix(vec3(1.0,0.8,0.9), vec3(0.8,0.9,1.0), interference),
+              mix(vec3(0.9,1.0,0.8), vec3(1.0,0.9,0.8), interference * 0.7),
+              fresnel
+            );
+            gl_FragColor.rgb = mix(gl_FragColor.rgb, soapColors, 0.3);
             #include <dithering_fragment>
             `
           );
         };
         
-        // Store animation data
+        // Store animation data for realistic bubble physics
         bubble.userData = {
-          speed: Math.random() * 0.4 + 0.1,
-          wobbleSpeed: Math.random() * 0.15 + 0.05,
-          wobbleAmount: Math.random() * 8 + 3,
+          speed: Math.random() * 0.3 + 0.05,  // Slower, more realistic
+          wobbleSpeed: Math.random() * 0.1 + 0.02,
+          wobbleAmount: Math.random() * 3 + 1,  // Subtle wobble
           startY: bubble.position.y,
-          rotationSpeed: Math.random() * 0.02 + 0.01
+          rotationSpeed: Math.random() * 0.005 + 0.002,  // Very slow rotation
+          size: bubble.scale.x
         };
         
         bubbles.push(bubble);
@@ -249,36 +255,36 @@
       document.removeEventListener('pointerup', onPointerUp);
     }
 
-    let lastFrame = 0;
     function animate(t) {
-      // Cap at ~30fps for mobile performance
-      if (t - lastFrame < 33) return;
-      lastFrame = t;
       
       const time = (t || 0) * 0.0001;
       
-      // Animate bubbles with realistic physics
+      // Animate bubbles with realistic soap bubble physics
       bubbles.forEach((bubble) => {
         const userData = bubble.userData;
         
-        // Float upward in world space
-        bubble.position.y += userData.speed;
+        // Float upward with slight acceleration (like real bubbles)
+        bubble.position.y += userData.speed * (1 + time * 0.1);
         
-        // Subtle wobble for natural movement
-        bubble.position.x += Math.sin(time * userData.wobbleSpeed) * userData.wobbleAmount * 0.008;
-        bubble.position.z += Math.cos(time * userData.wobbleSpeed * 1.3) * userData.wobbleAmount * 0.005;
+        // Very subtle wobble - real soap bubbles are quite stable
+        bubble.position.x += Math.sin(time * userData.wobbleSpeed) * userData.wobbleAmount * 0.002;
+        bubble.position.z += Math.cos(time * userData.wobbleSpeed * 1.1) * userData.wobbleAmount * 0.001;
         
-        // Gentle rotation for dynamic reflections
+        // Very slow rotation for subtle reflection changes
         bubble.rotation.x += userData.rotationSpeed;
-        bubble.rotation.y += userData.rotationSpeed * 0.7;
-        bubble.rotation.z += userData.rotationSpeed * 0.3;
+        bubble.rotation.y += userData.rotationSpeed * 0.5;
+        
+        // Slight size variation (bubbles can expand/shrink slightly)
+        const sizeVariation = 1 + Math.sin(time * 0.5 + bubble.position.x * 0.01) * 0.05;
+        bubble.scale.setScalar(userData.size * sizeVariation);
         
         // Recycle bubbles that go too high
         if (bubble.position.y > 300) {
           bubble.position.y = userData.startY;
           bubble.position.x = (Math.random() - 0.5) * 600;
           bubble.position.z = (Math.random() - 0.5) * 800;
-          bubble.rotation.set(0, 0, 0); // Reset rotation
+          bubble.rotation.set(0, 0, 0);
+          bubble.scale.setScalar(userData.size);
         }
       });
       
@@ -287,12 +293,12 @@
       group.rotation.x = Math.sin(time * 0.5) * 0.1;
       
       // Mouse follow (corrected direction) - camera stays in bubble field
-      const targetX = -mouseX * 20;  // Negative for correct direction
-      const targetY = mouseY * 20;   // Positive for correct direction
+      const targetX = -mouseX * 5;  // Reduced sensitivity
+      const targetY = mouseY * 5;   // Reduced sensitivity
       
       // Smooth camera follow within bubble field
-      camera.position.x += (targetX - camera.position.x) * 0.1;
-      camera.position.y += (targetY - camera.position.y) * 0.1;
+      camera.position.x += (targetX - camera.position.x) * 0.05;
+      camera.position.y += (targetY - camera.position.y) * 0.05;
       camera.position.z = 0;  // Keep camera in center of bubble field
       
       camera.lookAt(0, 0, 0);
