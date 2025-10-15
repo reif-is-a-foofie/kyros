@@ -216,8 +216,8 @@
         return;
       }
 
-      // Create initial text
-      createText(loadedFonts[0].font, loadedFonts[0].config, loadedMatcaps[0]);
+      // Create initial text (independent of font loading)
+      createText();
 
       // Events
       document.addEventListener('pointerdown', onPointerDown);
@@ -231,7 +231,7 @@
       mouseY = (event.clientY - windowHalfY) / 100;
     }
 
-    function createText(font, fontConfig, matcapTexture) {
+    function createText() {
       if (textMesh1) group.remove(textMesh1);
       if (textMesh2) group.remove(textMesh2);
 
@@ -241,7 +241,11 @@
       canvas1.width = 800;
       canvas1.height = 200;
       
-      ctx1.font = `bold ${fontConfig.size * 2}px Helvetica`;
+      // Responsive font size
+      const isMobile = window.innerWidth < 768;
+      const fontSize = isMobile ? 24 : 48;
+      
+      ctx1.font = `bold ${fontSize}px Helvetica`;
       ctx1.fillStyle = '#2d5a27'; // Emerald green
       ctx1.textAlign = 'center';
       ctx1.fillText('build the change you wish to see in the world', 400, 120);
@@ -259,7 +263,8 @@
       canvas2.width = 400;
       canvas2.height = 100;
       
-      ctx2.font = `bold ${fontConfig.size}px Helvetica`;
+      const subtitleSize = isMobile ? 16 : 24;
+      ctx2.font = `bold ${subtitleSize}px Helvetica`;
       ctx2.fillStyle = '#2d5a27';
       ctx2.textAlign = 'center';
       ctx2.fillText('Kyros investment studio', 200, 60);
@@ -284,10 +289,7 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       
       // Recreate text with responsive sizing
-      if (loadedFonts.length > 0 && loadedMatcaps.length > 0) {
-        const fontData = loadedFonts[0];
-        createText(fontData.font, fontData.config, loadedMatcaps[currentMatcapIndex]);
-      }
+      createText();
     }
 
     function onPointerDown(event) {
