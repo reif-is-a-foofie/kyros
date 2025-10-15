@@ -80,9 +80,7 @@
     let mouseX = 0;
     let mouseY = 0;
 
-    init();
-
-    async function init() {
+    function init() {
       // Camera positioned inside the bubble cloud for immersive parallax
       camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
       camera.position.set(0, 0, 0);  // Center of the bubble field
@@ -98,6 +96,8 @@
         texture.mapping = THREE.EquirectangularReflectionMapping;
         scene.environment = texture; // Keep environment for metallic reflections
         // Don't set as background - keep white background
+      }, undefined, function(error) {
+        console.log('EXR loading failed, continuing without environment map:', error);
       });
 
       // Renderer (must be created first)
@@ -243,6 +243,9 @@
       // Recreate text with responsive sizing
       createText();
     }
+
+    // Initialize after DOM is ready
+    init();
 
     function onPointerDown(event) {
       if (event.isPrimary === false) return;
