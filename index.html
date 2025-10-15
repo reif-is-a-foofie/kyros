@@ -621,12 +621,11 @@
         console.log('🌍 Earth bounding box size:', size);
         
         // Position text so front face sits exactly at Earth surface
-        // Account for depth + bevel thickness
-        const textDepth = 0.6; // Must match depth in TextGeometry
-        const bevelThickness = 0.08; // Must match bevelThickness in TextGeometry
-        const totalThickness = textDepth + bevelThickness;
-        textOrbitRadius = earthRadius - (totalThickness / 2); // Subtract half total thickness
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface, accounting for depth + bevel)');
+        // Account for bend curvature - text extends further out due to curvature
+        const textDepth = 0.6; // Must match depth in TextGeometry  
+        const bendOffset = 0.8; // Estimated offset due to bend curvature
+        textOrbitRadius = earthRadius - textDepth - bendOffset; // Subtract depth and bend offset
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface, accounting for depth + bend)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -637,9 +636,8 @@
           earthRadius = 2; // Fallback radius
           // Position text so front face sits exactly at Earth surface
           const textDepth = 0.6;
-          const bevelThickness = 0.08;
-          const totalThickness = textDepth + bevelThickness;
-          textOrbitRadius = earthRadius - (totalThickness / 2);
+          const bendOffset = 0.8; // Estimated offset due to bend curvature
+          textOrbitRadius = earthRadius - textDepth - bendOffset;
           console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface)');
         }
         
@@ -1021,9 +1019,17 @@
            console.log(`🌍 Using Earth radius ${safeEarthRadius.toFixed(2)} for orbital object ${index + 1} scaling`);
            const orbitRadius = calculateOrbitRadiusForIndex(index, safeEarthRadius);
            
-           // Make pizza smaller than other objects
+           // Calculate target size based on Earth diameter for pizza, radius for others
            const isPizza = glbFile.toLowerCase().includes('pizza');
-           const targetSize = safeEarthRadius * (isPizza ? 0.02 : 0.05); // Pizza is 2%, others 5%
+           let targetSize;
+           if (isPizza) {
+             // Pizza: 10% of Earth's diameter = 10% of (2 × radius) = 20% of radius
+             targetSize = safeEarthRadius * 2 * 0.1; // 10% of diameter
+             console.log(`🍕 Pizza target size: 10% of Earth diameter (${(safeEarthRadius * 2).toFixed(2)}), = ${targetSize.toFixed(2)}`);
+           } else {
+             // Other objects: 5% of Earth's radius
+             targetSize = safeEarthRadius * 0.05;
+           }
            const scale = Math.max(targetSize / maxDimension, 0.1); // Ensure minimum scale
            model.scale.setScalar(scale);
            
@@ -1073,15 +1079,15 @@
                  
                  // Apply realistic pizza colors based on mesh name
                  if (meshName.includes('CHEESE')) {
-                   material.color.set(0xffdd88); // Yellow cheese
-                   material.emissive.set(0x332200);
-                   material.emissiveIntensity = 0.2;
-                   console.log('🧀 Cheese layer - yellow');
+                   material.color.set(0xffee44); // Bright yellow cheese
+                   material.emissive.set(0x443300);
+                   material.emissiveIntensity = 0.25;
+                   console.log('🧀 Cheese layer - bright yellow');
                  } else if (meshName.includes('BREAD')) {
-                   material.color.set(0xcc8844); // Brown bread/crust
-                   material.emissive.set(0x221100);
-                   material.emissiveIntensity = 0.1;
-                   console.log('🍞 Bread layer - brown');
+                   material.color.set(0x995522); // Dark brown bread/crust
+                   material.emissive.set(0x331100);
+                   material.emissiveIntensity = 0.15;
+                   console.log('🍞 Bread layer - dark brown');
                  } else if (meshName.includes('PEPPERONI')) {
                    material.color.set(0xcc3333); // Red pepperoni
                    material.emissive.set(0x220000);
