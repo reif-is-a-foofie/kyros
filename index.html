@@ -56,47 +56,16 @@
 
   <script type="module">
     import * as THREE from 'three';
-    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
     let camera, scene, renderer;
     let textMesh1, textMesh2, textMesh3;
     let group;
-    let targetRotationX = 0;
-    let targetRotationY = 0;
-    let targetRotationXOnPointerDown = 0;
-    let targetRotationYOnPointerDown = 0;
-    let pointerX = 0;
-    let pointerY = 0;
-    let pointerXOnPointerDown = 0;
-    let pointerYOnPointerDown = 0;
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
     let currentComboIndex = 0;
     let isTransitioning = false;
 
     // Font and material combinations
-    const fonts = [
-      {
-        url: 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/fonts/helvetiker_bold.typeface.json',
-        size: 40,
-        depth: 8,  // Reduced from 20 to 8
-        bevel: 1,  // Reduced from 2 to 1
-        // Responsive sizes
-        mobileSize: 20,
-        mobileDepth: 4,
-        mobileBevel: 0.5
-      }
-    ];
-
-    // Single emerald green matcap
-    const matcapFiles = [
-      'matcaps/olive.png'  // Using olive as emerald green
-    ];
-
-    let loadedFonts = [];
-    let loadedMatcaps = [];
-    let currentMatcapIndex = 0;
     let bubbles = [];
     
     let mouseX = 0;
@@ -185,43 +154,11 @@
         scene.add(bubble);
       }
 
-      // Load matcap textures
-      const textureLoader = new THREE.TextureLoader();
-      for (const matcapFile of matcapFiles) {
-        try {
-          const texture = await new Promise((resolve, reject) => {
-            textureLoader.load(matcapFile, resolve, undefined, reject);
-          });
-          loadedMatcaps.push(texture);
-        } catch (err) {
-          console.warn('Failed to load matcap:', matcapFile, err);
-        }
-      }
-
-      // Load all fonts
-      const loader = new FontLoader();
-      for (const fontConfig of fonts) {
-        try {
-          const font = await new Promise((resolve, reject) => {
-            loader.load(fontConfig.url, resolve, undefined, reject);
-          });
-          loadedFonts.push({ font, config: fontConfig });
-        } catch (err) {
-          console.warn('Failed to load font:', fontConfig.url, err);
-        }
-      }
-
-      if (loadedFonts.length === 0) {
-        console.error('No fonts loaded');
-        return;
-      }
-
-      // Create initial text (independent of font loading)
+      // Create initial text
       createText();
 
       // Events
       document.addEventListener('pointerdown', onPointerDown);
-      document.addEventListener('click', changeColor);
       document.addEventListener('mousemove', onMouseMove);
       window.addEventListener('resize', onWindowResize);
     }
@@ -277,9 +214,6 @@
       group.add(textMesh2);
     }
 
-    function changeColor() {
-      // No-op - single color now
-    }
 
     function onWindowResize() {
       windowHalfX = window.innerWidth / 2;
@@ -366,8 +300,6 @@
       camera.position.y += (targetY - camera.position.y) * 0.1;
       camera.position.z = 0;  // Keep camera in center of bubble field
       
-      group.rotation.y += (targetRotationY - group.rotation.y) * 0.05;
-      group.rotation.x += (targetRotationX - group.rotation.x) * 0.05;
       camera.lookAt(0, 0, 0);
       renderer.render(scene, camera);
     }
