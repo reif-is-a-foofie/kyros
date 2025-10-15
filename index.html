@@ -249,12 +249,12 @@
     let orbitalObjects = [];
     let orbitalGroups = [];
     let glbFiles = [
-      'orbital_objects/pizza.glb',
+      'pizza/scene.gltf',
       'orbital_objects/crystal_stone_rock.glb', 
       'orbital_objects/gameboy_classic.glb', 
       'orbital_objects/2f322dab13694f6db1fb4795ff209171.glb',
       'orbital_objects/tether_usdt.glb'
-    ]; // Orbital objects around Earth - ordered: pizza → crystal → gameboy → K → tether
+    ]; // Orbital objects around Earth - ordered: pizza (GLTF) → crystal → gameboy → K → tether
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
     let bubbles = [];
@@ -470,46 +470,7 @@
       
       document.body.appendChild(renderer.domElement);
 
-      // Pizza-specific fix to remove masks and restore natural colors
-      setTimeout(() => {
-        scene.traverse(o => {
-          if (o.name && o.name.toLowerCase().includes('pizza')) {
-            if (o.material) {
-              const materials = Array.isArray(o.material) ? o.material : [o.material];
-              materials.forEach((material) => {
-                if (!material) return;
-                material.emissive?.set(0x000000); // Kill baked glow
-                if (typeof material.emissiveIntensity === 'number') {
-                  material.emissiveIntensity = 0.0;
-                }
-                if (typeof material.roughness === 'number') {
-                  material.roughness = Math.max(material.roughness, 0.45); // Keep sheen soft
-                }
-                if (typeof material.metalness === 'number') {
-                  material.metalness = Math.min(material.metalness, 0.25);
-                }
-                // Remove all masks and transparency
-                if ('alphaMap' in material && material.alphaMap) {
-                  material.alphaMap = null;
-                }
-                if ('normalMap' in material && material.normalMap) {
-                  material.normalMap = null; // Remove normal map masks
-                }
-                if ('displacementMap' in material && material.displacementMap) {
-                  material.displacementMap = null; // Remove displacement masks
-                }
-                if (material.transparent) {
-                  material.transparent = false;
-                  material.alphaTest = 0.0;
-                  material.opacity = 1.0; // Force full opacity
-                }
-                // Don't override color - let texture show through naturally
-                material.needsUpdate = true;
-              });
-            }
-          }
-        });
-      }, 3000); // Wait for pizza to load
+      // No pizza-specific global fixes - using original materials from GLB
 
       // Set up animation loop
       renderer.setAnimationLoop(animate);
@@ -692,6 +653,8 @@
       // Bend text geometry to curve around Earth (facing outward)
       console.log('🎯🎯🎯 BENDING TEXT WITH ORBIT RADIUS:', textOrbitRadius);
       console.log('🎯 Text will be positioned at radius:', textOrbitRadius);
+      console.log('🎯 Earth radius for reference:', earthRadius);
+      console.log('🎯 Expected text front face distance from center:', textOrbitRadius + 0.3);
       bendTextGeometry(textGeometry, textOrbitRadius, 0); // Single line centered
 
       // Optimized gold material for performance while maintaining visual quality
@@ -1099,46 +1062,22 @@
              materials.forEach((material) => {
                if (!material) return;
 
-               // Pizza-specific material fix - restore natural colors
+               // Pizza - debug and analyze structure
                if (glbFile.toLowerCase().includes('pizza')) {
-                 // Kill all properties that cause white appearance
-                 if (material.emissive) {
-                   material.emissive.set(0x000000);
-                 }
-                 material.emissiveIntensity = 0.0;
+                 // Log detailed information about each pizza mesh/material
+                 console.log('🍕 Pizza mesh:', child.name);
+                 console.log('🍕 Material color:', material.color ? material.color.getHex().toString(16) : 'none');
+                 console.log('🍕 Has texture map:', !!material.map);
+                 console.log('🍕 Metalness:', material.metalness);
+                 console.log('🍕 Roughness:', material.roughness);
+                 console.log('🍕 Emissive:', material.emissive ? material.emissive.getHex().toString(16) : 'none');
+                 console.log('🍕 EmissiveIntensity:', material.emissiveIntensity);
                  
-                 // DON'T override color - preserve original material color for textures
-                 // The color should multiply with the texture, not replace it
-                 
-                 // Set realistic pizza material properties
-                 material.roughness = 0.9; // Very matte surface
-                 material.metalness = 0.0; // Non-metallic
-                 material.transparent = false;
-                 material.opacity = 1.0;
-                 
-                 // Remove problematic maps
-                 material.alphaMap = null;
-                 material.emissiveMap = null;
-                 
-                 // Ensure texture maps are preserved and displayed
+                 // Only ensure proper color space for textures
                  if (material.map) {
                    material.map.colorSpace = THREE.SRGBColorSpace;
-                   material.map.needsUpdate = true;
-                   console.log('🍕 Pizza has texture map - ensuring it displays');
-                 } else {
-                   console.log('⚠️ Pizza has NO texture map - applying solid color');
-                   // DON'T enable vertex colors - use solid color instead
-                   material.vertexColors = false;
-                   // Set a bright pizza-like color
-                   material.color.set(0xff9966); // Bright orange pizza color
-                   // Add slight emissive to make it visible
-                   material.emissive.set(0x442211);
-                   material.emissiveIntensity = 0.3;
-                   console.log('🍕 Applied bright pizza color:', material.color.getHex().toString(16));
                  }
-                 
                  material.needsUpdate = true;
-                 console.log('🍕 Pizza material fixed - original color:', material.color.getHex().toString(16));
                  return; // Skip other material processing for pizza
                }
 
