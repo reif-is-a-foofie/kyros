@@ -700,9 +700,9 @@
         // Position text so front face sits exactly at Earth surface
         // Account for bend curvature - text extends further out due to curvature
         const textDepth = 0.6; // Must match depth in TextGeometry  
-        const bendOffset = 2.5; // Ultra-tight for maximum compression
+        const bendOffset = 3.5; // EXTREME compression for dramatic effect
         textOrbitRadius = earthRadius - textDepth - bendOffset; // Subtract depth and bend offset
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(ultra-tight compression)');
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(EXTREME compression)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -713,7 +713,7 @@
           earthRadius = 2; // Fallback radius
           // Position text so front face sits exactly at Earth surface
           const textDepth = 0.6;
-          const bendOffset = 2.5; // Ultra-tight for maximum compression
+          const bendOffset = 3.5; // EXTREME compression for dramatic effect
           textOrbitRadius = earthRadius - textDepth - bendOffset;
           console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(ultra-tight compression)');
         }
@@ -1638,14 +1638,9 @@
         
         // Snap camera back to original position when not panning
         if (!isPanning) {
-          const targetCameraX = 0;
-          const targetCameraY = 0;
-          const currentCameraZ = camera.position.z;
-          
           // Smoothly return camera to center position
-          camera.position.x += (targetCameraX - camera.position.x) * snapBackSpeed;
-          camera.position.y += (targetCameraY - camera.position.y) * snapBackSpeed;
-          camera.position.z = currentCameraZ; // Keep Z position unchanged
+          camera.position.x += (0 - camera.position.x) * snapBackSpeed;
+          camera.position.y += (0 - camera.position.y) * snapBackSpeed;
           
           // Always look at center
           camera.lookAt(0, 0, 0);
@@ -1664,9 +1659,7 @@
         targetCameraZ = baseCameraDistance * 1.18;
       }
       
-      // Remove mouse parallax - keep camera centered
-      camera.position.x = 0;
-      camera.position.y = 0;
+      // Allow camera panning - only adjust Z position smoothly
       camera.position.z += (targetCameraZ - camera.position.z) * 0.12;
       
       // Always look at the orbital center
