@@ -663,7 +663,7 @@
 
       // Optimized gold material for performance while maintaining visual quality
       const textMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffd700,        // Warm gold
+        color: 0x4169e1,        // Royal blue
         metalness: 1.0,         // Fully metallic
         roughness: 0.1,         // Very smooth for maximum reflections
         clearcoat: 1.0,         // Maximum clearcoat
@@ -1020,10 +1020,11 @@
            console.log(`🌍 Using Earth radius ${safeEarthRadius.toFixed(2)} for orbital object ${index + 1} scaling`);
            const orbitRadius = calculateOrbitRadiusForIndex(index, safeEarthRadius);
            
-           // All objects: 10% of Earth's diameter = 10% of (2 × radius) = 20% of radius
-           const targetSize = safeEarthRadius * 2 * 0.1; // 10% of diameter
+           // Pizza: 15% of Earth's diameter, others: 10% of Earth's diameter
            const isPizza = glbFile.toLowerCase().includes('pizza');
-           console.log(`${isPizza ? '🍕' : '🪨'} Orbital object ${index + 1} target size: 10% of Earth diameter (${(safeEarthRadius * 2).toFixed(2)}), = ${targetSize.toFixed(2)}`);
+           const diameterPercent = isPizza ? 0.15 : 0.1; // 15% for pizza, 10% for others
+           const targetSize = safeEarthRadius * 2 * diameterPercent;
+           console.log(`${isPizza ? '🍕' : '🪨'} Orbital object ${index + 1} target size: ${(diameterPercent * 100)}% of Earth diameter (${(safeEarthRadius * 2).toFixed(2)}), = ${targetSize.toFixed(2)}`);
            const scale = Math.max(targetSize / maxDimension, 0.1); // Ensure minimum scale
            model.scale.setScalar(scale);
            
@@ -1185,7 +1186,7 @@
       
       ctx.font = `bold ${fontSize}px Arial`;
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#9fd6ff';
+      ctx.fillStyle = '#4169e1';
       
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
