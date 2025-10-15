@@ -56,6 +56,7 @@
 
   <script type="module">
     import * as THREE from 'three';
+    import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 
     let camera, scene, renderer;
     let textMesh1;
@@ -100,14 +101,14 @@
       const bubbleCount = 60;
       const bubbleGeometry = new THREE.SphereGeometry(1, 32, 32);
       const bubbleMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0x888888,
-        metalness: 0.9,
-        roughness: 0.1,
+        color: 0xcccccc,
+        metalness: 0.95,
+        roughness: 0.05,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.1,
-        envMapIntensity: 1.0,
+        clearcoatRoughness: 0.05,
+        envMapIntensity: 2.0,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.9
       });
       
       for(let i = 0; i < bubbleCount; i++){
