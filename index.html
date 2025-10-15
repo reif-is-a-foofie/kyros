@@ -659,10 +659,9 @@
         console.log('🌍🌍🌍 EARTH RADIUS:', earthRadius);
         console.log('🌍 Earth bounding box size:', size);
         
-        // Text orbit radius set to 1.01x Earth radius, adjusted for text depth
-        const textDepth = 0.6; // Must match depth in TextGeometry
-        textOrbitRadius = (earthRadius * 1.01) - (textDepth / 2); // Subtract half depth so front face is at 1.01×
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(adjusted for depth, front face at EarthRadius × 1.01)');
+        // TEST: Set text orbit radius to EXACTLY Earth radius to find offset
+        textOrbitRadius = earthRadius; // Should position text ON Earth surface
+        console.log('🎯 TEST - Text orbit radius set to EXACTLY Earth radius:', textOrbitRadius.toFixed(2));
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -671,9 +670,9 @@
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
           earthRadius = 2; // Fallback radius
-          const textDepth = 0.6; // Must match depth in TextGeometry
-          textOrbitRadius = (earthRadius * 1.01) - (textDepth / 2); // Adjusted for depth
-          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(adjusted for depth)');
+          // TEST: Set to exactly Earth radius
+          textOrbitRadius = earthRadius;
+          console.log('🎯 TEST - Fallback text orbit radius set to EXACTLY Earth radius:', textOrbitRadius.toFixed(2));
         }
         
       // Persist orbit radius globally for other systems
