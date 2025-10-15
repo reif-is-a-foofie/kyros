@@ -25,24 +25,25 @@
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
-      color: white;
-      font-size: 18px;
+    color: white;
+    font-size: 36px;
+    font-family: 'Helvetica', 'Arial', sans-serif;
       z-index: 10;
       white-space: nowrap;
-      padding: 0 15px;
-      text-shadow: 0 0 8px rgba(0,0,0,0.9);
-      font-weight: 500;
+    padding: 0 15px;
+    text-shadow: 0 0 8px rgba(0,0,0,0.9);
+    font-weight: 500;
     }
     @media (max-width: 768px) {
       #links {
-        font-size: 16px;
+        font-size: 32px;
         bottom: 15px;
         padding: 0 10px;
       }
     }
     @media (max-width: 480px) {
       #links {
-        font-size: 14px;
+        font-size: 28px;
         bottom: 10px;
       }
     }
@@ -55,12 +56,14 @@
     #links a:hover {
       text-decoration: underline;
     }
+    
   </style>
 </head>
 <body>
   <div id="links">
     Kyros investment studio / <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> / <a href="https://calendly.com/reif-kyros/30min" target="_blank">Pitch us</a>
   </div>
+
 
   <script type="importmap">
     {
@@ -83,6 +86,24 @@
     let textMesh1;
     let earthModel;
     let group;
+    let textOrbitRadius = 12;
+    let earthRadius = 0;
+    let sunLight;
+    let orbitSpeed = 0.009;
+    let earthRotationSpeed = 0.00275;
+    let originalTextPositions = null; // Store original flat text positions
+    
+    // Multiple orbital objects
+    let orbitalObjects = [];
+    let orbitalGroups = [];
+    let glbFiles = [
+      'tether_usdt.glb', 
+      'crystal_stone_rock.glb', 
+      'gameboy_classic.glb', 
+      'pizza.glb'
+    ]; // Orbital objects around Earth
+    let currentOrbitIndex = 0;
+    let orbitalSpeedMultiplier = 0.5;
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
     let bubbles = [];
@@ -126,24 +147,39 @@
         console.log('⚠️ Space HDR load failed, using fallback:', error);
       });
 
-      // Add warm ambient lighting
-      scene.add(new THREE.AmbientLight(0x404040, 0.2)); // Dim ambient light
+      // Add balanced ambient lighting
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5)); // Reduced for realism
       
-      // Add warm yellow sun-like directional light with shadows (behind camera)
-      const sunLight = new THREE.DirectionalLight(0xffff88, 2.0); // Pure yellow sun (no green)
-      sunLight.position.set(0, 0, 30); // Behind the camera, illuminating the scene
+      // Add balanced directional light from user's right side
+      const sunLight = new THREE.DirectionalLight(0xffffff, 2.2); // Reduced for realism
+      sunLight.position.set(25, 5, 15); // To the user's right side
       sunLight.target.position.set(0, 0, 0); // Point at the Earth
       sunLight.castShadow = true;
-      sunLight.shadow.mapSize.width = 2048;
-      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.mapSize.width = 4096; // Higher resolution shadows
+      sunLight.shadow.mapSize.height = 4096;
       sunLight.shadow.camera.near = 0.5;
-      sunLight.shadow.camera.far = 50;
-      sunLight.shadow.camera.left = -20;
-      sunLight.shadow.camera.right = 20;
-      sunLight.shadow.camera.top = 20;
-      sunLight.shadow.camera.bottom = -20;
+      sunLight.shadow.camera.far = 100; // Larger shadow area
+      sunLight.shadow.camera.left = -50; // Wider shadow area
+      sunLight.shadow.camera.right = 50;
+      sunLight.shadow.camera.top = 50;
+      sunLight.shadow.camera.bottom = -50;
       scene.add(sunLight);
-      scene.add(sunLight.target); // Add target to scene
+      scene.add(sunLight.target);
+      
+      // Add balanced rim light behind Earth
+      const rimLight = new THREE.PointLight(0xffffff, 1.5, 50);
+      rimLight.position.set(0, 0, -20); // Behind Earth
+      scene.add(rimLight);
+      
+      // Add Universal Studios-style rim light
+      const rimLight2 = new THREE.PointLight(0x88aaff, 2.0, 50);
+      rimLight2.position.set(-10, 5, -10);
+      scene.add(rimLight2);
+      
+      // Add cool fill light for contrast and color balance
+      const fillLight = new THREE.DirectionalLight(0x88aaff, 0.4);
+      fillLight.position.set(-25, -10, -20);
+      scene.add(fillLight);
       
       console.log('✅ Added space lighting');
 
@@ -153,7 +189,33 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      
+      // Fix lighting and color accuracy with Universal Studios bloom
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 0.9; // Reduced exposure to restore neutral colors
+      
       document.body.appendChild(renderer.domElement);
+
+      // --- Color calibration fix ---
+      // Rebalance all lights to prevent over-saturation
+      scene.traverse(o => {
+        if (o.isLight) o.intensity *= 0.5; // Cut brightness in half
+      });
+
+      // Pizza-specific fix to restore natural colors
+      setTimeout(() => {
+        scene.traverse(o => {
+          if (o.name && o.name.toLowerCase().includes('pizza')) {
+            if (o.material) {
+              o.material.emissive?.set(0x000000); // Kill baked glow
+              o.material.emissiveIntensity = 0.0;
+              o.material.color.set(0xffffff); // Use texture colors
+              o.material.needsUpdate = true;
+            }
+          }
+        });
+      }, 3000); // Wait for pizza to load
 
       // Set up animation loop
       renderer.setAnimationLoop(animate);
@@ -180,6 +242,11 @@
       document.addEventListener('pointerdown', onPointerDown);
       document.addEventListener('mousemove', onMouseMove);
       window.addEventListener('resize', onWindowResize);
+      
+      // Handle screen orientation change for mobile devices
+      window.addEventListener('orientationchange', function() {
+        setTimeout(onWindowResize, 100); // Small delay to ensure dimensions are updated
+      }, false);
     }
     
     function onMouseMove(event) {
@@ -193,89 +260,351 @@
 
       // Load font and create bubble text
       const loader = new FontLoader();
-      // Try to load local Orbitron font (Bank Gothic lookalike) - fallback to Helvetiker
-      loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+      // Load Universal Secondaries font (authentic Universal Studios look)
+      loader.load('Universal Secondary Web_Regular.json', function(font) {
         
-        // Create text geometry with more depth
-        const textGeometry = new TextGeometry('build the change you wish to see in the world', {
-          font: font,
-          size: isMobile ? 0.6 : 0.8,
-          height: 0.8,              // Increased depth for 3D effect
-          curveSegments: 16,
-          bevelEnabled: true,
-          bevelThickness: 0.15,     // More pronounced bevel
-          bevelSize: 0.08,          // Larger bevel
-          bevelSegments: 8          // Smoother bevel
-        });
-        
-        textGeometry.computeBoundingBox();
-        textGeometry.center();
-        
-        // Calculate Earth circumference from actual loaded model
-        let earthRadius = 2; // Default fallback
-        let textOrbitRadius = 8; // Default fallback
-        
-        if (earthModel) {
-          // Get actual Earth bounding box
-          earthModel.updateMatrixWorld();
-          const boundingBox = new THREE.Box3().setFromObject(earthModel);
-          const size = boundingBox.getSize(new THREE.Vector3());
-          earthRadius = Math.max(size.x, size.y, size.z) / 2;
-          
-          // Calculate circumference and set text orbit radius with clear offset
-          const earthCircumference = 2 * Math.PI * earthRadius;
-          textOrbitRadius = earthRadius + (earthCircumference * 0.25); // 25% of circumference above Earth for clear visibility
-          
-          console.log('🌍 Earth radius calculated:', earthRadius);
-          console.log('🌍 Earth circumference:', earthCircumference);
-          console.log('🌍 Text orbit radius:', textOrbitRadius);
-        } else {
-          console.log('⚠️ Earth model not loaded yet, using default radius');
-          // Use larger default orbit for better visibility
-          textOrbitRadius = 12;
-        }
-        
-        // Bend text geometry to curve around Earth like Universal Studios (facing outward)
-        const pos = textGeometry.attributes.position;
-        for (let i = 0; i < pos.count; i++) {
-          const x = pos.getX(i);
-          const y = pos.getY(i);
-          const angle = x / textOrbitRadius;
-          const newX = Math.sin(angle) * textOrbitRadius;
-          const newZ = Math.cos(angle) * textOrbitRadius; // Remove negative offset - wrap outside
-          pos.setX(i, newX);
-          pos.setZ(i, newZ);
-        }
-        pos.needsUpdate = true;
-        textGeometry.computeVertexNormals();
-
-        // Create Universal Studios-style metallic gold material with maximum reflections
-        const textMaterial = new THREE.MeshPhysicalMaterial({
-          color: 0xffd700,        // Gold color
-          metalness: 1.0,         // Maximum metalness
-          roughness: 0.0,         // Mirror-like surface
-          clearcoat: 1.0,
-          clearcoatRoughness: 0.0,
-          envMapIntensity: 5.0,   // Maximum environment reflections
-          emissive: 0x332200,     // Subtle gold glow
-          emissiveIntensity: 0.3
-        });
-
-        // Create the mesh
-        textMesh1 = new THREE.Mesh(textGeometry, textMaterial);
-        
-        // Position curved text at Earth's center level (same as Earth)
-        textMesh1.position.set(0, 0, 0);
-        
-        // Make text face outward from Earth
-        textMesh1.rotation.y = Math.PI;
-        
-        // Add curved text to orbital group
-        group.add(textMesh1);
-        console.log('✅ 3D bubble text created with realistic physics');
+        // Create two lines of text for better readability
+        createTwoLineText(font);
       }, undefined, function(error) {
         console.log('⚠️ Font load failed, using fallback text:', error);
         createFallbackText();
+      });
+    }
+
+    function bendTextGeometry(geometry, radius, yOffset) {
+      const pos = geometry.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const y = pos.getY(i);
+        const angle = x / radius;
+        const newX = Math.sin(angle) * radius;
+        const newZ = Math.cos(angle) * radius;
+        pos.setX(i, newX);
+        pos.setY(i, y + yOffset); // Add vertical offset for line separation
+        pos.setZ(i, newZ);
+      }
+      pos.needsUpdate = true;
+      geometry.computeVertexNormals();
+    }
+
+    function createSingleLineText(font) {
+      const text = "build the change you wish to see in the world.";
+      
+      // Create clean Universal Studios-style text geometry
+      const textGeometry = new TextGeometry(text, {
+        font: font,
+        size: isMobile ? 0.8 : 1.2,    // Clean size
+        height: 0.4,                   // Clean, not chunky
+        curveSegments: 20,             // Smooth curves
+        bevelEnabled: true,            // Subtle bevels
+        bevelThickness: 0.05,          // Thin bevels
+        bevelSize: 0.03,               // Small bevels
+        bevelSegments: 5               // Clean bevels
+      });
+      
+      textGeometry.computeBoundingBox();
+      textGeometry.center();
+      
+      // Calculate Earth circumference from actual loaded model
+      let earthRadius = 2; // Default fallback
+      let textOrbitRadius = 8; // Default fallback
+      
+      if (earthModel) {
+        // Get actual Earth bounding box
+        earthModel.updateMatrixWorld();
+        const boundingBox = new THREE.Box3().setFromObject(earthModel);
+        const size = boundingBox.getSize(new THREE.Vector3());
+        earthRadius = Math.max(size.x, size.y, size.z) / 2;
+        
+        // Calculate circumference and set text orbit radius with clear offset
+        const earthCircumference = 2 * Math.PI * earthRadius;
+        textOrbitRadius = Math.max(earthRadius + (earthCircumference * 0.3), earthRadius + 6); // 30% of circumference above Earth with minimum 6 units
+        
+        console.log('🌍 Earth radius calculated:', earthRadius);
+        console.log('🌍 Earth circumference:', earthCircumference);
+        console.log('🌍 Text orbit radius:', textOrbitRadius);
+      } else {
+        console.log('⚠️ Earth model not loaded yet, using default radius');
+        // Use larger default orbit to ensure text is always visible and not masked
+        textOrbitRadius = 15;
+      }
+      
+      // Store original flat positions for rebending (for both lines)
+      const pos = textGeometry.attributes.position;
+      originalTextPositions = new Float32Array(pos.array.length);
+      originalTextPositions.set(pos.array, 0);
+      
+      // Bend text geometry to curve around Earth (facing outward)
+      bendTextGeometry(textGeometry, textOrbitRadius, 0); // Single line centered
+
+      // Create cinematic gold material (Universal Studios look)
+        const textMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0xffd700,        // Warm gold
+          metalness: 1.0,         // Maximum metalness
+          roughness: 0.25,        // Slight roughness for realism
+          clearcoat: 1.0,         // Full clearcoat for glossy finish
+          clearcoatRoughness: 0.1, // Slight clearcoat roughness
+          envMapIntensity: 2.5,   // Strong environment reflections
+          emissive: 0x442200,     // Warm gold emissive
+          emissiveIntensity: 0.25, // Subtle gold glow
+          side: THREE.DoubleSide, // Ensure both sides are rendered
+          transparent: false,     // Ensure no transparency issues
+          opacity: 1.0           // Fully opaque
+        });
+
+        // Create single text mesh
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        
+        // Enable shadows for 3D depth
+        textMesh.castShadow = true;
+        textMesh.receiveShadow = true;
+        
+        // Make text face outward from Earth
+        textMesh.rotation.y = Math.PI;
+        
+        // Add Universal Studios-style orbit tilt
+        group.rotation.x = Math.PI / 8;  // Slight X-axis tilt
+        group.rotation.z = Math.PI / 12; // Slight Z-axis tilt
+        
+        // Add both curved text lines to orbital group
+        group.add(textMesh1);
+        group.add(textMesh2);
+        
+        // Store reference to both meshes
+        window.textMesh1 = textMesh1;
+        window.textMesh2 = textMesh2;
+        
+        // Keep text orbit flat (no tilt) - aligned with Earth's equator
+        group.rotation.x = 0; // No tilt on X-axis
+        group.rotation.z = 0; // No tilt on Z-axis
+        
+        console.log('🎯 Text orbit flat - aligned with Earth equator');
+        
+        // Force text material to stay gold - prevent any overrides for both meshes
+        const clonedMaterial1 = textMaterial.clone();
+        const clonedMaterial2 = textMaterial.clone();
+        
+        textMesh1.material = clonedMaterial1;
+        textMesh1.material.needsUpdate = true;
+        textMesh2.material = clonedMaterial2;
+        textMesh2.material.needsUpdate = true;
+        
+        // Store reference to original materials
+        textMesh1.userData.originalMaterial = clonedMaterial1;
+        textMesh2.userData.originalMaterial = clonedMaterial2;
+        
+        // Enable shadows for Earth model
+        if (earthModel) {
+          earthModel.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+        }
+        console.log('✅ 3D bubble text created with realistic physics');
+      
+      // Start material protection loop
+      startMaterialProtection();
+      
+      // Start introducing orbital objects one by one
+      startOrbitalSequence();
+    }
+
+
+    function rebendTextGeometry() {
+      if (!textMesh1 || !originalTextPositions) {
+        console.log('❌ Cannot rebend: missing textMesh1 or originalTextPositions');
+        return;
+      }
+      
+      console.log('🔄 Rebending text geometry with radius:', textOrbitRadius);
+      
+      const geometry = textMesh1.geometry;
+      const pos = geometry.attributes.position;
+      
+      // Reset to original flat positions
+      pos.array.set(originalTextPositions);
+      
+      // Now rebend with new radius
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const angle = x / textOrbitRadius;
+        const newX = Math.sin(angle) * textOrbitRadius;
+        const newZ = Math.cos(angle) * textOrbitRadius;
+        pos.setX(i, newX);
+        pos.setZ(i, newZ);
+      }
+      
+      pos.needsUpdate = true;
+      geometry.computeVertexNormals();
+      
+      console.log('✅ Text geometry rebent successfully');
+    }
+
+    function startMaterialProtection() {
+      // Continuously protect text material from being overridden
+      setInterval(() => {
+        const meshes = [window.textMesh1, window.textMesh2].filter(mesh => mesh && mesh.userData.originalMaterial);
+        
+        meshes.forEach(mesh => {
+          // Check if material has been changed
+          const currentMaterial = mesh.material;
+          const originalMaterial = mesh.userData.originalMaterial;
+          
+          // If material color has changed from gold, restore it
+          if (currentMaterial.color.getHex() !== 0xffd700 || 
+              currentMaterial.emissive.getHex() !== 0xffd700) {
+            console.log('🛡️ Protecting text material from override');
+            mesh.material = originalMaterial.clone();
+            mesh.material.needsUpdate = true;
+          }
+        });
+      }, 100); // Check every 100ms
+    }
+
+    function startOrbitalSequence() {
+      // Introduce orbital objects one by one with increasing delays
+      for (let i = 0; i < glbFiles.length; i++) {
+        setTimeout(() => {
+          createOrbitalObject(i, 8 + (i * 3)); // Offset orbits: 8, 11, 14, 17
+        }, 2000 + (i * 1500)); // 2s, 3.5s, 5s, 6.5s delays
+      }
+    }
+
+    function createOrbitalObject(index, orbitRadius) {
+      if (index >= glbFiles.length) return;
+      
+      console.log(`🛰️ Creating orbital object ${index + 1} at radius ${orbitRadius}`);
+      
+      // Create orbital group
+      const orbitalGroup = new THREE.Group();
+      orbitalGroups.push(orbitalGroup);
+      
+      // Add offset to orbital plane (tilt the axis)
+      const tiltX = (Math.random() - 0.5) * 60; // Random tilt between -30 and +30 degrees
+      const tiltZ = (Math.random() - 0.5) * 60; // Random tilt between -30 and +30 degrees
+      orbitalGroup.rotation.x = tiltX * Math.PI / 180;
+      orbitalGroup.rotation.z = tiltZ * Math.PI / 180;
+      
+      // Load GLB file for this orbit
+      const loader = new GLTFLoader();
+      const glbFile = glbFiles[index];
+      
+         loader.load(glbFile, function(gltf) {
+           const model = gltf.scene.clone();
+           
+           // Calculate proper scale based on object's native dimensions
+           const box = new THREE.Box3().setFromObject(model);
+           const size = box.getSize(new THREE.Vector3());
+           const maxDimension = Math.max(size.x, size.y, size.z);
+           
+           // Scale all objects to match the size of letter "A" from text
+           const textSize = isMobile ? 0.8 : 1.2;
+           const targetSize = textSize * 0.8; // 80% of text letter size
+           const scale = targetSize / maxDimension;
+           model.scale.setScalar(scale);
+           
+           console.log(`📏 Orbital object ${index + 1}: native size ${maxDimension.toFixed(2)}, scaled to ${(maxDimension * scale).toFixed(2)}`);
+           
+           // Position on orbit around Earth's center (0,0,0)
+           model.position.set(orbitRadius, 0, 0);
+           
+           // Center the model's origin for proper rotation around Earth
+           model.position.add(box.getCenter(new THREE.Vector3()).multiplyScalar(-scale));
+           
+           // Add random initial rotation
+           model.rotation.set(
+             Math.random() * Math.PI * 2,
+             Math.random() * Math.PI * 2,
+             Math.random() * Math.PI * 2
+           );
+           
+           // Store tumbling speeds for natural orbiting motion
+           model.userData.tumbleX = (Math.random() - 0.5) * 0.02; // Random tumble speeds
+           model.userData.tumbleY = (Math.random() - 0.5) * 0.02;
+           model.userData.tumbleZ = (Math.random() - 0.5) * 0.02;
+           
+           // Store individual orbital speed (0.1 to 0.5 of text orbit speed)
+           model.userData.orbitalSpeed = 0.1 + Math.random() * 0.4; // Random between 0.1 and 0.5
+           
+           // Fix materials for orbital objects - ensure they're properly lit and colored
+           model.traverse((child) => {
+             if (child.isMesh) {
+               // Enable shadows
+               child.castShadow = true;
+               child.receiveShadow = true;
+               
+               // Fix grey materials - enhance lighting and colors
+               if (child.material) {
+                 // Make materials more visible
+                 if (child.material.map) {
+                   child.material.map.colorSpace = THREE.SRGBColorSpace;
+                 }
+                 
+           // Always add emissive for visibility - stronger for stone and coin
+           let emissiveColor = new THREE.Color(0x444444);
+           let emissiveIntensity = 0.6;
+           
+           // Special glow colors for different objects
+           if (glbFile.includes('stone')) {
+             emissiveColor = new THREE.Color(0x8888ff); // Blue glow for stone
+             emissiveIntensity = 1.2;
+           } else if (glbFile.includes('tether') || glbFile.includes('coin')) {
+             emissiveColor = new THREE.Color(0xffff88); // Yellow glow for coin
+             emissiveIntensity = 1.2;
+           } else if (glbFile.includes('gameboy')) {
+             emissiveColor = new THREE.Color(0x88ff88); // Green glow for gameboy
+             emissiveIntensity = 0.8;
+           } else if (glbFile.includes('pizza')) {
+             emissiveColor = new THREE.Color(0xff8888); // Red glow for pizza
+             emissiveIntensity = 0.8;
+           }
+           
+           child.material.emissive = emissiveColor;
+           child.material.emissiveIntensity = emissiveIntensity;
+                 
+                 // Force brighten ALL materials to make them visible
+                 if (child.material.color) {
+                   // Multiply color by 2 to make it much brighter
+                   child.material.color.multiplyScalar(2.0);
+                 }
+                 
+                 // Reduce roughness for better reflections
+                 if (child.material.roughness !== undefined) {
+                   child.material.roughness = Math.min(child.material.roughness, 0.5);
+                 }
+                 
+                 // Ensure material is properly configured
+                 child.material.needsUpdate = true;
+                 
+                 console.log(`🎨 Fixed material for ${glbFile}: color=${child.material.color.getHexString()}`);
+               }
+             }
+           });
+           
+           // Ensure model is not clipped and properly positioned
+           model.traverse((child) => {
+             if (child.isMesh) {
+               child.frustumCulled = false; // Prevent clipping
+             }
+           });
+           
+           // Add to orbital group
+           orbitalGroup.add(model);
+           orbitalObjects.push(model);
+           
+           // Add orbital group directly to scene (not nested under Earth)
+           scene.add(orbitalGroup);
+           
+           console.log(`✅ Orbital object ${index + 1} added directly to scene (not nested under Earth)`);
+           
+           console.log(`✅ Orbital object ${index + 1} (${glbFile}) added to scene with enhanced lighting`);
+           console.log(`📊 Total orbital objects loaded: ${orbitalObjects.length}`);
+         }, function(progress) {
+        console.log(`📊 Loading orbital object ${index + 1}:`, (progress.loaded / progress.total * 100) + '%');
+      }, function(error) {
+        console.log(`⚠️ Failed to load orbital object ${index + 1}:`, error);
       });
     }
 
@@ -360,9 +689,9 @@
 
 
     function createStarfield() {
-      // Create realistic starfield background
+      // Create dramatic starfield background
       const starGeometry = new THREE.BufferGeometry();
-      const starCount = 2000;
+      const starCount = 400; // Much fewer stars for dramatic effect
       const starPositions = new Float32Array(starCount * 3);
       const starColors = new Float32Array(starCount * 3);
       const starSizes = new Float32Array(starCount);
@@ -379,27 +708,27 @@
         starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
         starPositions[i3 + 2] = radius * Math.cos(phi);
         
-        // Varied star colors (mostly white/blue, some yellow/red)
-        const colorVariation = Math.random();
-        if (colorVariation < 0.7) {
-          // White/blue stars
-          starColors[i3] = 0.9 + Math.random() * 0.1;
-          starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
-          starColors[i3 + 2] = 1.0;
-        } else if (colorVariation < 0.9) {
-          // Yellow stars
-          starColors[i3] = 1.0;
-          starColors[i3 + 1] = 0.8 + Math.random() * 0.2;
-          starColors[i3 + 2] = 0.6 + Math.random() * 0.2;
-        } else {
-          // Red stars
-          starColors[i3] = 1.0;
-          starColors[i3 + 1] = 0.6 + Math.random() * 0.2;
-          starColors[i3 + 2] = 0.4 + Math.random() * 0.2;
-        }
-        
-        // Varied star sizes
-        starSizes[i] = Math.random() * 3 + 1;
+          // Bright star colors (5x brighter)
+          const colorVariation = Math.random();
+          if (colorVariation < 0.7) {
+            // Bright white/blue stars
+            starColors[i3] = 1.0;     // Maximum brightness
+            starColors[i3 + 1] = 1.0; // Maximum brightness
+            starColors[i3 + 2] = 1.0; // Maximum brightness
+          } else if (colorVariation < 0.9) {
+            // Bright yellow stars
+            starColors[i3] = 1.0;
+            starColors[i3 + 1] = 1.0;
+            starColors[i3 + 2] = 0.8;
+          } else {
+            // Bright red stars
+            starColors[i3] = 1.0;
+            starColors[i3 + 1] = 0.8;
+            starColors[i3 + 2] = 0.6;
+          }
+          
+          // Larger, more dramatic star sizes
+          starSizes[i] = Math.random() * 8 + 3; // 3-11 size range
       }
       
       starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
@@ -407,16 +736,22 @@
       starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
       
       const starMaterial = new THREE.PointsMaterial({
-        size: 1,
+        size: 4,              // Much larger stars for dramatic effect
         transparent: true,
-        opacity: 0.9,
+        opacity: 1.0,         // Fully opaque for maximum brightness
         vertexColors: true,
         sizeAttenuation: false,
-        alphaTest: 0.1
+        alphaTest: 0.1,
+        blending: THREE.AdditiveBlending // Makes stars circular and glow
       });
       
       const stars = new THREE.Points(starGeometry, starMaterial);
       scene.add(stars);
+      
+      // Add twinkling animation
+      window.stars = stars; // Store reference for animation
+      window.starColors = starColors; // Store colors for animation
+      
       console.log('✅ Realistic starfield created with', starCount, 'varied stars');
     }
 
@@ -477,9 +812,28 @@
       const time = (t || 0) * 0.0001;
       
       // Orbital animation - rotate the entire group around Y-axis (like Universal Studios)
-      group.rotation.y -= 0.003; // Reverse direction so text reads right to left
+      group.rotation.y -= orbitSpeed; // Use control variable
       
-      // Earth stays stationary - no rotation
+         // Rotate all orbital groups with individual speeds and add tumbling
+         orbitalGroups.forEach((orbitalGroup, index) => {
+           // Use individual orbital speed for each object (0.1 to 0.5 of text speed)
+           const groupSpeed = orbitalGroup.children[0]?.userData.orbitalSpeed || 0.3;
+           orbitalGroup.rotation.y += orbitSpeed * groupSpeed;
+           
+           // Add tumbling motion to each orbital object
+           orbitalGroup.children.forEach((child) => {
+             if (child.userData.tumbleX !== undefined) {
+               child.rotation.x += child.userData.tumbleX;
+               child.rotation.y += child.userData.tumbleY;
+               child.rotation.z += child.userData.tumbleZ;
+             }
+           });
+         });
+      
+      // Earth rotates slowly in opposite direction (1/4 speed of text)
+      if (earthModel) {
+        earthModel.rotation.y += earthRotationSpeed; // Use control variable
+      }
       
       // Curved text doesn't need to face camera - it's already oriented outward
       
@@ -497,6 +851,21 @@
       
       // Always look at the orbital center
       camera.lookAt(0, 0, 0);
+      
+      // Animate star twinkling
+      if (window.stars && window.starColors) {
+        const colors = window.stars.geometry.attributes.color.array;
+        const time = (t || 0) * 0.001;
+        
+        for (let i = 0; i < window.starColors.length; i += 3) {
+          const twinkle = Math.sin(time * 2 + i * 0.1) * 0.3 + 0.7; // 0.4 to 1.0 brightness
+          colors[i] = window.starColors[i] * twinkle;     // Red
+          colors[i + 1] = window.starColors[i + 1] * twinkle; // Green
+          colors[i + 2] = window.starColors[i + 2] * twinkle; // Blue
+        }
+        window.stars.geometry.attributes.color.needsUpdate = true;
+      }
+      
       renderer.render(scene, camera);
     }
   </script>
