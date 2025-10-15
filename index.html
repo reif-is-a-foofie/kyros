@@ -6,6 +6,12 @@
   <title>Kyros</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
+    @font-face {
+      font-family: 'Universal Secondary Web';
+      src: url('universal-secondary-web-regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
     html, body {
       margin: 0;
       padding: 0;
@@ -27,12 +33,12 @@
       text-align: center;
       color: #ffd700; /* Gold color matching orbiting text */
       font-size: 36px;
-      font-family: 'Helvetica', 'Arial', sans-serif;
+      font-family: 'Universal Secondary Web', 'Helvetica', 'Arial', sans-serif;
       z-index: 10;
       white-space: nowrap;
       padding: 0 15px;
       text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4); /* Gold glow */
-      font-weight: 500;
+      font-weight: 600;
       background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700); /* Gold gradient */
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -308,8 +314,7 @@
       // Create single line of text
       createSingleLineText(font);
       
-      // Update bottom text to use the same font
-      updateBottomTextFont(font);
+      // Bottom text font is now handled directly in CSS
     }, undefined, function(error) {
       console.log('⚠️ Font load failed, using fallback text:', error);
       createFallbackText();
@@ -503,7 +508,14 @@
       for (let i = 0; i < glbFiles.length; i++) {
         setTimeout(() => {
           console.log('🚀 Creating orbital object', i + 1, 'of', glbFiles.length);
-          createOrbitalObject(i, 8 + (i * 3)); // Offset orbits: 8, 11, 14, 17
+          // Calculate orbit radius relative to Earth's actual size
+          const earthRadius = earthModel ? (() => {
+            const earthBox = new THREE.Box3().setFromObject(earthModel);
+            const earthSize = earthBox.getSize(new THREE.Vector3());
+            return Math.max(earthSize.x, earthSize.y, earthSize.z) / 2;
+          })() : 2;
+          const orbitRadius = earthRadius * (1.5 + i * 0.8); // 1.5x, 2.3x, 3.1x, 3.9x Earth radius
+          createOrbitalObject(i, orbitRadius);
         }, 2000 + (i * 1500)); // 2s, 3.5s, 5s, 6.5s delays
       }
     }
@@ -534,18 +546,23 @@
         console.log('✅ GLB file loaded successfully:', glbFile);
         const model = gltf.scene.clone();
            
-           // Calculate proper scale based on object's native dimensions
+           // Calculate proper scale based on object's native dimensions relative to Earth
            const box = new THREE.Box3().setFromObject(model);
            const size = box.getSize(new THREE.Vector3());
            const maxDimension = Math.max(size.x, size.y, size.z);
            
-           // Scale all objects to match the size of letter "A" from text
-           const textSize = isMobile ? 0.8 : 1.2;
-           const targetSize = textSize * 0.8; // 80% of text letter size
+           // Scale objects relative to Earth's radius (2-5% of Earth's diameter)
+           const earthRadius = earthModel ? (() => {
+             const earthBox = new THREE.Box3().setFromObject(earthModel);
+             const earthSize = earthBox.getSize(new THREE.Vector3());
+             return Math.max(earthSize.x, earthSize.y, earthSize.z) / 2;
+           })() : 2; // Fallback radius
+           
+           const targetSize = earthRadius * (0.03 + Math.random() * 0.04); // 3-7% of Earth radius
            const scale = targetSize / maxDimension;
            model.scale.setScalar(scale);
            
-           console.log(`📏 Orbital object ${index + 1}: native size ${maxDimension.toFixed(2)}, scaled to ${(maxDimension * scale).toFixed(2)}`);
+           console.log(`📏 Orbital object ${index + 1}: native size ${maxDimension.toFixed(2)}, scaled to ${(maxDimension * scale).toFixed(2)} (${((targetSize / earthRadius) * 100).toFixed(1)}% of Earth radius)`);
            
            // Position on orbit around Earth's center (0,0,0)
            model.position.set(orbitRadius, 0, 0);
@@ -729,14 +746,6 @@
 
 
     // Create circular star texture
-    // Update bottom text to use the same font as orbiting text
-    function updateBottomTextFont(font) {
-      const linksElement = document.getElementById('links');
-      if (linksElement) {
-        linksElement.style.fontFamily = "'Universal Secondary Web', 'Helvetica', 'Arial', sans-serif";
-        console.log('✅ Bottom text updated to use Universal Secondary Web font');
-      }
-    }
 
     function createStarTexture() {
       const canvas = document.createElement('canvas');
