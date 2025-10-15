@@ -621,9 +621,12 @@
         console.log('🌍 Earth bounding box size:', size);
         
         // Position text so front face sits exactly at Earth surface
+        // Account for depth + bevel thickness
         const textDepth = 0.6; // Must match depth in TextGeometry
-        textOrbitRadius = earthRadius - (textDepth / 2); // Subtract half depth so front face is at Earth surface
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface)');
+        const bevelThickness = 0.08; // Must match bevelThickness in TextGeometry
+        const totalThickness = textDepth + bevelThickness;
+        textOrbitRadius = earthRadius - (totalThickness / 2); // Subtract half total thickness
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface, accounting for depth + bevel)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -634,7 +637,9 @@
           earthRadius = 2; // Fallback radius
           // Position text so front face sits exactly at Earth surface
           const textDepth = 0.6;
-          textOrbitRadius = earthRadius - (textDepth / 2);
+          const bevelThickness = 0.08;
+          const totalThickness = textDepth + bevelThickness;
+          textOrbitRadius = earthRadius - (totalThickness / 2);
           console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(front face at Earth surface)');
         }
         
@@ -1062,22 +1067,37 @@
              materials.forEach((material) => {
                if (!material) return;
 
-               // Pizza - debug and analyze structure
+               // Pizza - apply colors by layer
                if (glbFile.toLowerCase().includes('pizza')) {
-                 // Log detailed information about each pizza mesh/material
-                 console.log('🍕 Pizza mesh:', child.name);
-                 console.log('🍕 Material color:', material.color ? material.color.getHex().toString(16) : 'none');
-                 console.log('🍕 Has texture map:', !!material.map);
-                 console.log('🍕 Metalness:', material.metalness);
-                 console.log('🍕 Roughness:', material.roughness);
-                 console.log('🍕 Emissive:', material.emissive ? material.emissive.getHex().toString(16) : 'none');
-                 console.log('🍕 EmissiveIntensity:', material.emissiveIntensity);
+                 const meshName = child.name.toUpperCase();
                  
-                 // Only ensure proper color space for textures
-                 if (material.map) {
-                   material.map.colorSpace = THREE.SRGBColorSpace;
+                 // Apply realistic pizza colors based on mesh name
+                 if (meshName.includes('CHEESE')) {
+                   material.color.set(0xffdd88); // Yellow cheese
+                   material.emissive.set(0x332200);
+                   material.emissiveIntensity = 0.2;
+                   console.log('🧀 Cheese layer - yellow');
+                 } else if (meshName.includes('BREAD')) {
+                   material.color.set(0xcc8844); // Brown bread/crust
+                   material.emissive.set(0x221100);
+                   material.emissiveIntensity = 0.1;
+                   console.log('🍞 Bread layer - brown');
+                 } else if (meshName.includes('PEPPERONI')) {
+                   material.color.set(0xcc3333); // Red pepperoni
+                   material.emissive.set(0x220000);
+                   material.emissiveIntensity = 0.15;
+                   console.log('🌶️ Pepperoni layer - red');
+                 } else {
+                   // Default pizza color
+                   material.color.set(0xff9966);
+                   console.log('🍕 Other pizza layer - orange');
                  }
+                 
+                 // Set realistic material properties
+                 material.metalness = 0.0; // Not metallic
+                 material.roughness = 0.9; // Matte surface
                  material.needsUpdate = true;
+                 
                  return; // Skip other material processing for pizza
                }
 
