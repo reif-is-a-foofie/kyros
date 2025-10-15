@@ -82,24 +82,16 @@
     /* Military LED Screen Banner */
     #military-banner {
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.9);
-      border: 2px solid #00ff00;
-      border-radius: 8px;
-      padding: 20px 30px;
       font-family: 'Share Tech Mono', 'Courier New', monospace;
-      font-size: 18px;
+      font-size: 36px;
       color: #00ff00;
-      text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
-      box-shadow: 
-        0 0 20px rgba(0, 255, 0, 0.5),
-        inset 0 0 20px rgba(0, 255, 0, 0.1);
+      text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
       z-index: 1000;
       opacity: 0;
       transition: opacity 0.5s ease-in-out;
-      max-width: 90vw;
       text-align: center;
       white-space: nowrap;
       overflow: hidden;
@@ -112,6 +104,13 @@
     #military-banner .cursor {
       animation: blink 1s infinite;
       color: #00ff00;
+    }
+    
+    #military-banner.clickable {
+      text-decoration: underline;
+      text-decoration-color: #00ff00;
+      text-underline-offset: 4px;
+      cursor: pointer;
     }
     
     @keyframes blink {
@@ -165,7 +164,13 @@
   </style>
 </head>
 <body>
-  <div id="links">
+  <!-- Military LED Banner (replaces bottom links) -->
+  <div id="military-banner">
+    <span id="banner-content"></span><span class="cursor">_</span>
+  </div>
+
+  <!-- Hidden links for clickable functionality -->
+  <div id="links" style="display: none;">
     Kyros investment studio / <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> / <a href="https://calendly.com/reif-kyros/30min" target="_blank">Pitch us</a>
   </div>
 
@@ -232,9 +237,12 @@
       console.log('🚀 Starting Three.js initialization...');
       document.title = 'Kyros - Initializing';
       
+      // Start military banner sequence
+      startMilitaryBanner();
+      
       // Camera positioned to see entire Earth and orbiting text
       camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000); // Wider FOV
-      camera.position.set(0, 0, 18);  // Closer to Earth to fill 80% of screen
+      camera.position.set(0, 0, 22);  // Zoomed out more for better text visibility
       console.log('✅ Camera created');
 
       // Scene with realistic deep space background
@@ -484,11 +492,18 @@
         const size = boundingBox.getSize(new THREE.Vector3());
         earthRadius = Math.max(size.x, size.y, size.z) / 2;
         
-        // Set text orbit radius to 2x Earth radius for better visibility
-        textOrbitRadius = earthRadius * 2.0;
+        // Set text orbit radius using calculated safe radius
+        if (camera) {
+          textOrbitRadius = calculateOcclusionRadius() * 1.1; // 10% buffer above minimum safe radius
+        } else {
+          // If camera not ready, use a calculated safe distance based on Earth size
+          textOrbitRadius = earthRadius * 3.0; // Conservative fallback
+        }
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
+        console.log('🌍 Camera position:', camera ? camera.position : 'Camera not ready');
+        console.log('🌍 Text will orbit at distance:', textOrbitRadius, 'from Earth center');
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
           // Use default orbit for better visibility
@@ -515,7 +530,7 @@
           clearcoatRoughness: 0.1, // Slight clearcoat roughness
           envMapIntensity: 2.5,   // Strong environment reflections
           emissive: 0x442200,     // Warm gold emissive
-          emissiveIntensity: 0.25, // Subtle gold glow
+          emissiveIntensity: 0.6, // Enhanced gold glow
           side: THREE.DoubleSide, // Ensure both sides are rendered
           transparent: false,     // Ensure no transparency issues
           opacity: 1.0           // Fully opaque
@@ -603,6 +618,43 @@
       console.log('✅ Text geometry rebent successfully');
     }
 
+    function calculateOcclusionRadius() {
+      if (!earthModel || !camera) {
+        console.log('⚠️ Missing earthModel or camera for occlusion calculation');
+        return window.earthRadius * 3.0;
+      }
+      
+      // Get Earth's world position and radius
+      const earthWorldPosition = new THREE.Vector3();
+      earthModel.getWorldPosition(earthWorldPosition);
+      const earthRadius = window.earthRadius;
+      
+      // Calculate camera distance from Earth center
+      const cameraToEarthCenter = camera.position.distanceTo(earthWorldPosition);
+      
+      // Handle edge case where camera is too close to Earth
+      if (cameraToEarthCenter <= earthRadius) {
+        console.log('⚠️ Camera too close to Earth, using minimum safe radius');
+        return earthRadius * 4.0; // Minimum safe distance
+      }
+      
+      // Calculate the occlusion radius using geometric projection
+      // When text is at this radius, it will just graze Earth's edge from camera's perspective
+      const occlusionRadius = Math.sqrt(
+        Math.pow(cameraToEarthCenter, 2) - Math.pow(earthRadius, 2)
+      ) + earthRadius;
+      
+      // Add a safety buffer to ensure text never touches Earth
+      const safeOcclusionRadius = occlusionRadius * 1.15;
+      
+      console.log('📐 Calculated occlusion radius:', safeOcclusionRadius.toFixed(2));
+      console.log('📐 Camera distance from Earth:', cameraToEarthCenter.toFixed(2));
+      console.log('📐 Earth radius:', earthRadius.toFixed(2));
+      console.log('📐 Raw occlusion radius:', occlusionRadius.toFixed(2));
+      
+      return safeOcclusionRadius;
+    }
+
     function startDynamicTextRebending() {
       // Continuously check if text is blocked and rebend if necessary
       setInterval(() => {
@@ -626,16 +678,20 @@
         // Check if text is behind Earth (blocked)
         const textBehindEarth = cameraToText > cameraToEarth;
         
-        // If text is blocked and current orbit is too close, rebend with larger radius
-        if (textBehindEarth && textOrbitRadius < (window.earthRadius * 2.5)) {
-          console.log('🔄 Text blocked by Earth, rebending with larger radius');
-          textOrbitRadius = window.earthRadius * 2.5; // Increase orbit radius
+        // Calculate the minimum safe orbit radius dynamically
+        const minSafeRadius = calculateOcclusionRadius();
+        const optimalRadius = minSafeRadius * 1.15; // 15% buffer above minimum
+        
+        // If text is blocked and current orbit is too close, rebend with safe radius
+        if (textBehindEarth && textOrbitRadius < minSafeRadius) {
+          console.log('🔄 Text blocked by Earth, rebending with calculated safe radius');
+          textOrbitRadius = minSafeRadius;
           rebendTextGeometry();
         }
         // If text is not blocked and orbit is too large, optimize back down
-        else if (!textBehindEarth && textOrbitRadius > (window.earthRadius * 2.0)) {
+        else if (!textBehindEarth && textOrbitRadius > optimalRadius) {
           console.log('🎯 Text visible, optimizing orbit radius');
-          textOrbitRadius = window.earthRadius * 2.0; // Optimize orbit radius
+          textOrbitRadius = optimalRadius;
           rebendTextGeometry();
         }
       }, 500); // Check every 500ms
@@ -1089,7 +1145,7 @@
         // Smooth camera movement around the orbital system
       camera.position.x += (targetX - camera.position.x) * 0.08;
       camera.position.y += (targetY - camera.position.y) * 0.08;
-        camera.position.z = 18; // Keep camera closer to fill 80% of screen with Earth
+        camera.position.z = 22; // Keep camera zoomed out for better text visibility
       
       // Always look at the orbital center
       camera.lookAt(0, 0, 0);
@@ -1120,6 +1176,175 @@
         }
       
       renderer.render(scene, camera);
+    }
+
+    function startMilitaryBanner() {
+      const banner = document.getElementById('military-banner');
+      const content = document.getElementById('banner-content');
+      const cursor = banner.querySelector('.cursor');
+      
+      // Military messages - encrypted looking with translations
+      const encryptedPhrases = [
+        '01001000 01100101 01101100 01101100 01101111',
+        '4B 79 72 6F 73',
+        'SYS>INIT_CONNECTION',
+        'ACCESS_GRANTED',
+        'WELCOME TO THE FUTURE',
+        'BUILD THE CHANGE YOU WISH TO SEE IN THE WORLD',
+        'BUILD WITH US: hello@kyros.cc'
+      ];
+      
+      // Translation messages to show after encrypted ones
+      const translationPhrases = [
+        'BINARY>HELLO',
+        'HEX>KYROS',
+        null, null, null, null,
+        'CLICK TO BUILD'
+      ];
+      
+      // Store clickable actions
+      const clickableActions = [
+        null, null, null, null, null, null,
+        () => window.open('mailto:hello@kyros.cc')
+      ];
+      
+      let currentMessage = 0;
+      let currentChar = 0;
+      let isTyping = true;
+      let showDuration = 3000; // Show message for 3 seconds
+      let hideDuration = 2000; // Hide for 2 seconds
+      let clickableShowDuration = 8000; // Show clickable messages for 8 seconds
+      let isHovering = false;
+      let hideTimeout = null;
+      let showingTranslation = false;
+      
+      function typeText() {
+        if (!isTyping) return;
+        
+        const message = showingTranslation ? translationPhrases[currentMessage] : encryptedPhrases[currentMessage];
+        if (currentChar < message.length) {
+          content.textContent += message[currentChar];
+          currentChar++;
+          
+          // Faster typing speed for better UX
+          const delay = Math.random() * 30 + 20; // 20-50ms (much faster)
+          setTimeout(typeText, delay);
+        } else {
+          // Message complete, show for duration then hide or show translation
+          if (!showingTranslation && translationPhrases[currentMessage]) {
+            // Show translation after encrypted message
+            showingTranslation = true;
+            setTimeout(() => {
+              content.textContent = '';
+              currentChar = 0;
+              typeText();
+            }, 1500); // Brief pause before translation
+          } else {
+            // Message sequence complete, hide banner
+            const currentAction = clickableActions[currentMessage];
+            const displayDuration = currentAction ? clickableShowDuration : showDuration;
+            
+            if (!isHovering) {
+              hideTimeout = setTimeout(() => {
+                hideBanner();
+              }, displayDuration);
+            }
+          }
+        }
+      }
+      
+      function hideBanner() {
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+        
+        banner.classList.remove('show');
+        setTimeout(() => {
+          content.textContent = '';
+          currentChar = 0;
+          showingTranslation = false;
+          currentMessage = (currentMessage + 1) % encryptedPhrases.length;
+          
+          // Wait before showing next message
+          setTimeout(() => {
+            showBanner();
+          }, hideDuration);
+        }, 500); // Fade out time
+      }
+      
+      function showBanner() {
+        banner.classList.add('show');
+        setTimeout(typeText, 500); // Small delay after fade in
+        
+        // Add click functionality for clickable messages
+        const currentAction = clickableActions[currentMessage];
+        if (currentAction) {
+          banner.classList.add('clickable');
+          banner.onclick = () => {
+            currentAction();
+            // Hide banner after click
+            hideBanner();
+          };
+        } else {
+          banner.classList.remove('clickable');
+          banner.onclick = null;
+        }
+      }
+      
+      // Add hover event listeners
+      banner.addEventListener('mouseenter', () => {
+        const currentAction = clickableActions[currentMessage];
+        if (currentAction) {
+          isHovering = true;
+          if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+          }
+          console.log('🖱️ Hovering over clickable link - pausing banner');
+        }
+      });
+      
+      banner.addEventListener('mouseleave', () => {
+        const currentAction = clickableActions[currentMessage];
+        if (currentAction) {
+          isHovering = false;
+          // Resume hiding after a short delay
+          setTimeout(() => {
+            if (!isHovering) {
+              hideBanner();
+            }
+          }, 1000);
+          console.log('🖱️ Left clickable link - resuming banner');
+        }
+      });
+      
+      // Start the sequence
+      showBanner();
+      
+      // Add glitch effect to random characters
+      setInterval(() => {
+        if (Math.random() < 0.1) { // 10% chance
+          const text = content.textContent;
+          if (text.length > 0) {
+            const randomIndex = Math.floor(Math.random() * text.length);
+            const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+            const randomChar = chars[Math.floor(Math.random() * chars.length)];
+            
+            const newText = text.substring(0, randomIndex) + randomChar + text.substring(randomIndex + 1);
+            content.textContent = newText;
+            
+            // Restore original after brief moment
+            setTimeout(() => {
+              if (content.textContent === newText) {
+                content.textContent = text;
+              }
+            }, 100);
+          }
+        }
+      }, 200);
+      
+      console.log('🎖️ Military banner sequence started');
     }
   </script>
 </body>
