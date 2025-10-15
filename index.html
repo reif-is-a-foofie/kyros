@@ -1262,35 +1262,35 @@
           
           // Add Earth directly to scene (not in rotating group)
           scene.add(earthModel);
-        console.log('✅ Earth GLTF model loaded with original materials');
-        if (!loadingFlags.earth) {
-          loadingFlags.earth = true;
-          markLoadingStep('Earth model ready');
-        }
-        ensureEarthShadowSettings();
-        
-        // Recreate text now that Earth is loaded for proper radius calculation
-        console.log('🔄 Recreating text with Earth model loaded');
-        console.log('🌍 Earth radius before text recreation:', earthRadius);
-        
-        // Use fallback radius if Earth model didn't load properly
-        if (earthRadius === 0) {
-          window.earthRadius = 13.0; // Use known Earth radius as fallback
-          console.log('⚠️ Using fallback Earth radius:', window.earthRadius);
-        }
-        
-        // Clear existing text before recreating (text is in group, not textGroup)
-        if (textMesh1) {
-          group.remove(textMesh1);
-          textMesh1 = null;
-        }
-        
-        console.log('🎨 Calling createText() now that Earth is loaded...');
-        createText();
-        console.log('🎨 createText() called, waiting for font to load...');
-        // Text will mark itself as loaded after font loads
-        
-        repaintScene();
+          console.log('✅ Earth GLTF model loaded with original materials');
+          if (!loadingFlags.earth) {
+            loadingFlags.earth = true;
+            markLoadingStep('Earth model ready');
+          }
+          ensureEarthShadowSettings();
+          
+          // Recreate text now that Earth is loaded for proper radius calculation
+          console.log('🔄 Recreating text with Earth model loaded');
+          console.log('🌍 Earth radius before text recreation:', earthRadius);
+          
+          // Use fallback radius if Earth model didn't load properly
+          if (earthRadius === 0) {
+            window.earthRadius = 13.0; // Use known Earth radius as fallback
+            console.log('⚠️ Using fallback Earth radius:', window.earthRadius);
+          }
+          
+          // Clear existing text before recreating (text is in group, not textGroup)
+          if (textMesh1) {
+            group.remove(textMesh1);
+            textMesh1 = null;
+          }
+          
+          console.log('🎨 Calling createText() now that Earth is loaded...');
+          createText();
+          console.log('🎨 createText() called, waiting for font to load...');
+          // Text will mark itself as loaded after font loads
+          
+          repaintScene();
       }, function(progress) {
         console.log('📊 GLTF loading progress:', (progress.loaded / progress.total * 100) + '%');
         }, function(error2) {
