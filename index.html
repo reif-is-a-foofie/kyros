@@ -96,32 +96,37 @@
       group.position.y = 0;
       scene.add(group);
 
-      // Create simple floating bubbles
-      const bubbleCount = 50;
-      const bubbleGeometry = new THREE.SphereGeometry(1, 16, 16);
-      const bubbleMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
+      // Create metallic ball bubbles
+      const bubbleCount = 60;
+      const bubbleGeometry = new THREE.SphereGeometry(1, 32, 32);
+      const bubbleMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x888888,
+        metalness: 0.9,
+        roughness: 0.1,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
+        envMapIntensity: 1.0,
         transparent: true,
-        opacity: 0.7,
-        depthWrite: false
+        opacity: 0.8
       });
       
       for(let i = 0; i < bubbleCount; i++){
         const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial.clone());
         
-        // Distribute bubbles around text
-        bubble.position.x = (Math.random() - 0.5) * 400;
-        bubble.position.y = (Math.random() - 0.5) * 300 - 100;
-        bubble.position.z = (Math.random() - 0.5) * 400;
+        // Distribute metallic balls around text
+        bubble.position.x = (Math.random() - 0.5) * 300;
+        bubble.position.y = (Math.random() - 0.5) * 200 - 50;
+        bubble.position.z = (Math.random() - 0.5) * 300;
         
-        // Vary bubble sizes for natural look
-        bubble.scale.setScalar(Math.random() * 8 + 4);
+        // Vary metallic ball sizes
+        bubble.scale.setScalar(Math.random() * 6 + 3);
         
         // Simple soap bubble appearance (no complex shaders)
         
-        // Store animation data
+        // Store animation data for metallic balls
         bubble.userData = {
-          speed: Math.random() * 0.5 + 0.2,
+          speed: Math.random() * 0.3 + 0.1,
+          rotationSpeed: Math.random() * 0.02 + 0.01,
           startY: bubble.position.y,
           size: bubble.scale.x
         };
@@ -215,31 +220,37 @@
       
       const time = (t || 0) * 0.0001;
       
-      // Animate bubbles
+      // Animate metallic balls
       bubbles.forEach((bubble) => {
         const userData = bubble.userData;
         
         // Float upward
         bubble.position.y += userData.speed;
         
-        // Recycle bubbles that go too high
-        if (bubble.position.y > 300) {
+        // Rotate for metallic reflections
+        bubble.rotation.x += userData.rotationSpeed;
+        bubble.rotation.y += userData.rotationSpeed * 0.7;
+        bubble.rotation.z += userData.rotationSpeed * 0.3;
+        
+        // Recycle balls that go too high
+        if (bubble.position.y > 200) {
           bubble.position.y = userData.startY;
-          bubble.position.x = (Math.random() - 0.5) * 400;
-          bubble.position.z = (Math.random() - 0.5) * 400;
+          bubble.position.x = (Math.random() - 0.5) * 300;
+          bubble.position.z = (Math.random() - 0.5) * 300;
+          bubble.rotation.set(0, 0, 0);
         }
       });
       
       // Text stays pinned to center - no rotation
       
-      // Mouse follow (corrected direction) - camera stays in bubble field
-      const targetX = -mouseX * 5;  // Reduced sensitivity
-      const targetY = mouseY * 5;   // Reduced sensitivity
+      // Move camera around the fixed text
+      const targetX = -mouseX * 8;  // Camera moves around text
+      const targetY = mouseY * 8;   // Camera moves around text
       
-      // Smooth camera follow within bubble field
-      camera.position.x += (targetX - camera.position.x) * 0.05;
-      camera.position.y += (targetY - camera.position.y) * 0.05;
-      camera.position.z = 0;  // Keep camera in center of bubble field
+      // Smooth camera movement around text
+      camera.position.x += (targetX - camera.position.x) * 0.08;
+      camera.position.y += (targetY - camera.position.y) * 0.08;
+      camera.position.z = 0;  // Keep camera at same Z level
       
       camera.lookAt(0, 0, -10);  // Look at the text position
       renderer.render(scene, camera);
