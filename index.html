@@ -302,15 +302,18 @@
 
       // Load font and create bubble text
       const loader = new FontLoader();
-      // Load Universal Secondaries font (authentic Universal Studios look)
-      loader.load('Universal Secondary Web_Regular.json', function(font) {
-        
-        // Create single line of text
-        createSingleLineText(font);
-      }, undefined, function(error) {
-        console.log('⚠️ Font load failed, using fallback text:', error);
-        createFallbackText();
-      });
+    // Load Universal Secondaries font (authentic Universal Studios look)
+    loader.load('Universal Secondary Web_Regular.json', function(font) {
+      
+      // Create single line of text
+      createSingleLineText(font);
+      
+      // Update bottom text to use the same font
+      updateBottomTextFont(font);
+    }, undefined, function(error) {
+      console.log('⚠️ Font load failed, using fallback text:', error);
+      createFallbackText();
+    });
     }
 
     function bendTextGeometry(geometry, radius, yOffset) {
@@ -358,18 +361,18 @@
         const size = boundingBox.getSize(new THREE.Vector3());
         earthRadius = Math.max(size.x, size.y, size.z) / 2;
         
-        // Calculate circumference and set text orbit radius with clear offset
+        // Calculate circumference and set text orbit radius with clear offset (tighter orbit)
         const earthCircumference = 2 * Math.PI * earthRadius;
-        textOrbitRadius = Math.max(earthRadius + (earthCircumference * 0.3), earthRadius + 6); // 30% of circumference above Earth with minimum 6 units
+        textOrbitRadius = Math.max(earthRadius + (earthCircumference * 0.15), earthRadius + 3); // 15% of circumference above Earth with minimum 3 units
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Earth circumference:', earthCircumference);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
-      } else {
-        console.log('⚠️ Earth model not loaded yet, using default radius');
-        // Use larger default orbit to ensure text is always visible and not masked
-        textOrbitRadius = 15;
-      }
+        } else {
+          console.log('⚠️ Earth model not loaded yet, using default radius');
+          // Use tighter default orbit for better visibility
+          textOrbitRadius = 8;
+        }
       
       // Store original flat positions for rebending (for both lines)
       const pos = textGeometry.attributes.position;
@@ -514,11 +517,13 @@
       const orbitalGroup = new THREE.Group();
       orbitalGroups.push(orbitalGroup);
       
-      // Add offset to orbital plane (tilt the axis)
-      const tiltX = (Math.random() - 0.5) * 60; // Random tilt between -30 and +30 degrees
-      const tiltZ = (Math.random() - 0.5) * 60; // Random tilt between -30 and +30 degrees
-      orbitalGroup.rotation.x = tiltX * Math.PI / 180;
-      orbitalGroup.rotation.z = tiltZ * Math.PI / 180;
+         // Add randomized orbital plane (more dynamic tilt variations)
+         const tiltX = (Math.random() - 0.5) * 120; // Random tilt between -60 and +60 degrees
+         const tiltY = (Math.random() - 0.5) * 60;  // Random Y-axis rotation for more variety
+         const tiltZ = (Math.random() - 0.5) * 120; // Random tilt between -60 and +60 degrees
+         orbitalGroup.rotation.x = tiltX * Math.PI / 180;
+         orbitalGroup.rotation.y = tiltY * Math.PI / 180;
+         orbitalGroup.rotation.z = tiltZ * Math.PI / 180;
       
       // Load GLB file for this orbit
       const loader = new GLTFLoader();
@@ -724,6 +729,15 @@
 
 
     // Create circular star texture
+    // Update bottom text to use the same font as orbiting text
+    function updateBottomTextFont(font) {
+      const linksElement = document.getElementById('links');
+      if (linksElement) {
+        linksElement.style.fontFamily = "'Universal Secondary Web', 'Helvetica', 'Arial', sans-serif";
+        console.log('✅ Bottom text updated to use Universal Secondary Web font');
+      }
+    }
+
     function createStarTexture() {
       const canvas = document.createElement('canvas');
       canvas.width = 64;
