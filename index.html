@@ -594,7 +594,7 @@
           size: isMobile ? 0.5 : 0.8,    // Smaller text for tighter orbit
           depth: 0.6,                    // Reduced depth for tighter fit
           curveSegments: 16,             // Fewer segments for tighter curve
-          letterSpacing: -0.15,          // Tighter letter spacing for better readability
+          letterSpacing: -0.25,          // Even tighter letter spacing for better readability
           bevelEnabled: true,            // Subtle bevels
           bevelThickness: 0.08,          // Thinner bevels
           bevelSize: 0.04,               // Smaller bevels
@@ -1020,12 +1020,12 @@
            console.log(`🌍 Using Earth radius ${safeEarthRadius.toFixed(2)} for orbital object ${index + 1} scaling`);
            const orbitRadius = calculateOrbitRadiusForIndex(index, safeEarthRadius);
            
-           // Pizza: 15% of Earth's diameter, others: 10% of Earth's diameter
+           // All objects: 15% of Earth's diameter = 15% of (2 × radius) = 30% of radius
+           const targetSize = safeEarthRadius * 2 * 0.15; // 15% of diameter for all objects
            const isPizza = glbFile.toLowerCase().includes('pizza');
-           const diameterPercent = isPizza ? 0.15 : 0.1; // 15% for pizza, 10% for others
-           const targetSize = safeEarthRadius * 2 * diameterPercent;
-           console.log(`${isPizza ? '🍕' : '🪨'} Orbital object ${index + 1} target size: ${(diameterPercent * 100)}% of Earth diameter (${(safeEarthRadius * 2).toFixed(2)}), = ${targetSize.toFixed(2)}`);
-           const scale = Math.max(targetSize / maxDimension, 0.1); // Ensure minimum scale
+           console.log(`${isPizza ? '🍕' : '🪨'} Orbital object ${index + 1} target size: 12.5% of Earth diameter (${(safeEarthRadius * 2).toFixed(2)}), = ${targetSize.toFixed(2)}`);
+           const scale = targetSize / maxDimension; // Use exact scale, no minimum constraint
+           console.log(`🔍 Scaling calculation: ${targetSize.toFixed(2)} / ${maxDimension.toFixed(2)} = ${scale.toFixed(4)}`);
            model.scale.setScalar(scale);
            
            console.log(`📏 Orbital object ${index + 1}: native size ${maxDimension.toFixed(2)}, scaled to ${(maxDimension * scale).toFixed(2)} (${((targetSize / safeEarthRadius) * 100).toFixed(1)}% of Earth radius)`);
@@ -1102,9 +1102,9 @@
                  return; // Skip other material processing for pizza
                }
 
-               // Special bright golden material for K object (index 3)
+               // Special royal blue material for K object (index 3)
                if (index === 3) {
-                 material.color.set(0xffd700); // Bright golden base color
+                 material.color.set(0x4169e1); // Royal blue base color
                  material.metalness = 1.0; // 100% metalness - fully metallic
                  material.roughness = 0.2; // Slightly rougher for better visibility
                  material.clearcoat = 1.0; // Full clearcoat for shine
@@ -1123,7 +1123,7 @@
                  
                  // Force material update for immediate effect
                  material.needsUpdate = true;
-                 console.log('✨ Applied bright golden material to K object with enhanced visibility');
+                 console.log('✨ Applied royal blue material to K object with enhanced visibility');
                } else {
                  // Standard material optimization for other objects
                  if (material.map) {
