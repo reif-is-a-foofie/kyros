@@ -564,7 +564,7 @@
       // Convert screen movement to camera movement
       // Scale down the movement for subtle panning
       const cameraDeltaX = deltaX * panSensitivity * 0.01;
-      const cameraDeltaY = -deltaY * panSensitivity * 0.01; // Invert Y for natural feel
+      const cameraDeltaY = deltaY * panSensitivity * 0.01; // Natural direction - drag down = move down
       
       // Apply panning to camera position
       camera.position.x += cameraDeltaX;
@@ -700,9 +700,9 @@
         // Position text so front face sits exactly at Earth surface
         // Account for bend curvature - text extends further out due to curvature
         const textDepth = 0.6; // Must match depth in TextGeometry  
-        const bendOffset = 3.5; // EXTREME compression for dramatic effect
+        const bendOffset = 2.0; // Moderate compression - text was too tight
         textOrbitRadius = earthRadius - textDepth - bendOffset; // Subtract depth and bend offset
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(EXTREME compression)');
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(moderate compression - text visible)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -713,7 +713,7 @@
           earthRadius = 2; // Fallback radius
           // Position text so front face sits exactly at Earth surface
           const textDepth = 0.6;
-          const bendOffset = 3.5; // EXTREME compression for dramatic effect
+          const bendOffset = 2.0; // Moderate compression - text was too tight
           textOrbitRadius = earthRadius - textDepth - bendOffset;
           console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(ultra-tight compression)');
         }
@@ -770,6 +770,8 @@
         console.log('  - Text scale:', textMesh.scale);
         console.log('  - Text material color:', textMaterial.color.getHexString());
         console.log('  - Text material metalness:', textMaterial.metalness);
+        console.log('  - Text visible:', textMesh.visible);
+        console.log('  - Text geometry bounds:', textGeometry.boundingBox);
         
         // Text positioning is now handled by the simplified system above
         
