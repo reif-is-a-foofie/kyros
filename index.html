@@ -670,8 +670,8 @@
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
           earthRadius = 2; // Fallback radius
-          textOrbitRadius = earthRadius * 0.75; // EarthRadius × 0.75
-          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 0.75)');
+          textOrbitRadius = earthRadius * 0.85; // EarthRadius × 0.85
+          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 0.85)');
         }
         
       // Persist orbit radius globally for other systems
@@ -981,6 +981,15 @@
       
       // Start introducing orbital objects every 7 seconds
       let orbitalTimer = 0;
+      
+      // Deploy first object immediately
+      if (nextOrbitalIndex < glbFiles.length) {
+        console.log('🚀 Deploying orbital object', nextOrbitalIndex + 1, 'after', orbitalTimer, 'seconds (immediate)');
+        createOrbitalObject(nextOrbitalIndex);
+        nextOrbitalIndex += 1;
+        orbitalTimer += 7;
+      }
+      
       const orbitalInterval = setInterval(() => {
         if (nextOrbitalIndex < glbFiles.length) {
           console.log('🚀 Deploying orbital object', nextOrbitalIndex + 1, 'after', orbitalTimer, 'seconds');
