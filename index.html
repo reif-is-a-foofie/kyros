@@ -659,9 +659,9 @@
         console.log('🌍🌍🌍 EARTH RADIUS:', earthRadius);
         console.log('🌍 Earth bounding box size:', size);
         
-        // Text orbit radius set to 0.75x Earth radius
-        textOrbitRadius = earthRadius * 0.75;
-        console.log('🎯 Text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 0.75)');
+        // Text orbit radius set to 1.01x Earth radius
+        textOrbitRadius = earthRadius * 1.01;
+        console.log('🎯 Text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 1.01)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -670,8 +670,8 @@
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
           earthRadius = 2; // Fallback radius
-          textOrbitRadius = earthRadius * 0.85; // EarthRadius × 0.85
-          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 0.85)');
+          textOrbitRadius = earthRadius * 1.01; // EarthRadius × 1.01
+          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 1.01)');
         }
         
       // Persist orbit radius globally for other systems
