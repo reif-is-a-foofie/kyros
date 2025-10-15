@@ -561,6 +561,8 @@
       const deltaX = event.clientX - panStartX;
       const deltaY = event.clientY - panStartY;
       
+      console.log('🖱️ Panning:', { deltaX, deltaY, cameraPos: camera.position });
+      
       // Convert screen movement to camera movement
       // Scale down the movement for subtle panning
       const cameraDeltaX = deltaX * panSensitivity * 0.01;
@@ -996,7 +998,7 @@
     }
 
     function startMaterialProtection() {
-      // Continuously protect text material from being overridden
+      // Continuously protect text material from being overridden (less aggressive)
       setInterval(() => {
         const meshes = [window.textMesh1, window.textMesh2].filter(mesh => mesh && mesh.userData.originalMaterial);
         
@@ -1005,15 +1007,14 @@
           const currentMaterial = mesh.material;
           const originalMaterial = mesh.userData.originalMaterial;
           
-          // If material color has changed from gold, restore it
+          // If material color has changed from gold, restore it (silent fix)
           if (currentMaterial.color.getHex() !== 0xffd700 || 
               currentMaterial.emissive.getHex() !== 0xffd700) {
-            console.log('🛡️ Protecting text material from override');
             mesh.material = originalMaterial.clone();
             mesh.material.needsUpdate = true;
           }
         });
-      }, 100); // Check every 100ms
+      }, 1000); // Check every 1000ms instead of 100ms
     }
 
     function calculateOrbitRadiusForIndex(index, earthRadius) {
@@ -1192,8 +1193,15 @@
                  return; // Skip other material processing for pizza
                }
 
-               // Special royal blue material for K object (index 3)
-               if (index === 3) {
+               // Special materials for specific objects
+               if (index === 2) { // Gameboy Classic
+                 material.color.set(0x444444); // Dark gray for authentic Gameboy color
+                 material.metalness = 0.0; // Not metallic
+                 material.roughness = 0.8; // Matte plastic surface
+                 material.emissive.set(0x111111); // Very subtle emissive
+                 material.emissiveIntensity = 0.1;
+                 console.log('🎮 Gameboy material - dark gray plastic');
+               } else if (index === 3) { // K object
                  material.color.set(0x4169e1); // Royal blue base color
                  material.metalness = 1.0; // 100% metalness - fully metallic
                  material.roughness = 0.2; // Slightly rougher for better visibility
@@ -1210,6 +1218,7 @@
                  if (scene.environment) {
                    material.envMap = scene.environment;
                  }
+                 console.log('🔷 K object material - royal blue metallic');
                  
                  // Force material update for immediate effect
                  material.needsUpdate = true;
@@ -1534,7 +1543,7 @@
       starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
       
       const starMaterial = new THREE.PointsMaterial({
-        size: 2.5, // Smaller for better performance
+        size: 5.0, // Increased for better visibility
         transparent: true,
         opacity: 1.0,
         vertexColors: true,
@@ -1549,6 +1558,10 @@
       const stars = new THREE.Points(starGeometry, starMaterial);
       scene.add(stars);
       repaintScene();
+      
+      console.log('⭐ Stars added to scene:', stars);
+      console.log('⭐ Star count:', starCount);
+      console.log('⭐ Star material size:', starMaterial.size);
       
       // Add twinkling animation
       window.stars = stars; // Store reference for animation
