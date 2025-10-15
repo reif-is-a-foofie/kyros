@@ -516,6 +516,9 @@
 
       updateResponsiveFlags();
 
+      // Set cursor style for panning
+      document.body.style.cursor = 'grab';
+
       // Create simple starfield background
       createStarfield();
       console.log('✅ Starfield created');
@@ -536,8 +539,35 @@
       }, false);
     }
     
-    function onMouseMove(event) {
-      // Mouse tracking removed - no longer needed for parallax
+    function onPointerDown(event) {
+      isPanning = true;
+      panStartX = event.clientX;
+      panStartY = event.clientY;
+      document.body.style.cursor = 'grabbing';
+    }
+    
+    function onPointerMove(event) {
+      if (!isPanning || !earthModel) return;
+      
+      const deltaX = event.clientX - panStartX;
+      const deltaY = event.clientY - panStartY;
+      
+      // Convert screen movement to world space movement
+      // Scale down the movement for subtle panning
+      earthPanX += deltaX * panSensitivity * 0.01;
+      earthPanY -= deltaY * panSensitivity * 0.01; // Invert Y for natural feel
+      
+      // Apply panning to Earth model only
+      earthModel.position.set(earthPanX, earthPanY, earthPanZ);
+      
+      // Update start position for next frame
+      panStartX = event.clientX;
+      panStartY = event.clientY;
+    }
+    
+    function onPointerUp(event) {
+      isPanning = false;
+      document.body.style.cursor = 'grab';
     }
 
     function createText() {
@@ -1142,8 +1172,8 @@
                  material.roughness = 0.2; // Slightly rougher for better visibility
                  material.clearcoat = 1.0; // Full clearcoat for shine
                  material.clearcoatRoughness = 0.1; // Smooth clearcoat
-                 material.emissive.set(0xffaa00); // Bright golden emissive for visibility
-                 material.emissiveIntensity = 0.8; // Strong emissive to brighten object
+                 material.emissive.set(0x2040a0); // Royal blue emissive for visibility
+                 material.emissiveIntensity = 0.6; // Moderate emissive to brighten object
                  material.envMapIntensity = 3.0; // Strong environment reflections
                  material.reflectivity = 1.0; // Maximum reflectivity
                  material.sheen = 0.5; // Add sheen for extra shine
