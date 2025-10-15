@@ -76,8 +76,15 @@
 
       // Scene with atmospheric fog for depth
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xf0f8ff);  // Light blue background
-      scene.fog = new THREE.FogExp2(0xf0f8ff, 0.015);  // Subtle depth fading
+      scene.fog = new THREE.FogExp2(0x000000, 0.01); // Dark fog for depth
+      
+      // Load EXR environment map
+      const exrLoader = new EXRLoader();
+      exrLoader.load('studio_small_02_4k.exr', function(texture) {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        scene.environment = texture;
+        scene.background = texture;
+      });
 
       // Renderer (must be created first)
       renderer = new THREE.WebGLRenderer({ antialias: true });
