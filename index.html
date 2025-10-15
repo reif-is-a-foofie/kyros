@@ -83,16 +83,15 @@
     #military-banner {
       position: fixed;
       bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 24px;
       font-family: 'Share Tech Mono', 'Courier New', monospace;
       font-size: 36px;
-      color: #00ff00;
-      text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
+      color: #ffd700;
+      text-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700;
       z-index: 1000;
       opacity: 0;
       transition: opacity 0.5s ease-in-out;
-      text-align: center;
+      text-align: left;
       white-space: nowrap;
       overflow: hidden;
     }
@@ -103,14 +102,50 @@
     
     #military-banner .cursor {
       animation: blink 1s infinite;
-      color: #00ff00;
+      color: #ffd700;
     }
-    
+
     #military-banner.clickable {
       text-decoration: underline;
-      text-decoration-color: #00ff00;
+      text-decoration-color: #ffd700;
       text-underline-offset: 4px;
       cursor: pointer;
+    }
+    
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(10, 15, 25, 0.95), rgba(2, 4, 8, 0.98));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 2000;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    #loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loading-inner {
+      text-align: center;
+      color: #ffd700;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.3rem;
+    }
+
+    .loading-title {
+      font-size: clamp(32px, 6vw, 64px);
+      margin-bottom: 20px;
+    }
+
+    .loading-status {
+      font-size: clamp(18px, 4vw, 28px);
+      opacity: 0.85;
     }
     
     @keyframes blink {
@@ -169,6 +204,13 @@
     <span id="banner-content"></span><span class="cursor">_</span>
   </div>
 
+  <div id="loading-overlay">
+    <div class="loading-inner">
+      <div class="loading-title">KYROS</div>
+      <div class="loading-status" id="loading-status-text">INITIALIZING...</div>
+    </div>
+  </div>
+
   <!-- Hidden links for clickable functionality -->
   <div id="links" style="display: none;">
     Kyros investment studio / <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> / <a href="https://calendly.com/reif-kyros/30min" target="_blank">Pitch us</a>
@@ -207,13 +249,12 @@
     let orbitalObjects = [];
     let orbitalGroups = [];
     let glbFiles = [
-      'orbital_objects/tether_usdt.glb', 
+      'orbital_objects/pizza.glb',
       'orbital_objects/crystal_stone_rock.glb', 
       'orbital_objects/gameboy_classic.glb', 
-      'orbital_objects/pizza.glb'
-    ]; // Orbital objects around Earth
-    let currentOrbitIndex = 0;
-    let orbitalSpeedMultiplier = 0.5;
+      'orbital_objects/2f322dab13694f6db1fb4795ff209171.glb',
+      'orbital_objects/tether_usdt.glb'
+    ]; // Orbital objects around Earth - ordered: pizza → crystal → gameboy → K → tether
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
     let bubbles = [];
@@ -226,166 +267,247 @@
     let isPointerDown = false;
     let isMobile = window.innerWidth < 768;
     let isSmallMobile = window.innerWidth < 480;
-    let orbitTime = 0;
+    let orbitAccumulator = 0;
+    let groupTiltX = 0;
+    let groupYawOffset = 0;
+    let orbitCycleTracker = 0;
+    let completedOrbitCycles = 0;
+    let nextOrbitalIndex = 0;
+    let cachedFont = null;
+    let textMaterial = null;
 
     function updateResponsiveFlags() {
       isMobile = window.innerWidth < 768;
       isSmallMobile = window.innerWidth < 480;
     }
 
+    const loadingState = {
+      totalSteps: 3,
+      completedSteps: 0,
+      finished: false
+    };
+
+    const loadingFlags = {
+      hdr: false,
+      earth: false,
+      font: false
+    };
+
+    function repaintScene() {
+      if (!renderer || !scene || !camera) return;
+      renderer.render(scene, camera);
+    }
+
+    function setLoadingStatus(message) {
+      const overlayStatus = document.getElementById('loading-status-text');
+      if (overlayStatus) {
+        overlayStatus.textContent = message;
+      }
+      const banner = document.getElementById('military-banner');
+      const content = document.getElementById('banner-content');
+      if (banner && content) {
+        banner.classList.add('show');
+        content.textContent = message;
+      }
+    }
+
+    function markLoadingStep(label) {
+      if (loadingState.finished) return;
+      loadingState.completedSteps = Math.min(loadingState.completedSteps + 1, loadingState.totalSteps);
+      const message = `INITIALIZING... ${loadingState.completedSteps}/${loadingState.totalSteps} – ${label}`;
+      setLoadingStatus(message);
+      if (loadingState.completedSteps >= loadingState.totalSteps) {
+        finishLoadingSequence();
+      }
+    }
+
+    function finishLoadingSequence() {
+      if (loadingState.finished) return;
+      loadingState.finished = true;
+      setLoadingStatus('SYSTEMS ONLINE – WELCOME TO KYROS');
+      const overlay = document.getElementById('loading-overlay');
+      if (overlay) {
+        setTimeout(() => {
+          overlay.classList.add('hidden');
+        }, 700);
+      }
+      setTimeout(() => {
+        const banner = document.getElementById('military-banner');
+        const content = document.getElementById('banner-content');
+        if (banner) banner.classList.remove('show');
+        if (content) content.textContent = '';
+        startMilitaryBanner();
+      }, 1800);
+    }
+
+    function showBottomTextForOrbitalObject(objectIndex) {
+      const banner = document.getElementById('military-banner');
+      const content = document.getElementById('banner-content');
+      
+      if (!banner || !content) return;
+      
+      const announcements = [
+        'PIZZA ENTERED ORBIT',
+        'CRYSTAL STONE ENTERED ORBIT', 
+        'GAME BOY CLASSIC ENTERED ORBIT',
+        'K OBJECT ENTERED ORBIT',
+        'TETHER USDT ENTERED ORBIT'
+      ];
+      
+      const message = announcements[objectIndex] || `OBJECT ${objectIndex + 1} ENTERED ORBIT`;
+      
+      // Clear any existing timeouts
+      if (window.orbitalTextTimeout) {
+        clearTimeout(window.orbitalTextTimeout);
+      }
+      
+      // Show the banner
+      banner.classList.add('show');
+      
+      // Type out the message
+      content.textContent = '';
+      
+      let charIndex = 0;
+      function typeChar() {
+        if (charIndex < message.length) {
+          content.textContent += message[charIndex];
+          charIndex++;
+          setTimeout(typeChar, 30); // Faster typing for announcements
+        } else {
+          // Hide after 10 seconds
+          window.orbitalTextTimeout = setTimeout(() => {
+            banner.classList.remove('show');
+          }, 10000);
+        }
+      }
+      
+      typeChar();
+      console.log(`🚀 ${message}`);
+    }
+
     function init() {
       console.log('🚀 Starting Three.js initialization...');
       document.title = 'Kyros - Initializing';
       
-      // Start military banner sequence
-      startMilitaryBanner();
+      setLoadingStatus(`INITIALIZING... 0/${loadingState.totalSteps} – STARTING SYSTEMS`);
       
       // Camera positioned to see entire Earth and orbiting text
       camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000); // Wider FOV
-      camera.position.set(0, 0, 22);  // Zoomed out more for better text visibility
+      
+      // Dynamic camera position based on screen size
+      const screenArea = window.innerWidth * window.innerHeight;
+      const baseCameraZ = 28; // Base camera distance
+      let cameraZ = baseCameraZ;
+      
+      if (screenArea < 800000) { // Small screens (mobile)
+        cameraZ = baseCameraZ * 0.8; // Closer camera
+      } else if (screenArea > 2000000) { // Large screens
+        cameraZ = baseCameraZ * 1.2; // Further camera
+      }
+      
+      camera.position.set(0, 0, cameraZ);
+      console.log('📱 Dynamic camera position set to z:', cameraZ, 'based on screen area:', screenArea);
       console.log('✅ Camera created');
 
       // Scene with realistic deep space background
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x1a1a2e); // Dark blue space background instead of pure black
-      scene.fog = new THREE.FogExp2(0x1a1a2e, 0.0003); // Lighter fog for better visibility
+      scene.background = new THREE.Color(0x05060a); // Deep black with subtle blue tint
+      scene.fog = new THREE.FogExp2(0x05060a, 0.00018); // Gentle haze to lift the blacks slightly
       console.log('✅ Scene created with realistic space background');
-      
-      // Load space HDR environment map
+
+      // Load space HDR environment map for reflected light
       new RGBELoader().load('https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/1k/space_1k.exr', (hdr) => {
         hdr.mapping = THREE.EquirectangularReflectionMapping;
         scene.environment = hdr;
         console.log('✅ Space HDR environment map loaded');
-      }, undefined, function(error) {
-        console.log('⚠️ Space HDR load failed, using fallback:', error);
+        if (!loadingFlags.hdr) {
+          loadingFlags.hdr = true;
+          markLoadingStep('Space environment ready');
+        }
+        repaintScene();
+      }, undefined, (error) => {
+        console.log('⚠️ Space HDR load failed, continuing with direct lights only:', error);
+        if (!loadingFlags.hdr) {
+          loadingFlags.hdr = true;
+          markLoadingStep('Space environment skipped');
+        }
       });
 
-      // Add full-spectrum daylight ambient lighting
-      scene.add(new THREE.AmbientLight(0xfff8e7, 1.8)); // Warm daylight spectrum for natural material colors
+      // Optimized 3-light setup for performance while maintaining cinematic quality
       
-      // Add warm key light from user's right side (cinematic lighting)
-      const sunLight = new THREE.DirectionalLight(0xfff8e7, 4.0); // Full-spectrum daylight
-      sunLight.position.set(15, 5, 10); // Much closer to scene
-      sunLight.target.position.set(0, 0, 0); // Point at the Earth
-      sunLight.castShadow = true;
-      sunLight.shadow.mapSize.width = 4096; // Higher resolution shadows
-      sunLight.shadow.mapSize.height = 4096;
-      sunLight.shadow.camera.near = 0.5;
-      sunLight.shadow.camera.far = 100; // Larger shadow area
-      sunLight.shadow.camera.left = -50; // Wider shadow area
-      sunLight.shadow.camera.right = 50;
-      sunLight.shadow.camera.top = 50;
-      sunLight.shadow.camera.bottom = -50;
+      // 1. Key sunlight - main directional light
+      const sunLight = new THREE.DirectionalLight(0xffffff, 3);
+      sunLight.position.set(15, 12, 10);
+      sunLight.target.position.set(0, 0, 0);
+      sunLight.castShadow = false; // Disabled for performance
       scene.add(sunLight);
       scene.add(sunLight.target);
       
-      // Add warm back light for rim lighting
-      const backLight = new THREE.PointLight(0xfff8e7, 4.0, 30); // Full-spectrum daylight back light
-      backLight.position.set(0, 0, -15); // Closer behind Earth
-      scene.add(backLight);
+      // 2. Ambient light for overall illumination
+      scene.add(new THREE.AmbientLight(0xffffff, 0.15));
       
-      // Add Universal Studios-style rim light (cool contrast)
-      const rimLight2 = new THREE.PointLight(0xfff8e7, 2.5, 50); // Full-spectrum daylight
-      rimLight2.position.set(-10, 5, -10);
-      scene.add(rimLight2);
+      // 3. Rim light for edge definition
+      const rimLight = new THREE.DirectionalLight(0xd4e5ff, 2.5);
+      rimLight.position.set(-6, -2, 14);
+      scene.add(rimLight);
       
-      // Add cool fill light for contrast and color balance (closer)
-      const fillLight = new THREE.DirectionalLight(0xfff8e7, 1.2); // Full-spectrum daylight
-      fillLight.position.set(-15, -5, -10);
-      scene.add(fillLight);
+      // 4. Text-specific light for readability
+      const textLight = new THREE.PointLight(0xfff8e7, 2, 25, 2);
+      textLight.position.set(0, 0, 15);
+      scene.add(textLight);
       
-      // Add strategic full-spectrum lights for Universal Studios aesthetic
-      const warmLight = new THREE.PointLight(0xfff8e7, 2.5, 40); // Full-spectrum daylight
-      warmLight.position.set(20, 10, 15);
-      scene.add(warmLight);
-      
-      const coolLight = new THREE.PointLight(0xfff8e7, 2.0, 35); // Full-spectrum daylight
-      coolLight.position.set(-20, -10, 15);
-      scene.add(coolLight);
-      
-      const rimGold = new THREE.PointLight(0xfff8e7, 1.8, 30); // Full-spectrum daylight rim lighting
-      rimGold.position.set(0, 20, 10);
-      scene.add(rimGold);
-      
-      const fillCyan = new THREE.PointLight(0xfff8e7, 1.5, 30); // Full-spectrum daylight fill
-      fillCyan.position.set(0, -20, 10);
-      scene.add(fillCyan);
-      
-      // Add rim lights for better edge definition
-      const rimLight1 = new THREE.DirectionalLight(0xfff8e7, 1.5); // Full-spectrum daylight
-      rimLight1.position.set(25, 0, 0);
-      scene.add(rimLight1);
-      
-      const rimLight3 = new THREE.DirectionalLight(0xfff8e7, 1.5); // Full-spectrum daylight
-      rimLight3.position.set(-25, 0, 0);
-      scene.add(rimLight3);
-      
-      // Add more strategic lighting - TOP LIGHTS
-      const topLight1 = new THREE.PointLight(0xfff8e7, 2.2, 35); // Full-spectrum daylight
-      topLight1.position.set(15, 25, 8);
-      scene.add(topLight1);
-      
-      const topLight2 = new THREE.PointLight(0xfff8e7, 2.0, 30); // Full-spectrum daylight
-      topLight2.position.set(-15, 25, 8);
-      scene.add(topLight2);
-      
-      const topLight3 = new THREE.PointLight(0xfff8e7, 1.8, 25); // Full-spectrum daylight
-      topLight3.position.set(0, 30, 5);
-      scene.add(topLight3);
-      
-      // Add more strategic lighting - BOTTOM LIGHTS
-      const bottomLight1 = new THREE.PointLight(0xfff8e7, 2.2, 35); // Full-spectrum daylight
-      bottomLight1.position.set(15, -25, 8);
-      scene.add(bottomLight1);
-      
-      const bottomLight2 = new THREE.PointLight(0xfff8e7, 2.0, 30); // Full-spectrum daylight
-      bottomLight2.position.set(-15, -25, 8);
-      scene.add(bottomLight2);
-      
-      const bottomLight3 = new THREE.PointLight(0xfff8e7, 1.8, 25); // Full-spectrum daylight
-      bottomLight3.position.set(0, -30, 5);
-      scene.add(bottomLight3);
-      
-      // Add additional side fill lights for complete coverage
-      const sideLight1 = new THREE.PointLight(0xfff8e7, 1.6, 28); // Full-spectrum daylight
-      sideLight1.position.set(30, 0, 12);
-      scene.add(sideLight1);
-      
-      const sideLight2 = new THREE.PointLight(0xfff8e7, 1.6, 28); // Full-spectrum daylight
-      sideLight2.position.set(-30, 0, 12);
-      scene.add(sideLight2);
-      
-      console.log('✅ Added space lighting');
+      console.log('✅ Added optimized 4-light setup for performance');
 
-      // Renderer (must be created first)
+      // Renderer (must be created first) - optimized for performance
       renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1)); // Clamped to 1 for performance
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.enabled = false; // Disabled for performance
+      renderer.physicallyCorrectLights = true;
       
-      // Fix lighting and color accuracy with Universal Studios bloom
+      // Optimized color and tone mapping
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 2.0; // Even higher exposure for maximum brightness
+      renderer.toneMappingExposure = 1.0; // Reduced for performance
       
       document.body.appendChild(renderer.domElement);
 
-      // --- Color calibration fix ---
-      // Rebalance all lights to prevent over-saturation
-      scene.traverse(o => {
-        if (o.isLight) o.intensity *= 0.5; // Cut brightness in half
-      });
-
-      // Pizza-specific fix to restore natural colors
+      // Pizza-specific fix to remove masks and restore natural colors
       setTimeout(() => {
         scene.traverse(o => {
           if (o.name && o.name.toLowerCase().includes('pizza')) {
             if (o.material) {
-              o.material.emissive?.set(0x000000); // Kill baked glow
-              o.material.emissiveIntensity = 0.0;
-              o.material.color.set(0xffffff); // Use texture colors
-              o.material.needsUpdate = true;
+              const materials = Array.isArray(o.material) ? o.material : [o.material];
+              materials.forEach((material) => {
+                if (!material) return;
+                material.emissive?.set(0x000000); // Kill baked glow
+                if (typeof material.emissiveIntensity === 'number') {
+                  material.emissiveIntensity = 0.0;
+                }
+                if (typeof material.roughness === 'number') {
+                  material.roughness = Math.max(material.roughness, 0.45); // Keep sheen soft
+                }
+                if (typeof material.metalness === 'number') {
+                  material.metalness = Math.min(material.metalness, 0.25);
+                }
+                // Remove all masks and transparency
+                if ('alphaMap' in material && material.alphaMap) {
+                  material.alphaMap = null;
+                }
+                if ('normalMap' in material && material.normalMap) {
+                  material.normalMap = null; // Remove normal map masks
+                }
+                if ('displacementMap' in material && material.displacementMap) {
+                  material.displacementMap = null; // Remove displacement masks
+                }
+                if (material.transparent) {
+                  material.transparent = false;
+                  material.alphaTest = 0.0;
+                  material.opacity = 1.0; // Force full opacity
+                }
+                material.color?.set?.(0xffffff); // Use texture colors
+                material.needsUpdate = true;
+              });
             }
           }
         });
@@ -393,6 +515,7 @@
 
       // Set up animation loop
       renderer.setAnimationLoop(animate);
+      repaintScene();
 
       // No dynamic lighting for performance
 
@@ -424,8 +547,7 @@
     }
     
     function onMouseMove(event) {
-      mouseX = (event.clientX - windowHalfX) / 100;
-      mouseY = (event.clientY - windowHalfY) / 100;
+      // Mouse tracking removed - no longer needed for parallax
     }
 
     function createText() {
@@ -439,11 +561,19 @@
       
       // Create single line of text
       createSingleLineText(font);
+      if (!loadingFlags.font) {
+        loadingFlags.font = true;
+        markLoadingStep('Universal font ready');
+      }
       
       // Bottom text font is now handled directly in CSS
     }, undefined, function(error) {
       console.log('⚠️ Font load failed, using fallback text:', error);
       createFallbackText();
+      if (!loadingFlags.font) {
+        loadingFlags.font = true;
+        markLoadingStep('Fallback typography ready');
+      }
     });
     }
 
@@ -463,27 +593,51 @@
       geometry.computeVertexNormals();
     }
 
+    function ensureEarthShadowSettings() {
+      if (!earthModel) return;
+      earthModel.traverse((child) => {
+        if (!child.isMesh) return;
+        child.castShadow = true;
+        child.receiveShadow = true;
+        if (child.material) {
+          child.material.needsUpdate = true;
+        }
+      });
+      repaintScene();
+    }
+
     function createSingleLineText(font) {
       const text = "build the change you wish to see in the world.";
       
         // Create clean Universal Studios-style text geometry with more depth
         const textGeometry = new TextGeometry(text, {
           font: font,
-          size: isMobile ? 0.8 : 1.2,    // Clean size
-          depth: 0.8,                    // More depth for 3D effect
-          curveSegments: 20,             // Smooth curves
+          size: isMobile ? 0.5 : 0.8,    // Smaller text for tighter orbit
+          depth: 0.6,                    // Reduced depth for tighter fit
+          curveSegments: 16,             // Fewer segments for tighter curve
           bevelEnabled: true,            // Subtle bevels
-          bevelThickness: 0.1,           // Thicker bevels for depth
-          bevelSize: 0.05,               // Larger bevels
-          bevelSegments: 8               // More bevel segments for smoothness
+          bevelThickness: 0.08,          // Thinner bevels
+          bevelSize: 0.04,               // Smaller bevels
+          bevelSegments: 6               // Fewer bevel segments
         });
       
       textGeometry.computeBoundingBox();
       textGeometry.center();
+      textGeometry.computeBoundingBox();
+      
+      const boundingBox = textGeometry.boundingBox;
+      const halfTextWidth = boundingBox ? Math.max(Math.abs(boundingBox.min.x), Math.abs(boundingBox.max.x)) : 0;
+      const maxArcCoverage = THREE.MathUtils.degToRad(isMobile ? 540 : 720); // Allow text to wrap up to 1.5-2 turns
+      const angleLimit = Math.max(0.0001, maxArcCoverage * 0.5);
+      const arcSafety = 0.18;
+      const minOrbitRadiusForText = (halfTextWidth > 0 && angleLimit > 0) ? (halfTextWidth + arcSafety) / angleLimit : 0;
+      window.textArcMinRadius = minOrbitRadiusForText;
+      const existingRadius = window.textOrbitRadius || textOrbitRadius || 5;
+      textOrbitRadius = Math.max(existingRadius, window.textArcMinRadius || 0);
       
       // Calculate Earth circumference from actual loaded model
       let earthRadius = 2; // Default fallback
-      let textOrbitRadius = 8; // Default fallback
+      textOrbitRadius = Math.max(textOrbitRadius, window.textArcMinRadius || 0); // Default fallback, reuse global radius
       
       if (earthModel) {
         // Get actual Earth bounding box
@@ -492,12 +646,16 @@
         const size = boundingBox.getSize(new THREE.Vector3());
         earthRadius = Math.max(size.x, size.y, size.z) / 2;
         
-        // Set text orbit radius using calculated safe radius
+        // Set text orbit radius using dynamic calculation
         if (camera) {
-          textOrbitRadius = calculateOcclusionRadius() * 1.1; // 10% buffer above minimum safe radius
+          const dynamicRadius = calculateDynamicOrbitRadius();
+          const safeRadius = calculateOcclusionRadius();
+          // Guarantee the text sits comfortably in front of Earth - tight margin
+          textOrbitRadius = Math.max(dynamicRadius, safeRadius) + earthRadius * 0.15;
+          console.log('🎯 Dynamic text orbit radius:', textOrbitRadius.toFixed(2), '(dynamic:', dynamicRadius.toFixed(2), ', safe:', safeRadius.toFixed(2), ')');
         } else {
-          // If camera not ready, use a calculated safe distance based on Earth size
-          textOrbitRadius = earthRadius * 3.0; // Conservative fallback
+          // If camera not ready, use dynamic calculation without camera factor
+          textOrbitRadius = Math.max(textOrbitRadius, calculateDynamicOrbitRadius());
         }
         
         console.log('🌍 Earth radius calculated:', earthRadius);
@@ -507,8 +665,11 @@
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
           // Use default orbit for better visibility
-          textOrbitRadius = 8;
+          textOrbitRadius = Math.max(4.8, window.textArcMinRadius || 0);
         }
+        
+      // Persist orbit radius globally for other systems
+      window.textOrbitRadius = textOrbitRadius;
       
       // Store earthRadius globally for rebending function
       window.earthRadius = earthRadius;
@@ -517,20 +678,21 @@
       const pos = textGeometry.attributes.position;
       originalTextPositions = new Float32Array(pos.array.length);
       originalTextPositions.set(pos.array, 0);
+      window.textGeometry = textGeometry;
       
       // Bend text geometry to curve around Earth (facing outward)
       bendTextGeometry(textGeometry, textOrbitRadius, 0); // Single line centered
 
-      // Create cinematic gold material (Universal Studios look)
+      // Optimized gold material for performance while maintaining visual quality
         const textMaterial = new THREE.MeshPhysicalMaterial({
           color: 0xffd700,        // Warm gold
-          metalness: 1.0,         // Maximum metalness
-          roughness: 0.25,        // Slight roughness for realism
-          clearcoat: 1.0,         // Full clearcoat for glossy finish
-          clearcoatRoughness: 0.1, // Slight clearcoat roughness
-          envMapIntensity: 2.5,   // Strong environment reflections
+          metalness: 0.8,         // Reduced for performance
+          roughness: 0.4,         // Simplified for performance
+          clearcoat: 0.5,         // Reduced for performance
+          clearcoatRoughness: 0.2, // Simplified for performance
+          envMapIntensity: 1.5,   // Reduced for performance
           emissive: 0x442200,     // Warm gold emissive
-          emissiveIntensity: 0.6, // Enhanced gold glow
+          emissiveIntensity: 0.4, // Reduced for performance
           side: THREE.DoubleSide, // Ensure both sides are rendered
           transparent: false,     // Ensure no transparency issues
           opacity: 1.0           // Fully opaque
@@ -567,14 +729,9 @@
         textMesh.userData.originalMaterial = textMaterial.clone();
         
         // Enable shadows for Earth model
-        if (earthModel) {
-          earthModel.traverse((child) => {
-            if (child.isMesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
-            }
-          });
-        }
+        ensureEarthShadowSettings();
+        
+        repaintScene();
         console.log('✅ 3D bubble text created with realistic physics');
       
       // Start material protection loop
@@ -582,6 +739,11 @@
       
       // Start dynamic text rebending system
       startDynamicTextRebending();
+      
+      // Add window resize handler for dynamic orbit recalculation
+      window.addEventListener('resize', handleWindowResize);
+      
+      // Load textures and other assets
       
       // Start introducing orbital objects one by one
       startOrbitalSequence();
@@ -593,6 +755,11 @@
         console.log('❌ Cannot rebend: missing textMesh1 or originalTextPositions');
         return;
       }
+      
+      if (window.textArcMinRadius) {
+        textOrbitRadius = Math.max(textOrbitRadius, window.textArcMinRadius);
+      }
+      window.textOrbitRadius = textOrbitRadius;
       
       console.log('🔄 Rebending text geometry with radius:', textOrbitRadius);
       
@@ -618,39 +785,68 @@
       console.log('✅ Text geometry rebent successfully');
     }
 
+    // Calculate dynamic orbit radius based on screen size and camera position
+    function calculateDynamicOrbitRadius() {
+      const earthRadius = window.earthRadius || 1;
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const aspectRatio = screenWidth / screenHeight;
+      
+      // Base radius calculation considering screen size - tight orbit
+      let baseRadius = earthRadius * 1.15; // Very tight orbit
+
+      // Adjust for screen aspect ratio
+      if (aspectRatio > 1.5) { // Wide screens
+        baseRadius *= 0.8; // Closer orbit for wide screens
+      } else if (aspectRatio < 0.8) { // Tall screens
+        baseRadius *= 1.2; // Further orbit for tall screens
+      }
+      
+      // Adjust for screen size
+      const screenArea = screenWidth * screenHeight;
+      if (screenArea < 800000) { // Small screens (mobile)
+        baseRadius *= 0.7; // Much closer orbit
+      } else if (screenArea > 2000000) { // Large screens
+        baseRadius *= 1.1; // Slightly further orbit
+      }
+      
+      // Consider camera distance
+      if (camera) {
+        const cameraDistance = camera.position.distanceTo(new THREE.Vector3());
+        const cameraFactor = Math.min(cameraDistance / 22, 1.6); // Normalize camera distance
+        baseRadius *= cameraFactor;
+      }
+      
+      // Ensure minimum and maximum bounds (also respect camera distance)
+      const textArcMinRadius = window.textArcMinRadius || 0;
+      const minRadius = Math.max(earthRadius * 1.1, textArcMinRadius); // Very tight minimum
+      const cameraDistance = camera ? camera.position.length() : 28;
+      const cameraLimitedMax = cameraDistance - earthRadius - 2.4;
+      const maxRadius = Math.max(minRadius + 0.18, Math.min(earthRadius * 1.8, cameraLimitedMax));
+      
+      const constrainedBaseRadius = Math.max(baseRadius, minRadius);
+      return Math.min(constrainedBaseRadius, maxRadius);
+    }
+
     function calculateOcclusionRadius() {
       if (!earthModel || !camera) {
         console.log('⚠️ Missing earthModel or camera for occlusion calculation');
-        return window.earthRadius * 3.0;
+        const fallbackEarthRadius = window.earthRadius || 2;
+        return Math.max(fallbackEarthRadius * 1.5, window.textArcMinRadius || 0);
       }
       
-      // Get Earth's world position and radius
       const earthWorldPosition = new THREE.Vector3();
       earthModel.getWorldPosition(earthWorldPosition);
       const earthRadius = window.earthRadius;
-      
-      // Calculate camera distance from Earth center
       const cameraToEarthCenter = camera.position.distanceTo(earthWorldPosition);
-      
-      // Handle edge case where camera is too close to Earth
-      if (cameraToEarthCenter <= earthRadius) {
-        console.log('⚠️ Camera too close to Earth, using minimum safe radius');
-        return earthRadius * 4.0; // Minimum safe distance
-      }
-      
-      // Calculate the occlusion radius using geometric projection
-      // When text is at this radius, it will just graze Earth's edge from camera's perspective
-      const occlusionRadius = Math.sqrt(
-        Math.pow(cameraToEarthCenter, 2) - Math.pow(earthRadius, 2)
-      ) + earthRadius;
-      
-      // Add a safety buffer to ensure text never touches Earth
-      const safeOcclusionRadius = occlusionRadius * 1.15;
+      const textArcMinRadius = window.textArcMinRadius || 0;
+      const minimumVisibleRadius = Math.max(earthRadius * 1.6, textArcMinRadius);
+      const cameraAllowance = Math.max(minimumVisibleRadius, cameraToEarthCenter - earthRadius - 2.6);
+      const safeOcclusionRadius = Math.min(cameraAllowance, minimumVisibleRadius + earthRadius * 0.28);
       
       console.log('📐 Calculated occlusion radius:', safeOcclusionRadius.toFixed(2));
       console.log('📐 Camera distance from Earth:', cameraToEarthCenter.toFixed(2));
       console.log('📐 Earth radius:', earthRadius.toFixed(2));
-      console.log('📐 Raw occlusion radius:', occlusionRadius.toFixed(2));
       
       return safeOcclusionRadius;
     }
@@ -676,25 +872,57 @@
         const cameraToEarth = earthWorldPosition.distanceTo(camera.position);
         
         // Check if text is behind Earth (blocked)
-        const textBehindEarth = cameraToText > cameraToEarth;
-        
         // Calculate the minimum safe orbit radius dynamically
-        const minSafeRadius = calculateOcclusionRadius();
-        const optimalRadius = minSafeRadius * 1.15; // 15% buffer above minimum
+        // Calculate dynamic orbit radius based on current screen conditions
+        const minTextRadius = window.textArcMinRadius || 0;
+        const dynamicRadius = calculateDynamicOrbitRadius();
+        const safeRadius = calculateOcclusionRadius();
+        const cameraDistance = camera.position.length();
+        const cameraLimit = Math.max(window.earthRadius * 1.6, cameraDistance - window.earthRadius - 2.6);
+        const baseTarget = Math.max(dynamicRadius, safeRadius, minTextRadius);
+        const orbitMargin = Math.max((window.earthRadius || 0) * 0.1, 0.18);
+        let targetRadius = Math.min(baseTarget + orbitMargin, cameraLimit);
         
-        // If text is blocked and current orbit is too close, rebend with safe radius
-        if (textBehindEarth && textOrbitRadius < minSafeRadius) {
-          console.log('🔄 Text blocked by Earth, rebending with calculated safe radius');
-          textOrbitRadius = minSafeRadius;
-          rebendTextGeometry();
-        }
-        // If text is not blocked and orbit is too large, optimize back down
-        else if (!textBehindEarth && textOrbitRadius > optimalRadius) {
-          console.log('🎯 Text visible, optimizing orbit radius');
-          textOrbitRadius = optimalRadius;
+        if (Math.abs(textOrbitRadius - targetRadius) > 0.05) {
+          textOrbitRadius += (targetRadius - textOrbitRadius) * 0.2; // Ease toward target radius
+          window.textOrbitRadius = textOrbitRadius;
           rebendTextGeometry();
         }
       }, 500); // Check every 500ms
+    }
+
+    // Handle window resize for dynamic orbit recalculation
+    function handleWindowResize() {
+      console.log('📱 Window resized, recalculating dynamic orbit radius');
+      
+      // Recalculate dynamic orbit radius
+      const newDynamicRadius = calculateDynamicOrbitRadius();
+      const currentSafeRadius = calculateOcclusionRadius();
+      const minTextRadius = window.textArcMinRadius || 0;
+      const cameraDistance = camera ? camera.position.length() : 28;
+      const cameraLimit = Math.max(window.earthRadius * 1.6, cameraDistance - window.earthRadius - 2.6);
+      const orbitMargin = Math.max((window.earthRadius || 0) * 0.1, 0.18);
+      const desiredRadius = Math.max(newDynamicRadius, currentSafeRadius, minTextRadius);
+      const targetRadius = Math.min(desiredRadius + orbitMargin, cameraLimit);
+      
+      // Update text orbit radius if needed
+      if (!window.textOrbitRadius || Math.abs(window.textOrbitRadius - targetRadius) > 0.1) {
+        console.log('🔄 Updating text orbit radius due to screen size change');
+        window.textOrbitRadius = targetRadius;
+        textOrbitRadius = targetRadius;
+        rebendTextGeometry();
+      }
+      
+      // Update camera aspect ratio
+      if (camera) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      }
+      
+      // Update renderer size
+      if (renderer) {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
     }
 
     function startMaterialProtection() {
@@ -718,28 +946,53 @@
       }, 100); // Check every 100ms
     }
 
-    function startOrbitalSequence() {
-      console.log('🛰️ Starting orbital sequence with', glbFiles.length, 'objects');
-      // Introduce orbital objects one by one with increasing delays
-      for (let i = 0; i < glbFiles.length; i++) {
-        setTimeout(() => {
-          console.log('🚀 Creating orbital object', i + 1, 'of', glbFiles.length);
-          // Calculate orbit radius relative to Earth's actual size
-          const earthRadius = earthModel ? (() => {
-            const earthBox = new THREE.Box3().setFromObject(earthModel);
-            const earthSize = earthBox.getSize(new THREE.Vector3());
-            return Math.max(earthSize.x, earthSize.y, earthSize.z) / 2;
-          })() : 2;
-          const orbitRadius = earthRadius * (1.5 + i * 0.8); // 1.5x, 2.3x, 3.1x, 3.9x Earth radius
-          createOrbitalObject(i, orbitRadius);
-        }, 2000 + (i * 1500)); // 2s, 3.5s, 5s, 6.5s delays
-      }
+    function calculateOrbitRadiusForIndex(index, earthRadius) {
+      // Position objects at +/- 5% of headline text radius
+      const textRadius = window.textOrbitRadius || (earthRadius * 1.6);
+      const variation = textRadius * 0.05; // 5% variation
+      
+      // Alternate between slightly inside and outside text radius for 5 objects
+      const positions = [
+        textRadius - variation,  // Pizza: 95% of text radius
+        textRadius + variation,  // Crystal: 105% of text radius  
+        textRadius - variation,  // Gameboy: 95% of text radius
+        textRadius + variation,  // K Object: 105% of text radius
+        textRadius - variation   // Tether: 95% of text radius
+      ];
+      
+      return positions[index] || textRadius;
     }
 
-    function createOrbitalObject(index, orbitRadius) {
+    function startOrbitalSequence() {
+      if (orbitalObjects.length > 0) {
+        console.log('🛰️ Orbital sequence already active, skipping restart');
+        return;
+      }
+      console.log('🛰️ Starting orbital sequence with', glbFiles.length, 'objects');
+      orbitAccumulator = 0;
+      orbitCycleTracker = 0;
+      completedOrbitCycles = 0;
+      nextOrbitalIndex = 0;
+      
+      // Start introducing orbital objects every 7 seconds
+      let orbitalTimer = 0;
+      const orbitalInterval = setInterval(() => {
+        if (nextOrbitalIndex < glbFiles.length) {
+          console.log('🚀 Deploying orbital object', nextOrbitalIndex + 1, 'after', orbitalTimer, 'seconds');
+          createOrbitalObject(nextOrbitalIndex);
+          nextOrbitalIndex += 1;
+          orbitalTimer += 7;
+        } else {
+          clearInterval(orbitalInterval);
+          console.log('🛰️ All orbital objects deployed');
+        }
+      }, 7000); // Every 7 seconds
+    }
+
+    function createOrbitalObject(index) {
       if (index >= glbFiles.length) return;
       
-      console.log(`🛰️ Creating orbital object ${index + 1} at radius ${orbitRadius}`);
+      console.log(`🛰️ Creating orbital object ${index + 1} of ${glbFiles.length}`);
       
       // Create orbital group
       const orbitalGroup = new THREE.Group();
@@ -767,14 +1020,15 @@
            const size = box.getSize(new THREE.Vector3());
            const maxDimension = Math.max(size.x, size.y, size.z);
            
-           // Scale objects relative to Earth's radius (2-5% of Earth's diameter)
+           // Scale objects relative to Earth's radius for consistent presence
            const earthRadius = earthModel ? (() => {
              const earthBox = new THREE.Box3().setFromObject(earthModel);
              const earthSize = earthBox.getSize(new THREE.Vector3());
              return Math.max(earthSize.x, earthSize.y, earthSize.z) / 2;
            })() : 2; // Fallback radius
+           const orbitRadius = calculateOrbitRadiusForIndex(index, earthRadius);
            
-           const targetSize = earthRadius * (0.03 + Math.random() * 0.04); // 3-7% of Earth radius
+           const targetSize = earthRadius * 0.2; // 1/10 of Earth's diameter
            const scale = targetSize / maxDimension;
            model.scale.setScalar(scale);
            
@@ -793,67 +1047,31 @@
              Math.random() * Math.PI * 2
            );
            
-           // Store tumbling speeds for natural orbiting motion
-           model.userData.tumbleX = (Math.random() - 0.5) * 0.02; // Random tumble speeds
-           model.userData.tumbleY = (Math.random() - 0.5) * 0.02;
-           model.userData.tumbleZ = (Math.random() - 0.5) * 0.02;
+           // Store tumbling speeds for chaotic orbiting motion
+           model.userData.tumbleX = (Math.random() - 0.5) * 0.025; // Much faster tumbling
+           model.userData.tumbleY = (Math.random() - 0.5) * 0.025;
+           model.userData.tumbleZ = (Math.random() - 0.5) * 0.025;
            
-           // Store individual orbital speed (0.1 to 0.5 of text orbit speed)
-           model.userData.orbitalSpeed = 0.1 + Math.random() * 0.4; // Random between 0.1 and 0.5
+           // Store individual orbital speed (steady range for calm motion)
+           model.userData.orbitalSpeed = 0.18 + Math.random() * 0.2; // Steady speed range
            
-           // Fix materials for orbital objects - ensure they're properly lit and colored
+           // Fix materials for orbital objects - ensure they're properly lit without washing out textures
            model.traverse((child) => {
-             if (child.isMesh) {
-               // Enable shadows
+             if (!child.isMesh) return;
+
                child.castShadow = true;
                child.receiveShadow = true;
                
-               // Fix grey materials - enhance lighting and colors
-               if (child.material) {
-                 // Make materials more visible
-                 if (child.material.map) {
-                   child.material.map.colorSpace = THREE.SRGBColorSpace;
-                 }
-                 
-           // Always add emissive for visibility - stronger for stone and coin
-           let emissiveColor = new THREE.Color(0x444444);
-           let emissiveIntensity = 0.6;
-           
-           // Special glow colors for different objects
-           if (glbFile.includes('stone')) {
-             emissiveColor = new THREE.Color(0x8888ff); // Blue glow for stone
-             emissiveIntensity = 1.2;
-           } else if (glbFile.includes('tether') || glbFile.includes('coin')) {
-             emissiveColor = new THREE.Color(0xffff88); // Yellow glow for coin
-             emissiveIntensity = 1.2;
-           } else if (glbFile.includes('gameboy')) {
-             emissiveColor = new THREE.Color(0x88ff88); // Green glow for gameboy
-             emissiveIntensity = 0.8;
-           } else if (glbFile.includes('pizza')) {
-             emissiveColor = new THREE.Color(0xff8888); // Red glow for pizza
-             emissiveIntensity = 0.8;
-           }
-           
-           child.material.emissive = emissiveColor;
-           child.material.emissiveIntensity = emissiveIntensity;
-                 
-                 // Force brighten ALL materials to make them visible
-                 if (child.material.color) {
-                   // Multiply color by 2 to make it much brighter
-                   child.material.color.multiplyScalar(2.0);
-                 }
-                 
-                 // Reduce roughness for better reflections
-                 if (child.material.roughness !== undefined) {
-                   child.material.roughness = Math.min(child.material.roughness, 0.5);
-                 }
-                 
-                 // Ensure material is properly configured
-                 child.material.needsUpdate = true;
-                 
-                 console.log(`🎨 Fixed material for ${glbFile}: color=${child.material.color.getHexString()}`);
+             const materials = Array.isArray(child.material) ? child.material : [child.material];
+             materials.forEach((material) => {
+               if (!material) return;
+
+               if (material.map) {
+                 material.map.colorSpace = THREE.SRGBColorSpace;
                }
-             }
+
+               material.needsUpdate = true;
+             });
            });
            
            // Ensure model is not clipped and properly positioned
@@ -869,6 +1087,10 @@
            
            // Add orbital group directly to scene (not nested under Earth)
            scene.add(orbitalGroup);
+           repaintScene();
+           
+           // Show bottom text notification for new orbital object
+           showBottomTextForOrbitalObject(index);
            
            console.log(`✅ Orbital object ${index + 1} added directly to scene (not nested under Earth)`);
            
@@ -912,6 +1134,7 @@
       textMesh1.position.set(0, 0, 0);
       textMesh1.rotation.y = Math.PI;
       group.add(textMesh1);
+      repaintScene();
       console.log('✅ Fallback text created');
     }
 
@@ -932,6 +1155,18 @@
         // Add Earth directly to scene (not in rotating group)
         scene.add(earthModel);
         console.log('✅ Earth GLB model loaded with original materials');
+        if (!loadingFlags.earth) {
+          loadingFlags.earth = true;
+          markLoadingStep('Earth model ready');
+        }
+        ensureEarthShadowSettings();
+        
+        // Recreate text now that Earth is loaded for proper radius calculation
+        console.log('🔄 Recreating text with Earth model loaded');
+        console.log('🌍 Earth radius before text recreation:', earthRadius);
+        createText();
+        
+        repaintScene();
       }, function(progress) {
         console.log('📊 GLB loading progress:', (progress.loaded / progress.total * 100) + '%');
       }, function(error) {
@@ -950,12 +1185,28 @@
           
           // Add Earth directly to scene (not in rotating group)
           scene.add(earthModel);
-          console.log('✅ Earth GLTF model loaded with original materials');
+        console.log('✅ Earth GLTF model loaded with original materials');
+        if (!loadingFlags.earth) {
+          loadingFlags.earth = true;
+          markLoadingStep('Earth model ready');
+        }
+        ensureEarthShadowSettings();
+        
+        // Recreate text now that Earth is loaded for proper radius calculation
+        console.log('🔄 Recreating text with Earth model loaded');
+        console.log('🌍 Earth radius before text recreation:', earthRadius);
+        createText();
+        
+        repaintScene();
         }, function(progress) {
           console.log('📊 GLTF loading progress:', (progress.loaded / progress.total * 100) + '%');
         }, function(error2) {
           console.log('⚠️ Earth GLTF also failed:', error2);
           console.log('❌ No Earth model could be loaded');
+          if (!loadingFlags.earth) {
+            loadingFlags.earth = true;
+            markLoadingStep('Earth model unavailable');
+          }
         });
       });
     }
@@ -984,18 +1235,21 @@
     }
 
     function createStarfield() {
-      // Create dramatic starfield background
+      // Create optimized starfield background for performance
       const starGeometry = new THREE.BufferGeometry();
-      const starCount = 800; // More stars for better visibility
+      const starCount = 50; // Reduced for performance while maintaining visual impact
       const starPositions = new Float32Array(starCount * 3);
       const starColors = new Float32Array(starCount * 3);
       const starSizes = new Float32Array(starCount);
+      const twinkleSpeed = new Float32Array(starCount);
+      const twinklePhase = new Float32Array(starCount);
+      const twinkleAmplitude = new Float32Array(starCount);
       
       for (let i = 0; i < starCount; i++) {
         const i3 = i * 3;
         
-        // Random positions in a sphere - much further back for better layering
-        const radius = Math.random() * 2000 + 1500;
+        // Scatter stars in a sphere around the origin
+        const radius = 220 + Math.random() * 420; // 220-640 units away
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
         
@@ -1003,54 +1257,60 @@
         starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
         starPositions[i3 + 2] = radius * Math.cos(phi);
         
-          // Bright star colors (5x brighter)
-          const colorVariation = Math.random();
-          if (colorVariation < 0.7) {
-            // Bright white/blue stars
-            starColors[i3] = 1.0;     // Maximum brightness
-            starColors[i3 + 1] = 1.0; // Maximum brightness
-            starColors[i3 + 2] = 1.0; // Maximum brightness
-          } else if (colorVariation < 0.9) {
-            // Bright yellow stars
-            starColors[i3] = 1.0;
-            starColors[i3 + 1] = 1.0;
-            starColors[i3 + 2] = 0.8;
-          } else {
-            // Bright red stars
-            starColors[i3] = 1.0;
-            starColors[i3 + 1] = 0.8;
-            starColors[i3 + 2] = 0.6;
-          }
-          
-          // Larger, more dramatic star sizes
-          starSizes[i] = Math.random() * 8 + 3; // 3-11 size range
+        // Assign a base colour temperature
+        const paletteRoll = Math.random();
+        if (paletteRoll < 0.6) {            // cool white / blue
+          starColors[i3] = 0.85 + Math.random() * 0.15;
+          starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
+          starColors[i3 + 2] = 1.0;
+        } else if (paletteRoll < 0.85) {    // warm yellow
+          starColors[i3] = 1.0;
+          starColors[i3 + 1] = 0.92 + Math.random() * 0.06;
+          starColors[i3 + 2] = 0.72 + Math.random() * 0.08;
+        } else {                            // ember red
+          starColors[i3] = 1.0;
+          starColors[i3 + 1] = 0.6 + Math.random() * 0.1;
+          starColors[i3 + 2] = 0.5 + Math.random() * 0.1;
+        }
+        
+        // Unique twinkle signature per star
+        twinkleSpeed[i] = 0.4 + Math.random() * 1.2;
+        twinklePhase[i] = Math.random() * Math.PI * 2;
+        twinkleAmplitude[i] = 0.25 + Math.random() * 0.35;
+        
+        // Subtle size variation
+        starSizes[i] = 1.5 + Math.random() * 2.5; // 1.5 - 4.0
       }
       
       starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
       starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
       starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
       
-        const starMaterial = new THREE.PointsMaterial({
-          size: 8,              // Even larger stars for better visibility
-          transparent: true,
-          opacity: 1.0,         // Fully opaque for maximum brightness
-          vertexColors: true,
-          sizeAttenuation: true, // Enable size attenuation for proper depth
-          alphaTest: 0.01,      // Lower alpha test for better visibility
-          blending: THREE.AdditiveBlending, // Makes stars circular and glow
-          map: createStarTexture(), // Custom circular star texture
-          depthWrite: false,    // Prevent z-fighting
-          depthTest: true       // Enable depth testing
-        });
+      const starMaterial = new THREE.PointsMaterial({
+        size: 2.5, // Smaller for better performance
+        transparent: true,
+        opacity: 1.0,
+        vertexColors: true,
+        sizeAttenuation: true,
+        alphaTest: 0.01,
+        blending: THREE.AdditiveBlending,
+        map: createStarTexture(),
+        depthWrite: false,
+        depthTest: true
+      });
       
       const stars = new THREE.Points(starGeometry, starMaterial);
       scene.add(stars);
+      repaintScene();
       
       // Add twinkling animation
       window.stars = stars; // Store reference for animation
-      window.starColors = starColors; // Store colors for animation
+      window.starBaseColors = new Float32Array(starColors); // Store immutable base colors
+      window.starTwinkleSpeed = twinkleSpeed;
+      window.starTwinklePhase = twinklePhase;
+      window.starTwinkleAmplitude = twinkleAmplitude;
       
-      console.log('✅ Realistic starfield created with', starCount, 'varied stars');
+      console.log('✅ Custom starfield created with', starCount, 'stars');
     }
 
 
@@ -1064,6 +1324,7 @@
       
       // Recreate text with responsive sizing
       createText();
+      repaintScene();
       console.log('🎉 Three.js initialization complete!');
     }
 
@@ -1107,15 +1368,29 @@
         animate.logged = true;
       }
       
-      const time = (t || 0) * 0.0001;
+      // Orbital animation - full 360° sweep with subtle user steering
+      orbitAccumulator = THREE.MathUtils.euclideanModulo(orbitAccumulator - orbitSpeed, Math.PI * 2);
+      groupYawOffset += (targetRotationY - groupYawOffset) * 0.08;
+      groupTiltX += (targetRotationX - groupTiltX) * 0.08;
+      group.rotation.y = orbitAccumulator + groupYawOffset;
+      group.rotation.x = groupTiltX;
+      if (!isPointerDown) {
+        targetRotationX *= 0.94;
+        targetRotationY *= 0.94;
+      }
       
-      // Orbital animation - rotate the entire group around Y-axis (like Universal Studios)
-      group.rotation.y -= orbitSpeed; // Use control variable
+      orbitCycleTracker += Math.abs(orbitSpeed);
+      if (orbitCycleTracker >= Math.PI * 2) {
+        orbitCycleTracker -= Math.PI * 2;
+        completedOrbitCycles += 1;
+        console.log('🔁 Completed text orbit cycle', completedOrbitCycles);
+        // Orbital objects now deployed on timer, not orbit cycles
+      }
       
          // Rotate all orbital groups with individual speeds and add tumbling
          orbitalGroups.forEach((orbitalGroup, index) => {
-           // Use individual orbital speed for each object (0.1 to 0.5 of text speed)
-           const groupSpeed = orbitalGroup.children[0]?.userData.orbitalSpeed || 0.3;
+           // Use individual orbital speed for each object (steady, slightly slower than text)
+           const groupSpeed = orbitalGroup.children[0]?.userData.orbitalSpeed || 0.28;
            orbitalGroup.rotation.y += orbitSpeed * groupSpeed;
            
            // Add tumbling motion to each orbital object
@@ -1135,42 +1410,42 @@
       
       // Curved text doesn't need to face camera - it's already oriented outward
       
-      // Click-to-pan camera controls (only when pointer is down)
-      let targetX = 0, targetY = 0;
-      if (isPointerDown) {
-        targetX = -mouseX * 0.8;  // Reduced sensitivity
-        targetY = mouseY * 0.8;   // Reduced sensitivity
+      // Camera stays fixed for clean, focused view
+      const screenArea = window.innerWidth * window.innerHeight;
+      const baseCameraDistance = 26;
+      let targetCameraZ = baseCameraDistance;
+      if (screenArea < 800000) {
+        targetCameraZ = baseCameraDistance * 0.78;
+      } else if (screenArea > 2000000) {
+        targetCameraZ = baseCameraDistance * 1.18;
       }
       
-        // Smooth camera movement around the orbital system
-      camera.position.x += (targetX - camera.position.x) * 0.08;
-      camera.position.y += (targetY - camera.position.y) * 0.08;
-        camera.position.z = 22; // Keep camera zoomed out for better text visibility
+      // Remove mouse parallax - keep camera centered
+      camera.position.x = 0;
+      camera.position.y = 0;
+      camera.position.z += (targetCameraZ - camera.position.z) * 0.12;
       
       // Always look at the orbital center
       camera.lookAt(0, 0, 0);
       
         // Animate star twinkling with more dynamic patterns (never disappear)
-        if (window.stars && window.starColors) {
+        if (window.stars && window.starBaseColors) {
           const colors = window.stars.geometry.attributes.color.array;
-          const time = (t || 0) * 0.002; // Faster animation
+          const baseColors = window.starBaseColors;
+          const speeds = window.starTwinkleSpeed;
+          const phases = window.starTwinklePhase;
+          const amplitudes = window.starTwinkleAmplitude;
+          const twinkleTime = (t || 0) * 0.0015;
           
-          for (let i = 0; i < window.starColors.length; i += 3) {
-            const starIndex = i / 3;
-            // Different twinkle patterns for variety - always keep minimum brightness
-            const pattern1 = Math.sin(time * 3 + starIndex * 0.2) * 0.3 + 0.7; // 0.4 to 1.0
-            const pattern2 = Math.sin(time * 5 + starIndex * 0.15) * 0.2 + 0.8; // 0.6 to 1.0
-            const pattern3 = Math.sin(time * 2 + starIndex * 0.3) * 0.4 + 0.6; // 0.2 to 1.0
+          for (let i = 0, starIndex = 0; i < colors.length; i += 3, starIndex++) {
+            const basePulse = Math.sin(twinkleTime * speeds[starIndex] + phases[starIndex]);
+            const harmonics = Math.sin(twinkleTime * (speeds[starIndex] * 1.7) + phases[starIndex] * 1.3);
+            const pulse = 0.65 + amplitudes[starIndex] * (0.5 * (basePulse + 1) + 0.2 * (harmonics + 1));
+            const brightness = THREE.MathUtils.clamp(pulse, 0.45, 1.65);
             
-            // Mix different patterns for each star - ensure minimum 0.4 brightness
-            const twinkle = Math.max(0.4, (pattern1 + pattern2 + pattern3) / 3);
-            
-            // Add occasional bright flashes
-            const flash = Math.random() > 0.98 ? 1.5 : 1.0;
-            
-            colors[i] = window.starColors[i] * twinkle * flash;     // Red
-            colors[i + 1] = window.starColors[i + 1] * twinkle * flash; // Green
-            colors[i + 2] = window.starColors[i + 2] * twinkle * flash; // Blue
+            colors[i] = baseColors[i] * brightness;
+            colors[i + 1] = baseColors[i + 1] * brightness;
+            colors[i + 2] = baseColors[i + 2] * brightness;
           }
           window.stars.geometry.attributes.color.needsUpdate = true;
         }
@@ -1183,40 +1458,50 @@
       const content = document.getElementById('banner-content');
       const cursor = banner.querySelector('.cursor');
       
-      // Military messages - encrypted looking with translations
-      const encryptedPhrases = [
-        '01001000 01100101 01101100 01101100 01101111',
-        '4B 79 72 6F 73',
-        'SYS>INIT_CONNECTION',
-        'ACCESS_GRANTED',
-        'WELCOME TO THE FUTURE',
-        'BUILD THE CHANGE YOU WISH TO SEE IN THE WORLD',
-        'BUILD WITH US: hello@kyros.cc'
-      ];
+      // Show cursor for 10 seconds first
+      banner.classList.add('show');
+      content.textContent = '';
       
-      // Translation messages to show after encrypted ones
-      const translationPhrases = [
-        'BINARY>HELLO',
-        'HEX>KYROS',
-        null, null, null, null,
-        'CLICK TO BUILD'
-      ];
+      // After 10 seconds, start the message sequence
+      setTimeout(() => {
+        startMessageSequence();
+      }, 10000);
       
-      // Store clickable actions
-      const clickableActions = [
-        null, null, null, null, null, null,
-        () => window.open('mailto:hello@kyros.cc')
-      ];
-      
-      let currentMessage = 0;
-      let currentChar = 0;
-      let isTyping = true;
-      let showDuration = 3000; // Show message for 3 seconds
-      let hideDuration = 2000; // Hide for 2 seconds
-      let clickableShowDuration = 8000; // Show clickable messages for 8 seconds
-      let isHovering = false;
-      let hideTimeout = null;
-      let showingTranslation = false;
+      function startMessageSequence() {
+        // Military messages - encrypted looking with translations
+        const encryptedPhrases = [
+          '01001000 01100101 01101100 01101100 01101111',
+          '4B 79 72 6F 73',
+          'SYS>INIT_CONNECTION',
+          'ACCESS_GRANTED',
+          'WELCOME TO THE FUTURE',
+          'BUILD THE CHANGE YOU WISH TO SEE IN THE WORLD',
+          'BUILD WITH US: hello@kyros.cc'
+        ];
+        
+        // Translation messages to show after encrypted ones
+        const translationPhrases = [
+          'BINARY>HELLO',
+          'HEX>KYROS',
+          null, null, null, null,
+          'CLICK TO BUILD'
+        ];
+        
+        // Store clickable actions
+        const clickableActions = [
+          null, null, null, null, null, null,
+          () => window.open('mailto:hello@kyros.cc')
+        ];
+        
+        let currentMessage = 0;
+        let currentChar = 0;
+        let isTyping = true;
+        let showDuration = 3000; // Show message for 3 seconds
+        let hideDuration = 2000; // Hide for 2 seconds
+        let clickableShowDuration = 8000; // Show clickable messages for 8 seconds
+        let isHovering = false;
+        let hideTimeout = null;
+        let showingTranslation = false;
       
       function typeText() {
         if (!isTyping) return;
@@ -1319,32 +1604,33 @@
         }
       });
       
-      // Start the sequence
-      showBanner();
-      
-      // Add glitch effect to random characters
-      setInterval(() => {
-        if (Math.random() < 0.1) { // 10% chance
-          const text = content.textContent;
-          if (text.length > 0) {
-            const randomIndex = Math.floor(Math.random() * text.length);
-            const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-            const randomChar = chars[Math.floor(Math.random() * chars.length)];
-            
-            const newText = text.substring(0, randomIndex) + randomChar + text.substring(randomIndex + 1);
-            content.textContent = newText;
-            
-            // Restore original after brief moment
-            setTimeout(() => {
-              if (content.textContent === newText) {
-                content.textContent = text;
-              }
-            }, 100);
+        // Start the sequence
+        showBanner();
+        
+        // Add glitch effect to random characters
+        setInterval(() => {
+          if (Math.random() < 0.1) { // 10% chance
+            const text = content.textContent;
+            if (text.length > 0) {
+              const randomIndex = Math.floor(Math.random() * text.length);
+              const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+              const randomChar = chars[Math.floor(Math.random() * chars.length)];
+              
+              const newText = text.substring(0, randomIndex) + randomChar + text.substring(randomIndex + 1);
+              content.textContent = newText;
+              
+              // Restore original after brief moment
+              setTimeout(() => {
+                if (content.textContent === newText) {
+                  content.textContent = text;
+                }
+              }, 100);
+            }
           }
-        }
-      }, 200);
+        }, 200);
+      }
       
-      console.log('🎖️ Military banner sequence started');
+      console.log('🎖️ Military banner sequence started with 10-second cursor delay');
     }
   </script>
 </body>
