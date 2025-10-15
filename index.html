@@ -166,8 +166,8 @@
       // Add much brighter ambient lighting
       scene.add(new THREE.AmbientLight(0xffffff, 2.0)); // Even brighter for better visibility
       
-      // Add bright directional light from user's right side (closer)
-      const sunLight = new THREE.DirectionalLight(0xffffff, 4.0); // Brighter and closer
+      // Add warm key light from user's right side (cinematic lighting)
+      const sunLight = new THREE.DirectionalLight(0xfff8e1, 4.0); // Warm white for cinematic feel
       sunLight.position.set(15, 5, 10); // Much closer to scene
       sunLight.target.position.set(0, 0, 0); // Point at the Earth
       sunLight.castShadow = true;
@@ -182,13 +182,13 @@
       scene.add(sunLight);
       scene.add(sunLight.target);
       
-      // Add bright light directly behind Earth for better illumination
-      const backLight = new THREE.PointLight(0xffffff, 5.0, 30);
+      // Add warm back light for rim lighting
+      const backLight = new THREE.PointLight(0xffd700, 4.0, 30); // Gold back light
       backLight.position.set(0, 0, -15); // Closer behind Earth
       scene.add(backLight);
       
-      // Add Universal Studios-style rim light
-      const rimLight2 = new THREE.PointLight(0x88aaff, 3.0, 50);
+      // Add Universal Studios-style rim light (cool contrast)
+      const rimLight2 = new THREE.PointLight(0x88aaff, 2.5, 50);
       rimLight2.position.set(-10, 5, -10);
       scene.add(rimLight2);
       
@@ -197,22 +197,22 @@
       fillLight.position.set(-15, -5, -10);
       scene.add(fillLight);
       
-      // Add more lights around the scene for better visibility
-      const light1 = new THREE.PointLight(0xffffff, 3.0, 40);
-      light1.position.set(20, 10, 15);
-      scene.add(light1);
+      // Add strategic colored lights for Universal Studios aesthetic
+      const warmLight = new THREE.PointLight(0xffd700, 2.5, 40); // Gold accent light
+      warmLight.position.set(20, 10, 15);
+      scene.add(warmLight);
       
-      const light2 = new THREE.PointLight(0x88aaff, 2.5, 35);
-      light2.position.set(-20, -10, 15);
-      scene.add(light2);
+      const coolLight = new THREE.PointLight(0x88aaff, 2.0, 35); // Cool blue contrast
+      coolLight.position.set(-20, -10, 15);
+      scene.add(coolLight);
       
-      const light3 = new THREE.PointLight(0xffaa88, 2.0, 30);
-      light3.position.set(0, 20, 10);
-      scene.add(light3);
+      const rimGold = new THREE.PointLight(0xffed4e, 1.8, 30); // Warm rim lighting
+      rimGold.position.set(0, 20, 10);
+      scene.add(rimGold);
       
-      const light4 = new THREE.PointLight(0x88ffaa, 2.0, 30);
-      light4.position.set(0, -20, 10);
-      scene.add(light4);
+      const fillCyan = new THREE.PointLight(0x88ffff, 1.5, 30); // Subtle cyan fill
+      fillCyan.position.set(0, -20, 10);
+      scene.add(fillCyan);
       
       // Add rim lights for better edge definition
       const rimLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
