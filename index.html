@@ -322,16 +322,15 @@
         }
       });
       
-      // Combine auto-pan with mouse follow
-      const slowTime = time * 0.1;
-      const autoPanX = Math.sin(slowTime) * 30;
-      const autoPanY = Math.sin(slowTime * 1.5) * 20;
+      // Automatic text movement (gentle rotation)
+      group.rotation.y += 0.002;
+      group.rotation.x = Math.sin(time * 0.5) * 0.1;
       
-      // Target position combines auto-pan and mouse (10x amplification)
-      const targetX = autoPanX + mouseX * 10;
-      const targetY = 200 + autoPanY - mouseY * 10;
+      // Mouse follow (corrected direction)
+      const targetX = -mouseX * 15;  // Negative for correct direction
+      const targetY = 200 + mouseY * 15;   // Positive for correct direction
       
-      // Smooth camera follow (faster response)
+      // Smooth camera follow
       camera.position.x += (targetX - camera.position.x) * 0.1;
       camera.position.y += (targetY - camera.position.y) * 0.1;
       
