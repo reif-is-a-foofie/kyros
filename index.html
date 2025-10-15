@@ -692,21 +692,17 @@
       // Optimized gold material for performance while maintaining visual quality
       const textMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xffd700,        // Warm gold
-        metalness: 0.9,         // High metalness for premium look
-        roughness: 0.6,         // Increased roughness for more texture
-        clearcoat: 0.8,         // Strong clearcoat for extra shine
-        clearcoatRoughness: 0.4, // Increased clearcoat roughness for texture
-        envMapIntensity: 2.5,   // Strong environment reflections
-        emissive: 0x553300,     // Rich golden emissive
-        emissiveIntensity: 0.6, // Enhanced glow
+        metalness: 1.0,         // Fully metallic
+        roughness: 0.1,         // Very smooth for maximum reflections
+        clearcoat: 1.0,         // Maximum clearcoat
+        clearcoatRoughness: 0.1, // Smooth clearcoat
+        envMapIntensity: 3.0,   // Strong environment reflections
+        emissive: 0xffaa00,     // Bright interior glow
+        emissiveIntensity: 1.5, // Strong interior glow
         reflectivity: 1.0,      // Maximum reflectivity
-        sheen: 0.3,             // Subtle sheen effect
-        sheenRoughness: 0.5,    // Increased sheen roughness for texture
         side: THREE.DoubleSide, // Ensure both sides are rendered
         transparent: false,     // Ensure no transparency issues
-        opacity: 1.0,          // Fully opaque
-        bumpScale: 0.2,        // Add bump mapping for texture
-        displacementScale: 0.1  // Slight displacement for depth
+        opacity: 1.0           // Fully opaque
       });
 
         // Create single text mesh
@@ -1026,8 +1022,9 @@
       
       console.log('📁 Loading GLB file:', glbFile);
       loader.load(glbFile, function(gltf) {
-        console.log('✅ GLB file loaded successfully:', glbFile);
-        const model = gltf.scene.clone();
+        try {
+          console.log('✅ GLB file loaded successfully:', glbFile);
+          const model = gltf.scene.clone();
            
            // Calculate proper scale based on object's native dimensions relative to Earth
            const box = new THREE.Box3().setFromObject(model);
@@ -1130,28 +1127,30 @@
              }
            });
            
+           // Add to orbital group
+           orbitalGroup.add(model);
+           orbitalObjects.push(model);
+           
+           // Add orbital group directly to scene (not nested under Earth)
+           scene.add(orbitalGroup);
+           repaintScene();
+           
+           // Show bottom text notification for new orbital object
            try {
-             // Add to orbital group
-             orbitalGroup.add(model);
-             orbitalObjects.push(model);
-             
-             // Add orbital group directly to scene (not nested under Earth)
-             scene.add(orbitalGroup);
-             repaintScene();
-             
-             // Show bottom text notification for new orbital object
              showBottomTextForOrbitalObject(index);
-             
-             console.log(`✅ Orbital object ${index + 1} added directly to scene (not nested under Earth)`);
-             console.log(`✅ Orbital object ${index + 1} (${glbFile}) added to scene with enhanced lighting`);
-             console.log(`📊 Total orbital objects loaded: ${orbitalObjects.length}`);
            } catch (error) {
-             console.error(`❌ Error adding orbital object ${index + 1} to scene:`, error);
+             console.warn(`⚠️ Could not show notification for orbital object ${index + 1}:`, error);
            }
+           
+           console.log(`✅ Orbital object ${index + 1} added directly to scene (not nested under Earth)`);
+           console.log(`✅ Orbital object ${index + 1} (${glbFile}) added to scene with enhanced lighting`);
+           console.log(`📊 Total orbital objects loaded: ${orbitalObjects.length}`);
          }, function(progress) {
         console.log(`📊 Loading orbital object ${index + 1}:`, (progress.loaded / progress.total * 100) + '%');
       }, function(error) {
-        console.log(`⚠️ Failed to load orbital object ${index + 1}:`, error);
+        console.log(`⚠️ Failed to load GLB file for orbital object ${index + 1}:`, error);
+        console.log(`⚠️ Error details:`, error.message || error);
+        console.log(`⚠️ GLB file path:`, glbFile);
       });
     }
 
