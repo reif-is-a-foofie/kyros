@@ -379,18 +379,8 @@
         
         console.log('🎯 Text orbit flat - aligned with Earth equator');
         
-        // Force text material to stay gold - prevent any overrides for both meshes
-        const clonedMaterial1 = textMaterial.clone();
-        const clonedMaterial2 = textMaterial.clone();
-        
-        textMesh1.material = clonedMaterial1;
-        textMesh1.material.needsUpdate = true;
-        textMesh2.material = clonedMaterial2;
-        textMesh2.material.needsUpdate = true;
-        
-        // Store reference to original materials
-        textMesh1.userData.originalMaterial = clonedMaterial1;
-        textMesh2.userData.originalMaterial = clonedMaterial2;
+        // Store reference to original material for protection
+        textMesh.userData.originalMaterial = textMaterial.clone();
         
         // Enable shadows for Earth model
         if (earthModel) {
