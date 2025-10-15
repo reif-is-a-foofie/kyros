@@ -238,7 +238,6 @@
     let textMesh1;
     let earthModel;
     let group;
-    let textGroup; // Text group for managing text elements
     let textOrbitRadius = 12;
     let earthRadius = 0;
     let sunLight;
@@ -1233,10 +1232,10 @@
           console.log('⚠️ Using fallback Earth radius:', window.earthRadius);
         }
         
-        // Clear existing text before recreating
-        if (textGroup) {
-          scene.remove(textGroup);
-          textGroup = null;
+        // Clear existing text before recreating (text is in group, not textGroup)
+        if (textMesh1) {
+          group.remove(textMesh1);
+          textMesh1 = null;
         }
         
         console.log('🎨 Calling createText() now that Earth is loaded...');
@@ -1280,10 +1279,10 @@
           console.log('⚠️ Using fallback Earth radius:', window.earthRadius);
         }
         
-        // Clear existing text before recreating
-        if (textGroup) {
-          scene.remove(textGroup);
-          textGroup = null;
+        // Clear existing text before recreating (text is in group, not textGroup)
+        if (textMesh1) {
+          group.remove(textMesh1);
+          textMesh1 = null;
         }
         
         console.log('🎨 Calling createText() now that Earth is loaded...');
