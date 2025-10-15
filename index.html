@@ -284,6 +284,7 @@
     let panStartX = 0;
     let panStartY = 0;
     let panSensitivity = 0.5;
+    let snapBackSpeed = 0.05; // How fast Earth returns to center (0.05 = slow)
     
     // Message queue system
     let messageQueue = [];
@@ -1431,7 +1432,7 @@
     function createStarfield() {
       // Create optimized starfield background for performance
       const starGeometry = new THREE.BufferGeometry();
-      const starCount = 50; // Reduced for performance while maintaining visual impact
+      const starCount = 400; // Increased for layered depth effect
       const starPositions = new Float32Array(starCount * 3);
       const starColors = new Float32Array(starCount * 3);
       const starSizes = new Float32Array(starCount);
@@ -1442,8 +1443,18 @@
       for (let i = 0; i < starCount; i++) {
         const i3 = i * 3;
         
-        // Scatter stars in a sphere around the origin
-        const radius = 220 + Math.random() * 420; // 220-640 units away
+        // Create layered star distribution for depth
+        let radius;
+        if (i < starCount * 0.3) {
+          // 30% close stars (near field)
+          radius = 50 + Math.random() * 150; // 50-200 units away
+        } else if (i < starCount * 0.7) {
+          // 40% medium stars (mid field)
+          radius = 200 + Math.random() * 300; // 200-500 units away
+        } else {
+          // 30% far stars (background)
+          radius = 500 + Math.random() * 500; // 500-1000 units away
+        }
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
         
@@ -1525,35 +1536,6 @@
     // Initialize after DOM is ready
     init();
 
-    function onPointerDown(event) {
-      if (event.isPrimary === false) return;
-      isPointerDown = true;
-      pointerXOnPointerDown = event.clientX - windowHalfX;
-      pointerYOnPointerDown = event.clientY - windowHalfY;
-      targetRotationXOnPointerDown = targetRotationX;
-      targetRotationYOnPointerDown = targetRotationY;
-      document.addEventListener('pointermove', onPointerMove);
-      document.addEventListener('pointerup', onPointerUp);
-    }
-
-    function onPointerMove(event) {
-      if (event.isPrimary === false) return;
-      pointerX = event.clientX - windowHalfX;
-      pointerY = event.clientY - windowHalfY;
-      targetRotationY = targetRotationYOnPointerDown + (pointerX - pointerXOnPointerDown) * 0.02;
-      targetRotationX = targetRotationXOnPointerDown + (pointerY - pointerYOnPointerDown) * 0.02;
-      
-      // Clamp rotations to keep text readable - tighter range for better bubble density
-      targetRotationY = Math.max(-Math.PI / 6, Math.min(Math.PI / 6, targetRotationY)); // ±30°
-      targetRotationX = Math.max(-Math.PI / 8, Math.min(Math.PI / 8, targetRotationX)); // ±22.5°
-    }
-
-    function onPointerUp(event) {
-      if (event.isPrimary === false) return;
-      isPointerDown = false;
-      document.removeEventListener('pointermove', onPointerMove);
-      document.removeEventListener('pointerup', onPointerUp);
-    }
 
     function animate(t) {
       // Log text orbit radius once to check actual value
@@ -1602,6 +1584,13 @@
       // Earth rotates slowly in opposite direction (1/4 speed of text)
       if (earthModel) {
         earthModel.rotation.y += earthRotationSpeed; // Use control variable
+        
+        // Snap back to original position when not panning
+        if (!isPanning) {
+          earthPanX += (0 - earthPanX) * snapBackSpeed;
+          earthPanY += (0 - earthPanY) * snapBackSpeed;
+          earthModel.position.set(earthPanX, earthPanY, earthPanZ);
+        }
       }
       
       // Curved text doesn't need to face camera - it's already oriented outward
