@@ -645,17 +645,9 @@
       
       const boundingBox = textGeometry.boundingBox;
       const halfTextWidth = boundingBox ? Math.max(Math.abs(boundingBox.min.x), Math.abs(boundingBox.max.x)) : 0;
-      const maxArcCoverage = THREE.MathUtils.degToRad(isMobile ? 540 : 720); // Allow text to wrap up to 1.5-2 turns
-      const angleLimit = Math.max(0.0001, maxArcCoverage * 0.5);
-      const arcSafety = 0.18;
-      const minOrbitRadiusForText = (halfTextWidth > 0 && angleLimit > 0) ? (halfTextWidth + arcSafety) / angleLimit : 0;
-      window.textArcMinRadius = minOrbitRadiusForText;
-      const existingRadius = window.textOrbitRadius || textOrbitRadius || 5;
-      textOrbitRadius = Math.max(existingRadius, window.textArcMinRadius || 0);
-      
       // Calculate Earth circumference from actual loaded model
       let earthRadius = 2; // Default fallback
-      textOrbitRadius = Math.max(textOrbitRadius, window.textArcMinRadius || 0); // Default fallback, reuse global radius
+      // No minimum radius constraints - use exact formula specified
       
       if (earthModel) {
         // Get actual Earth bounding box
@@ -667,9 +659,9 @@
         console.log('🌍🌍🌍 EARTH RADIUS:', earthRadius);
         console.log('🌍 Earth bounding box size:', size);
         
-        // Text orbit radius based on Earth circumference + 5%
-        textOrbitRadius = (2 * Math.PI * earthRadius) + (earthRadius * 0.05);
-        console.log('🎯 Text orbit radius:', textOrbitRadius.toFixed(2), '(2π × earthRadius + 5%)');
+        // Text orbit radius set to 1.01x Earth radius
+        textOrbitRadius = earthRadius * 1.01;
+        console.log('🎯 Text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 1.01)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -678,8 +670,8 @@
         } else {
           console.log('⚠️ Earth model not loaded yet, using default radius');
           earthRadius = 2; // Fallback radius
-          textOrbitRadius = (2 * Math.PI * earthRadius) + (earthRadius * 0.05); // 2π × earthRadius + 5%
-          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(2π × earthRadius + 5%)');
+          textOrbitRadius = earthRadius * 1.01; // EarthRadius × 1.01
+          console.log('🎯 Fallback text orbit radius:', textOrbitRadius.toFixed(2), '(EarthRadius × 1.01)');
         }
         
       // Persist orbit radius globally for other systems
@@ -701,18 +693,20 @@
       const textMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xffd700,        // Warm gold
         metalness: 0.9,         // High metalness for premium look
-        roughness: 0.2,         // Smooth surface for reflections
+        roughness: 0.6,         // Increased roughness for more texture
         clearcoat: 0.8,         // Strong clearcoat for extra shine
-        clearcoatRoughness: 0.1, // Very smooth clearcoat
+        clearcoatRoughness: 0.4, // Increased clearcoat roughness for texture
         envMapIntensity: 2.5,   // Strong environment reflections
         emissive: 0x553300,     // Rich golden emissive
         emissiveIntensity: 0.6, // Enhanced glow
         reflectivity: 1.0,      // Maximum reflectivity
         sheen: 0.3,             // Subtle sheen effect
-        sheenRoughness: 0.2,    // Smooth sheen
+        sheenRoughness: 0.5,    // Increased sheen roughness for texture
         side: THREE.DoubleSide, // Ensure both sides are rendered
         transparent: false,     // Ensure no transparency issues
-        opacity: 1.0           // Fully opaque
+        opacity: 1.0,          // Fully opaque
+        bumpScale: 0.2,        // Add bump mapping for texture
+        displacementScale: 0.1  // Slight displacement for depth
       });
 
         // Create single text mesh
@@ -786,9 +780,7 @@
         return;
       }
       
-      if (window.textArcMinRadius) {
-        textOrbitRadius = Math.max(textOrbitRadius, window.textArcMinRadius);
-      }
+      // No arc minimum radius constraint - use exact orbit radius
       window.textOrbitRadius = textOrbitRadius;
       
       console.log('🔄 Rebending text geometry with radius:', textOrbitRadius);
@@ -847,30 +839,22 @@
         baseRadius *= cameraFactor;
       }
       
-      // Ensure minimum and maximum bounds (also respect camera distance)
-      const textArcMinRadius = window.textArcMinRadius || 0;
-      const minRadius = Math.max(earthRadius * 1.3, textArcMinRadius); // Tight but visible minimum
-      const cameraDistance = camera ? camera.position.length() : 28;
-      const cameraLimitedMax = cameraDistance - earthRadius - 2.4;
-      const maxRadius = Math.max(minRadius + 0.18, Math.min(earthRadius * 1.8, cameraLimitedMax));
-      
-      const constrainedBaseRadius = Math.max(baseRadius, minRadius);
-      return Math.min(constrainedBaseRadius, maxRadius);
+      // Return base radius without constraints
+      return baseRadius;
     }
 
     function calculateOcclusionRadius() {
       if (!earthModel || !camera) {
         console.log('⚠️ Missing earthModel or camera for occlusion calculation');
         const fallbackEarthRadius = window.earthRadius || 2;
-        return Math.max(fallbackEarthRadius * 1.5, window.textArcMinRadius || 0);
+        return fallbackEarthRadius * 1.5;
       }
       
       const earthWorldPosition = new THREE.Vector3();
       earthModel.getWorldPosition(earthWorldPosition);
       const earthRadius = window.earthRadius;
       const cameraToEarthCenter = camera.position.distanceTo(earthWorldPosition);
-      const textArcMinRadius = window.textArcMinRadius || 0;
-      const minimumVisibleRadius = Math.max(earthRadius * 1.4, textArcMinRadius);
+      const minimumVisibleRadius = earthRadius * 1.4;
       const cameraAllowance = Math.max(minimumVisibleRadius, cameraToEarthCenter - earthRadius - 2.6);
       const safeOcclusionRadius = Math.min(cameraAllowance, minimumVisibleRadius + earthRadius * 0.28);
       
@@ -904,12 +888,11 @@
         // Check if text is behind Earth (blocked)
         // Calculate the minimum safe orbit radius dynamically
         // Calculate dynamic orbit radius based on current screen conditions
-        const minTextRadius = window.textArcMinRadius || 0;
         const dynamicRadius = calculateDynamicOrbitRadius();
         const safeRadius = calculateOcclusionRadius();
         const cameraDistance = camera.position.length();
         const cameraLimit = Math.max(window.earthRadius * 1.6, cameraDistance - window.earthRadius - 2.6);
-        const baseTarget = Math.max(dynamicRadius, safeRadius, minTextRadius);
+        const baseTarget = Math.max(dynamicRadius, safeRadius);
         const orbitMargin = Math.max((window.earthRadius || 0) * 0.1, 0.18);
         let targetRadius = Math.min(baseTarget + orbitMargin, cameraLimit);
         
@@ -928,11 +911,10 @@
       // Recalculate dynamic orbit radius
       const newDynamicRadius = calculateDynamicOrbitRadius();
       const currentSafeRadius = calculateOcclusionRadius();
-      const minTextRadius = window.textArcMinRadius || 0;
       const cameraDistance = camera ? camera.position.length() : 28;
       const cameraLimit = Math.max(window.earthRadius * 1.6, cameraDistance - window.earthRadius - 2.6);
       const orbitMargin = Math.max((window.earthRadius || 0) * 0.1, 0.18);
-      const desiredRadius = Math.max(newDynamicRadius, currentSafeRadius, minTextRadius);
+      const desiredRadius = Math.max(newDynamicRadius, currentSafeRadius);
       const targetRadius = Math.min(desiredRadius + orbitMargin, cameraLimit);
       
       // Update text orbit radius if needed
