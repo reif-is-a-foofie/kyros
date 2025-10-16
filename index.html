@@ -102,12 +102,12 @@
     
     #military-banner .cursor {
       animation: blink 1s infinite;
-      color: #ffd700;
+      color: #d4af37;
     }
 
     #military-banner.clickable {
       text-decoration: underline;
-      text-decoration-color: #ffd700;
+      text-decoration-color: #d4af37;
       text-decoration-thickness: 2px;
       text-underline-offset: 4px;
       cursor: pointer;
@@ -117,17 +117,17 @@
     
     #military-banner.clickable:hover {
       text-decoration-thickness: 3px;
-      text-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700;
+      text-shadow: 0 0 30px #d4af37, 0 0 60px #d4af37;
       transform: scale(1.02);
     }
     
     @keyframes pulse-glow {
       0% { 
-        text-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700;
+        text-shadow: 0 0 20px #d4af37, 0 0 40px #d4af37;
         filter: brightness(1);
       }
       100% { 
-        text-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700, 0 0 80px #ffd700;
+        text-shadow: 0 0 30px #d4af37, 0 0 60px #d4af37, 0 0 80px #d4af37;
         filter: brightness(1.2);
       }
     }
@@ -409,7 +409,7 @@
   <div id="contact-overlay" class="contact-overlay hidden">
     <div class="contact-content">
       <div class="contact-header">
-        <h2>CONTACT KYROS</h2>
+        <h2>BUILD THE CHANGE YOU WISH TO SEE IN THE WORLD</h2>
         <button class="close-contact" onclick="hideContactOverlay()">×</button>
       </div>
       
@@ -959,18 +959,18 @@
       ];
       
       // Calculate Earth radius
-        let earthRadius = 2; // Default fallback
-        if (earthModel) {
-          earthModel.updateMatrixWorld();
-          const boundingBox = new THREE.Box3().setFromObject(earthModel);
-          const size = boundingBox.getSize(new THREE.Vector3());
-          earthRadius = Math.max(size.x, size.y, size.z) / 2;
+      let earthRadius = 2; // Default fallback
+      if (earthModel) {
+        earthModel.updateMatrixWorld();
+        const boundingBox = new THREE.Box3().setFromObject(earthModel);
+        const size = boundingBox.getSize(new THREE.Vector3());
+        earthRadius = Math.max(size.x, size.y, size.z) / 2;
         } else {
           earthRadius = 13.0; // Use known fallback
         }
         
-      // Set uniform tight orbit radius for all lines - very close to Earth's surface
-      const orbitRadius = earthRadius * 1.02; // Very tight to Earth surface
+      // Set uniform tight orbit radius for all lines - hugging Earth's surface
+      const orbitRadius = earthRadius * 1.05; // Tight to Earth surface
       const orbitRadii = [orbitRadius, orbitRadius, orbitRadius]; // All same radius
       
       // Create orbit groups for each line
@@ -999,14 +999,14 @@
         const textGeometry = new TextGeometry(lineText, {
           font: font,
           size: isMobile ? 0.4 : 0.5, // Smaller text
-          height: 0.3, // Less thick
+          height: 0.15, // Much less thick - more elegant
           curveSegments: 24,
           letterSpacing: -0.1,
           bevelEnabled: true,
-          bevelThickness: 0.08, // Thinner bevel
-          bevelSize: 0.04, // Smaller bevel
-          bevelSegments: 6, // Fewer segments for cleaner look
-          bevelOffset: 0.02
+          bevelThickness: 0.04, // Even thinner bevel
+          bevelSize: 0.02, // Smaller bevel
+          bevelSegments: 4, // Fewer segments for cleaner look
+          bevelOffset: 0.01
         });
         
         textGeometry.computeBoundingBox();
@@ -1106,15 +1106,15 @@
       scene.add(frontLight);
       scene.add(frontLight.target);
         
-      // Add super bright gold flash light at x=0 for transition effect
-      const flashLight = new THREE.PointLight(0xd4af37, 15, 20, 2); // Gold color to match text
+      // Add super bright flash light at x=0 for transition effect
+      const flashLight = new THREE.PointLight(0xffffff, 15, 20, 2);
       flashLight.position.set(0, 0, 0); // Exactly at x=0, y=0, z=0
       scene.add(flashLight);
-      
-      // Enable shadows for Earth model
-      ensureEarthShadowSettings();
-      
-      repaintScene();
+        
+        // Enable shadows for Earth model
+        ensureEarthShadowSettings();
+        
+        repaintScene();
       console.log('✅ Clean 3-line text orbit system created');
       console.log('✅ Lines will counter-rotate with proper Earth-facing direction');
       
@@ -2381,28 +2381,31 @@
           '4B 79 72 6F 73',
           'SYS>INIT_CONNECTION',
           'ACCESS_GRANTED',
+          'WELCOME TO THE FUTURE',
+          'BUILD THE CHANGE YOU WISH TO SEE IN THE WORLD',
           'CONTACT KYROS: hello@kyros.cc',
-          'BOOK A MEETING: calendly.com/reif-kyros/30min',
-          'GET IN TOUCH',
-          'BOOK A MEETING',
-          'CONTACT KYROS'
+          'SCHEDULE MEETING: calendly.com/reif-kyros/30min',
+          'PITCH YOUR IDEA TO KYROS',
+          'INVESTMENT OPPORTUNITIES AWAIT',
+          'CLICK TO CONNECT WITH KYROS'
         ];
         
         // Translation messages to show after encrypted ones
         const translationPhrases = [
           'BINARY>HELLO',
           'HEX>KYROS',
-          null, null,
+          null, null, null,
+          'CLICK TO BUILD',
           'EMAIL: hello@kyros.cc',
           'MEETING: calendly.com/reif-kyros/30min',
-          'GET IN TOUCH',
-          'BOOK A MEETING',
-          'CONTACT KYROS'
+          'CLICK TO PITCH',
+          'CLICK TO INVEST',
+          'CLICK TO CONNECT'
         ];
         
         // Store clickable actions for contact-focused messages
         const clickableActions = [
-          null, null, null, null,
+          null, null, null, null, null, null,
           () => window.open('mailto:hello@kyros.cc?subject=Partnership%20Inquiry'),
           () => window.open('https://calendly.com/reif-kyros/30min', '_blank'),
           () => showContactOverlay(),
@@ -2575,13 +2578,15 @@
       
       if (!banner || !content) return;
       
-      // Direct contact messages
+      // Clear, action-oriented contact messages
       const contactMessages = [
-        'EMAIL: hello@kyros.cc',
-        'BOOK A MEETING: calendly.com/reif-kyros/30min',
-        'GET IN TOUCH',
-        'BOOK A MEETING',
-        'CONTACT KYROS'
+        '📧 EMAIL: hello@kyros.cc',
+        '📅 BOOK A MEETING: calendly.com/reif-kyros/30min',
+        '💡 CLICK TO PITCH YOUR IDEA',
+        '💰 INVESTMENT OPPORTUNITIES AWAIT',
+        '🚀 READY TO BUILD SOMETHING AMAZING?',
+        '💬 LET\'S TALK ABOUT YOUR PROJECT',
+        '🎯 PARTNER WITH KYROS TODAY'
       ];
       
       const randomMessage = contactMessages[Math.floor(Math.random() * contactMessages.length)];
