@@ -632,69 +632,71 @@
                 switch(language) {
                     // Real Languages
                     case 'spanish':
-                        return words.map(word => {
+                        return `Spanish: ${words.map(word => {
                             const variations = wordVariations[word] || [word];
                             return variations.find(v => v === 'construir' || v === 'cambio' || v === 'mundo') || word;
-                        }).join(' ');
+                        }).join(' ')}`;
                     case 'french':
-                        return words.map(word => {
+                        return `French: ${words.map(word => {
                             const variations = wordVariations[word] || [word];
                             return variations.find(v => v === 'bâtir' || v === 'changement' || v === 'monde') || word;
-                        }).join(' ');
+                        }).join(' ')}`;
                     case 'german':
-                        return words.map(word => {
+                        return `German: ${words.map(word => {
                             const variations = wordVariations[word] || [word];
                             return variations.find(v => v === 'bauen' || v === 'Wandel' || v === 'Welt') || word;
-                        }).join(' ');
+                        }).join(' ')}`;
                     case 'japanese':
-                        return words.map(word => {
+                        return `Japanese: ${words.map(word => {
                             const variations = wordVariations[word] || [word];
                             return variations.find(v => v === '建てる' || v === '変化' || v === '世界') || word;
-                        }).join(' ');
+                        }).join(' ')}`;
                     case 'arabic':
-                        return words.map(word => {
+                        return `Arabic: ${words.map(word => {
                             const variations = wordVariations[word] || [word];
                             return variations.find(v => v === 'بناء' || v === 'تغيير' || v === 'عالم') || word;
-                        }).join(' ');
+                        }).join(' ')}`;
                     case 'russian':
-                        return words.map(word => {
+                        return `Russian: ${words.map(word => {
                             const variations = wordVariations[word] || [word];
                             return variations.find(v => v === 'строить' || v === 'изменение' || v === 'мир') || word;
-                        }).join(' ');
+                        }).join(' ')}`;
                     case 'chinese':
-                        return words.map(word => {
+                        return `Chinese: ${words.map(word => {
                             const variations = wordVariations[word] || [word];
                             return variations.find(v => v === '建' || v === '变' || v === '世界') || word;
-                        }).join(' ');
+                        }).join(' ')}`;
+                    case 'swahili':
+                        return `Swahili: jenga mabadiliko unayotaka kuona ulimwenguni`;
                     
                     // Fun Transformations
                     case 'emoji':
-                        return '🔨 🏗️ ⚡ 🌍 ✨ 👁️ 🌟 💫';
+                        return `Emoji: 🔨 🏗️ ⚡ 🌍 ✨ 👁️ 🌟 💫`;
                     case 'numbers':
-                        return basePhrase.replace(/[aeiostbg]/gi, char => {
+                        return `Numbers: ${basePhrase.replace(/[aeiostbg]/gi, char => {
                             const numMap = {'a': '4', 'e': '3', 'i': '1', 'o': '0', 's': '5', 't': '7', 'b': '8', 'g': '9'};
                             return numMap[char.toLowerCase()] || char;
-                        });
+                        })}`;
                     case 'symbols':
-                        return basePhrase.replace(/[aeiostlc]/gi, char => {
+                        return `Symbols: ${basePhrase.replace(/[aeiostlc]/gi, char => {
                             const symMap = {'a': '@', 'e': '€', 'i': '!', 'o': '°', 's': '$', 't': '+', 'l': '|', 'c': '©'};
                             return symMap[char.toLowerCase()] || char;
-                        });
+                        })}`;
                     case 'uppercase':
-                        return basePhrase.toUpperCase();
+                        return `Uppercase: ${basePhrase.toUpperCase()}`;
                     case 'lowercase':
-                        return basePhrase.toLowerCase();
+                        return `Lowercase: ${basePhrase.toLowerCase()}`;
                     case 'reverse':
-                        return basePhrase.split('').reverse().join('');
+                        return `Reverse: ${basePhrase.split('').reverse().join('')}`;
                     case 'binary':
-                        return basePhrase.split('').map(char => char.charCodeAt(0).toString(2)).join(' ');
+                        return `Binary: ${basePhrase.split('').map(char => char.charCodeAt(0).toString(2)).join(' ')}`;
                     case 'hex':
-                        return basePhrase.split('').map(char => char.charCodeAt(0).toString(16)).join(' ');
+                        return `Hex: ${basePhrase.split('').map(char => char.charCodeAt(0).toString(16)).join(' ')}`;
                     case 'leetspeak':
-                        return basePhrase.replace(/[aeiost]/gi, char => {
+                        return `Leetspeak: ${basePhrase.replace(/[aeiost]/gi, char => {
                             const leetMap = {'a': '4', 'e': '3', 'i': '1', 'o': '0', 's': '5', 't': '7'};
                             return leetMap[char.toLowerCase()] || char;
-                        });
+                        })}`;
                     
                     // Fictional Languages
                     case 'klingon':
@@ -875,8 +877,8 @@
                             setCurrentCommand(command.substring(0, charIndex + 1));
                             charIndex++;
                             setTimeout(typeChar, Math.random() * 50 + 50);
-                        } else {
-                            setTimeout(() => {
+        } else {
+            setTimeout(() => {
                                 // Execute command and show output
                                 const output = executeCommand(command);
                                 
@@ -905,13 +907,6 @@
 
             return (
                 <div className="magic-terminal">
-                    <div className="terminal-line">
-                        <span className="terminal-prompt">$</span>
-                        <span className="animated-text">
-                            {currentCommand}
-                            <span className="cursor">_</span>
-                        </span>
-                    </div>
                     {history.map((item, index) => (
                         <div key={index} className="terminal-history-line">
                             <span className="terminal-prompt">$</span>
@@ -921,6 +916,13 @@
                             </span>
                         </div>
                     ))}
+                    <div className="terminal-line">
+                        <span className="terminal-prompt">$</span>
+                        <span className="animated-text">
+                            {currentCommand}
+                            <span className="cursor">_</span>
+                        </span>
+                    </div>
                 </div>
             );
         }
