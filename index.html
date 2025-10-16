@@ -1000,17 +1000,17 @@
         const yOffset = index === 0 ? 2.5 : index === 1 ? 0 : -2.5;
         
         // Store original flat positions for rebending
-      const pos = textGeometry.attributes.position;
+        const pos = textGeometry.attributes.position;
         const originalPositions = new Float32Array(pos.array.length);
         originalPositions.set(pos.array, 0);
-      
-      // Bend text geometry to curve around Earth (facing outward)
+        
+        // Bend text geometry to curve around Earth (facing outward)
         const lineOrbitRadius = orbitRadii[index];
         bendTextGeometry(textGeometry, lineOrbitRadius, yOffset);
         
         // Create readable gold material with balanced lighting
         console.log(`🎨 Creating readable gold material for: "${lineText}"`);
-      const textMaterial = new THREE.MeshPhysicalMaterial({
+        const textMaterial = new THREE.MeshPhysicalMaterial({
           color: 0xd4af37,        // Rich, less yellow gold (classic gold)
           metalness: 0.6,         // Reduced from 0.8 for softer highlights
           roughness: 0.35,        // Increased for softer highlights
@@ -1106,11 +1106,11 @@
       frontLight.shadow.camera.far = 30;
       scene.add(frontLight);
       scene.add(frontLight.target);
-        
-        // Enable shadows for Earth model
-        ensureEarthShadowSettings();
-        
-        repaintScene();
+      
+      // Enable shadows for Earth model
+      ensureEarthShadowSettings();
+      
+      repaintScene();
       console.log('✅ Clean 3-line text orbit system created');
       console.log('✅ Lines will counter-rotate with proper Earth-facing direction');
       
@@ -1300,14 +1300,14 @@
         if (window.textMeshes && window.textMeshes.length > 0) {
           window.textMeshes.forEach((mesh, index) => {
             if (mesh && mesh.userData.originalMaterial) {
-          const currentMaterial = mesh.material;
-          const originalMaterial = mesh.userData.originalMaterial;
-          
-          // If material color has changed from gold, restore it (silent fix)
-          if (currentMaterial.color.getHex() !== 0xffd700 || 
-              currentMaterial.emissive.getHex() !== 0xffd700) {
-            mesh.material = originalMaterial.clone();
-            mesh.material.needsUpdate = true;
+              const currentMaterial = mesh.material;
+              const originalMaterial = mesh.userData.originalMaterial;
+              
+              // If material color has changed from gold, restore it (silent fix)
+              if (currentMaterial.color.getHex() !== 0xffd700 || 
+                  currentMaterial.emissive.getHex() !== 0xffd700) {
+                mesh.material = originalMaterial.clone();
+                mesh.material.needsUpdate = true;
               }
             }
           });
@@ -1871,39 +1871,54 @@
         starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
         starPositions[i3 + 2] = radius * Math.cos(phi);
         
-        // Assign a base colour temperature
+        // Realistic stellar color temperatures with varying brightness
         const paletteRoll = Math.random();
-        if (paletteRoll < 0.6) {            // cool white / blue
-          starColors[i3] = 0.85 + Math.random() * 0.15;
+        const brightnessVariation = 0.3 + Math.random() * 0.7; // 30-100% brightness
+        
+        if (paletteRoll < 0.15) {            // Hot blue-white stars (O/B type)
+          starColors[i3] = 0.8 + Math.random() * 0.2;
           starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
           starColors[i3 + 2] = 1.0;
-        } else if (paletteRoll < 0.85) {    // warm yellow
+        } else if (paletteRoll < 0.35) {     // White stars (A type)
+          starColors[i3] = 0.95 + Math.random() * 0.05;
+          starColors[i3 + 1] = 0.95 + Math.random() * 0.05;
+          starColors[i3 + 2] = 1.0;
+        } else if (paletteRoll < 0.65) {     // Yellow-white stars (F/G type like our Sun)
           starColors[i3] = 1.0;
-          starColors[i3 + 1] = 0.92 + Math.random() * 0.06;
-          starColors[i3 + 2] = 0.72 + Math.random() * 0.08;
-        } else {                            // ember red
+          starColors[i3 + 1] = 0.95 + Math.random() * 0.05;
+          starColors[i3 + 2] = 0.8 + Math.random() * 0.2;
+        } else if (paletteRoll < 0.85) {     // Orange stars (K type)
           starColors[i3] = 1.0;
-          starColors[i3 + 1] = 0.6 + Math.random() * 0.1;
-          starColors[i3 + 2] = 0.5 + Math.random() * 0.1;
+          starColors[i3 + 1] = 0.8 + Math.random() * 0.2;
+          starColors[i3 + 2] = 0.6 + Math.random() * 0.2;
+        } else {                            // Red stars (M type)
+          starColors[i3] = 1.0;
+          starColors[i3 + 1] = 0.6 + Math.random() * 0.2;
+          starColors[i3 + 2] = 0.4 + Math.random() * 0.2;
         }
         
-        // Unique twinkle signature per star
-        twinkleSpeed[i] = 0.4 + Math.random() * 1.2;
+        // Apply brightness variation to all stars
+        starColors[i3] *= brightnessVariation;
+        starColors[i3 + 1] *= brightnessVariation;
+        starColors[i3 + 2] *= brightnessVariation;
+        
+        // Unique twinkle signature per star with enhanced variation
+        twinkleSpeed[i] = 0.2 + Math.random() * 2.0; // Wider speed range
         twinklePhase[i] = Math.random() * Math.PI * 2;
-        twinkleAmplitude[i] = 0.25 + Math.random() * 0.35;
+        twinkleAmplitude[i] = 0.4 + Math.random() * 0.6; // More dramatic twinkling
         
         // Subtle size variation
         // Size stars based on distance for realistic depth perception
         let starSize;
         if (i < starCount * 0.3) {
           // Close stars: larger and more prominent
-          starSize = 2.5 + Math.random() * 4.0; // 2.5 - 6.5
+          starSize = 4.0 + Math.random() * 6.0; // 4.0 - 10.0
         } else if (i < starCount * 0.7) {
           // Medium stars: moderate size
-          starSize = 1.5 + Math.random() * 3.0; // 1.5 - 4.5
+          starSize = 2.5 + Math.random() * 4.5; // 2.5 - 7.0
         } else {
           // Far stars: smaller points
-          starSize = 0.8 + Math.random() * 2.0; // 0.8 - 2.8
+          starSize = 1.2 + Math.random() * 3.0; // 1.2 - 4.2
         }
         starSizes[i] = starSize;
       }
@@ -2063,8 +2078,8 @@
         window.textOrbitGroups[1].rotation.y -= 0.002;
         // Line 3: Clockwise
         window.textOrbitGroups[2].rotation.y += 0.002;
-        
-        // Optional: Reset rotation to prevent overflow and maintain precision
+          
+          // Optional: Reset rotation to prevent overflow and maintain precision
         window.textOrbitGroups.forEach(orbitGroup => {
           if (orbitGroup.rotation.y > Math.PI * 2) {
             orbitGroup.rotation.y -= Math.PI * 2;
@@ -2167,10 +2182,22 @@
           const twinkleTime = (t || 0) * 0.0015;
           
           for (let i = 0, starIndex = 0; i < colors.length; i += 3, starIndex++) {
+            // Multiple harmonic frequencies for realistic twinkling
             const basePulse = Math.sin(twinkleTime * speeds[starIndex] + phases[starIndex]);
-            const harmonics = Math.sin(twinkleTime * (speeds[starIndex] * 1.7) + phases[starIndex] * 1.3);
-            const pulse = 0.65 + amplitudes[starIndex] * (0.5 * (basePulse + 1) + 0.2 * (harmonics + 1));
-            const brightness = THREE.MathUtils.clamp(pulse, 0.45, 1.65);
+            const harmonics1 = Math.sin(twinkleTime * (speeds[starIndex] * 1.7) + phases[starIndex] * 1.3);
+            const harmonics2 = Math.sin(twinkleTime * (speeds[starIndex] * 2.3) + phases[starIndex] * 0.7);
+            const harmonics3 = Math.sin(twinkleTime * (speeds[starIndex] * 3.1) + phases[starIndex] * 1.9);
+            
+            // Combine harmonics for complex twinkling pattern
+            const pulse = 0.4 + amplitudes[starIndex] * (
+              0.3 * (basePulse + 1) + 
+              0.25 * (harmonics1 + 1) + 
+              0.2 * (harmonics2 + 1) + 
+              0.15 * (harmonics3 + 1)
+            );
+            
+            // More dramatic brightness range for enhanced twinkling
+            const brightness = THREE.MathUtils.clamp(pulse, 0.2, 2.0);
             
             colors[i] = baseColors[i] * brightness;
             colors[i + 1] = baseColors[i + 1] * brightness;
