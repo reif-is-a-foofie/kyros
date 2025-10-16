@@ -72,6 +72,23 @@
             align-items: flex-start;
         }
 
+        .contact-line {
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .contact-line.indent {
+            margin-left: 1.5rem;
+            position: relative;
+        }
+
+        .contact-line.indent::before {
+            content: '└─';
+            position: absolute;
+            left: -1.5rem;
+            color: var(--accent);
+        }
+
         .terminal-line::before {
             content: '$';
             color: var(--accent);
@@ -160,7 +177,7 @@
             display: inline-block;
             width: 2px;
             height: 1em;
-            background: #00ff00;
+            background: var(--accent);
             animation: blink 1s infinite;
             margin-left: 2px;
         }
@@ -206,9 +223,9 @@
         </div>
         
         <div class="terminal-line contact-info" id="contactInfo">
-            contact() Kyros Investment Studio<br>
-            &nbsp;&nbsp;--- <a href="mailto:hello@kyros.cc">hello@kyros.cc</a><br>
-            &nbsp;&nbsp;--- <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
+            <span class="contact-line">contact() Kyros Investment Studio</span>
+            <span class="contact-line indent"><a href="mailto:hello@kyros.cc">hello@kyros.cc</a></span>
+            <span class="contact-line indent"><a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a></span>
         </div>
     </div>
 
@@ -416,7 +433,7 @@
                 const char = text[i].toLowerCase();
                 if (transformSets.symbols[char]) {
                     transformedText += transformSets.symbols[char];
-                 } else {
+        } else {
                     transformedText += text[i];
                 }
             }
@@ -458,7 +475,7 @@
                 // Preserve spaces by using &nbsp; for actual spaces
                 if (char === ' ') {
                     span.innerHTML = '&nbsp;';
-                } else {
+        } else {
                     span.textContent = char;
                 }
                 mainText.appendChild(span);
@@ -467,7 +484,7 @@
         }
 
         // Start the typing animation
-      setTimeout(() => {
+        setTimeout(() => {
               typeText();
           }, 1000);
 
