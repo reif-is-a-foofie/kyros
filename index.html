@@ -563,7 +563,7 @@
       
       // Convert screen movement to camera movement
       // Scale down the movement for subtle panning
-      const cameraDeltaX = deltaX * panSensitivity * 0.01;
+      const cameraDeltaX = -deltaX * panSensitivity * 0.01; // Invert X - drag right = scene moves right
       const cameraDeltaY = deltaY * panSensitivity * 0.01; // Natural direction - drag down = move down
       
       // Apply panning to camera position
@@ -668,13 +668,13 @@
         const textGeometry = new TextGeometry(text, {
           font: font,
           size: isMobile ? 0.5 : 0.8,    // Smaller text for tighter orbit
-          depth: 0.6,                    // Reduced depth for tighter fit
-          curveSegments: 16,             // Fewer segments for tighter curve
+          depth: 1.2,                    // Increased depth for dramatic 3D effect
+          curveSegments: 20,             // More segments for smoother depth
           letterSpacing: -0.3,           // Ultra-tight letter spacing for maximum compression
-          bevelEnabled: true,            // Subtle bevels
-          bevelThickness: 0.08,          // Thinner bevels
-          bevelSize: 0.04,               // Smaller bevels
-          bevelSegments: 6               // Fewer bevel segments
+          bevelEnabled: true,            // Enhanced bevels for depth
+          bevelThickness: 0.15,          // Thicker bevels for more depth
+          bevelSize: 0.08,               // Larger bevels for dramatic effect
+          bevelSegments: 8               // More segments for smooth bevels
         });
       
       textGeometry.computeBoundingBox();
@@ -699,10 +699,10 @@
         
         // Position text so front face sits exactly at Earth surface
         // Account for bend curvature - text extends further out due to curvature
-        const textDepth = 0.6; // Must match depth in TextGeometry  
-        const bendOffset = 2.0; // Moderate compression - text was too tight
-        textOrbitRadius = earthRadius - textDepth - bendOffset; // Subtract depth and bend offset
-        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(moderate compression - text visible)');
+        const textDepth = 1.2; // Must match depth in TextGeometry  
+        const bendOffset = 1.8; // Adjusted for increased depth
+        textOrbitRadius = earthRadius - (textDepth / 2) - bendOffset; // Subtract half depth and bend offset
+        console.log('🎯 Text orbit radius (center):', textOrbitRadius.toFixed(2), '(deep 3D text with dramatic depth)');
         
         console.log('🌍 Earth radius calculated:', earthRadius);
         console.log('🌍 Text orbit radius:', textOrbitRadius);
@@ -712,10 +712,10 @@
           console.log('⚠️ Earth model not loaded yet, using default radius');
           earthRadius = 2; // Fallback radius
           // Position text so front face sits exactly at Earth surface
-          const textDepth = 0.6;
-          const bendOffset = 2.0; // Moderate compression - text was too tight
-          textOrbitRadius = earthRadius - textDepth - bendOffset;
-          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(ultra-tight compression)');
+          const textDepth = 1.2;
+          const bendOffset = 1.8; // Adjusted for increased depth
+          textOrbitRadius = earthRadius - (textDepth / 2) - bendOffset;
+          console.log('🎯 Fallback text orbit radius (center):', textOrbitRadius.toFixed(2), '(deep 3D text)');
         }
         
       // Persist orbit radius globally for other systems
@@ -737,19 +737,19 @@
       console.log('🎯 Expected text front face distance from center:', textOrbitRadius + 0.3);
       bendTextGeometry(textGeometry, textOrbitRadius, 0); // Single line centered
 
-      // Spectacular gold material with maximum shine and depth
+      // Spectacular gold material with maximum depth and dramatic lighting
       const textMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xffd700,        // Rich gold base color
-        metalness: 0.95,        // Near-perfect metalness for gold
-        roughness: 0.05,        // Mirror-like smoothness
+        metalness: 0.98,        // Near-perfect metalness for gold
+        roughness: 0.02,        // Ultra-smooth for maximum reflections
         clearcoat: 1.0,         // Maximum clearcoat for extra shine
         clearcoatRoughness: 0.0, // Perfect clearcoat smoothness
-        envMapIntensity: 4.0,   // Extra strong environment reflections
-        emissive: 0x332200,     // Warm gold interior glow
-        emissiveIntensity: 0.8, // Strong but not overpowering glow
+        envMapIntensity: 5.0,   // Maximum environment reflections for depth
+        emissive: 0x442200,     // Stronger warm gold interior glow
+        emissiveIntensity: 1.2, // Enhanced glow for depth perception
         reflectivity: 1.0,      // Maximum reflectivity
-        sheen: 0.8,             // High sheen for luster
-        sheenRoughness: 0.1,    // Smooth sheen
+        sheen: 0.9,             // Maximum sheen for dramatic luster
+        sheenRoughness: 0.05,   // Ultra-smooth sheen
         side: THREE.DoubleSide, // Ensure both sides are rendered
         transparent: false,     // Ensure no transparency issues
         opacity: 1.0           // Fully opaque
@@ -1122,16 +1122,38 @@
            console.log(`📏 Orbital object ${index + 1}: native size ${maxDimension.toFixed(2)}, scaled to ${(maxDimension * scale).toFixed(2)} (${((targetSize / safeEarthRadius) * 100).toFixed(1)}% of Earth radius)`);
            console.log(`🎯 Orbital object ${index + 1}: orbit radius ${orbitRadius.toFixed(2)}, random position`);
            
-           // Position randomly around orbit
+           // Create elliptical orbits with one object going much further out
            const randomAngle = Math.random() * Math.PI * 2;
-           model.position.set(
-             Math.cos(randomAngle) * orbitRadius, 
-             0, 
-             Math.sin(randomAngle) * orbitRadius
-           );
+           
+           // Elliptical orbit parameters
+           let semiMajorAxis, semiMinorAxis, eccentricity;
+           if (index === 4) { // K object (index 4) goes much further out
+             semiMajorAxis = orbitRadius * 3.5; // Much longer ellipse
+             semiMinorAxis = orbitRadius * 1.2; // Narrow ellipse
+             eccentricity = 0.85; // Very elliptical
+           } else {
+             semiMajorAxis = orbitRadius * 1.3; // Slightly wider than circular
+             semiMinorAxis = orbitRadius * 0.8; // Narrower than circular
+             eccentricity = 0.6; // Moderately elliptical
+           }
+           
+           // Elliptical position calculation: r = a(1-e²)/(1+e*cos(θ))
+           const r = semiMajorAxis * (1 - eccentricity * eccentricity) / (1 + eccentricity * Math.cos(randomAngle));
+           const x = r * Math.cos(randomAngle);
+           const z = r * Math.sin(randomAngle) * (semiMinorAxis / semiMajorAxis); // Compress Y-axis for ellipse
+           
+           model.position.set(x, 0, z);
+           
+           // Store orbital parameters for animation
+           model.userData.semiMajorAxis = semiMajorAxis;
+           model.userData.semiMinorAxis = semiMinorAxis;
+           model.userData.eccentricity = eccentricity;
+           model.userData.initialAngle = randomAngle;
            
            // Center the model's origin for proper rotation around Earth
-           model.position.add(box.getCenter(new THREE.Vector3()).multiplyScalar(-scale));
+           const centerOffset = box.getCenter(new THREE.Vector3()).multiplyScalar(-scale);
+           model.position.add(centerOffset);
+           model.userData.originalCenter = centerOffset.clone();
            
            // Add random initial rotation
            model.rotation.set(
@@ -1618,20 +1640,35 @@
         // Orbital objects now deployed on timer, not orbit cycles
       }
       
-         // Rotate all orbital groups with individual speeds and add tumbling
+         // Animate elliptical orbits with individual speeds and tumbling
          orbitalGroups.forEach((orbitalGroup, index) => {
-           // Use individual orbital speed for each object (steady, slightly slower than text)
-           const groupSpeed = orbitalGroup.children[0]?.userData.orbitalSpeed || 0.28;
-           orbitalGroup.rotation.y += orbitSpeed * groupSpeed;
+           const model = orbitalGroup.children[0];
+           if (!model || !model.userData.semiMajorAxis) return;
            
-           // Add tumbling motion to each orbital object
-           orbitalGroup.children.forEach((child) => {
-             if (child.userData.tumbleX !== undefined) {
-               child.rotation.x += child.userData.tumbleX;
-               child.rotation.y += child.userData.tumbleY;
-               child.rotation.z += child.userData.tumbleZ;
-             }
-           });
+           // Use individual orbital speed for each object
+           const groupSpeed = model.userData.orbitalSpeed || 0.28;
+           const currentAngle = model.userData.initialAngle + (t * 0.001 * groupSpeed);
+           
+           // Calculate elliptical position
+           const semiMajorAxis = model.userData.semiMajorAxis;
+           const semiMinorAxis = model.userData.semiMinorAxis;
+           const eccentricity = model.userData.eccentricity;
+           
+           // Elliptical orbit equation: r = a(1-e²)/(1+e*cos(θ))
+           const r = semiMajorAxis * (1 - eccentricity * eccentricity) / (1 + eccentricity * Math.cos(currentAngle));
+           const x = r * Math.cos(currentAngle);
+           const z = r * Math.sin(currentAngle) * (semiMinorAxis / semiMajorAxis);
+           
+           // Update position (account for centering offset)
+           const originalCenter = model.userData.originalCenter || new THREE.Vector3();
+           model.position.set(x - originalCenter.x, 0, z - originalCenter.z);
+           
+           // Add tumbling motion
+           if (model.userData.tumbleX !== undefined) {
+             model.rotation.x += model.userData.tumbleX;
+             model.rotation.y += model.userData.tumbleY;
+             model.rotation.z += model.userData.tumbleZ;
+           }
          });
       
       // Earth rotates slowly in opposite direction (1/4 speed of text)
