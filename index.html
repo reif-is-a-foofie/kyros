@@ -549,6 +549,15 @@
             const MAX_LINES = 8; // Terminal height limit
             const MAX_ITERATIONS = 100; // Reset after 100 iterations
 
+            const welcomeCommands = [
+                'echo "Welcome to Kyros: an investment studio"',
+                'define investment_studio',
+                'print motto',
+                'echo "The most important thing in business are extraordinary people"',
+                'echo "Let\'s explore our motto in different languages..."',
+                'echo ""'
+            ];
+
             const commands = [
                 // Real Languages
                 'translate(spanish)', 'translate(french)', 'translate(german)', 'translate(italian)', 'translate(portuguese)',
@@ -588,7 +597,30 @@
                 'translate(hipster)', 'translate(nerd)', 'translate(geek)', 'translate(hacker)', 'translate(artist)'
             ];
 
+            const allCommands = [...welcomeCommands, ...commands];
+
             const executeCommand = (command) => {
+                // Handle welcome commands
+                if (command.includes('echo "Welcome to Kyros: an investment studio"')) {
+                    return 'Welcome to Kyros: an investment studio';
+                }
+                if (command === 'define investment_studio') {
+                    return 'Investment Studio: a company that builds, buys and brokers companies, deals, etc.';
+                }
+                if (command === 'print motto') {
+                    return 'Motto: build the change you wish to see in the world...';
+                }
+                if (command.includes('echo "The most important thing in business are extraordinary people"')) {
+                    return 'The most important thing in business are extraordinary people';
+                }
+                if (command.includes('echo "Let\'s explore our motto in different languages..."')) {
+                    return 'Let\'s explore our motto in different languages...';
+                }
+                if (command === 'echo ""') {
+                    return '';
+                }
+                
+                // Handle translate commands
                 const match = command.match(/translate\((\w+)\)/);
                 if (!match) return basePhrase;
                 
@@ -832,8 +864,8 @@
                     return;
                 }
 
-                if (isTyping && currentCommandIndex < commands.length) {
-                    const command = commands[currentCommandIndex];
+                if (isTyping && currentCommandIndex < allCommands.length) {
+                    const command = allCommands[currentCommandIndex];
                     let charIndex = 0;
                     
                     const typeChar = () => {
@@ -841,8 +873,8 @@
                             setCurrentCommand(command.substring(0, charIndex + 1));
                             charIndex++;
                             setTimeout(typeChar, Math.random() * 50 + 50);
-        } else {
-            setTimeout(() => {
+                        } else {
+                            setTimeout(() => {
                                 // Execute command and show output
                                 const output = executeCommand(command);
                                 
@@ -854,12 +886,12 @@
                                 
                                 setCurrentCommandIndex(prev => prev + 1);
                                 setCurrentCommand('');
-          }, 1000);
+                            }, 1000);
                         }
                     };
                     
                     typeChar();
-                } else if (currentCommandIndex >= commands.length) {
+                } else if (currentCommandIndex >= allCommands.length) {
                     // Loop back to beginning and increment iteration count
         setTimeout(() => {
                         setCurrentCommandIndex(0);
@@ -878,12 +910,12 @@
                             <span className="cursor">_</span>
                         </span>
                     </div>
-                    {history.map((phrase, index) => (
+                    {history.map((item, index) => (
                         <div key={index} className="terminal-history-line">
                             <span className="terminal-prompt">$</span>
                             <span className="terminal-output">
                                 <span className="checkmark">✓</span>
-                                <span className="output-text">{phrase}</span>
+                                <span className="output-text">{item.output}</span>
                             </span>
                         </div>
                     ))}
