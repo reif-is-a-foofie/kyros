@@ -1313,18 +1313,6 @@
           });
         }
         
-        // Legacy protection for single text mesh (backward compatibility)
-        const legacyMeshes = [window.textMesh1, window.textMesh2].filter(mesh => mesh && mesh.userData.originalMaterial);
-        legacyMeshes.forEach(mesh => {
-          const currentMaterial = mesh.material;
-          const originalMaterial = mesh.userData.originalMaterial;
-          
-          if (currentMaterial.color.getHex() !== 0xffd700 || 
-              currentMaterial.emissive.getHex() !== 0xffd700) {
-            mesh.material = originalMaterial.clone();
-            mesh.material.needsUpdate = true;
-          }
-        });
         
         // Protect K object material - ensure it stays royal blue
         if (window.orbitalObjects && window.orbitalObjects.length > 0) {
@@ -2155,16 +2143,6 @@
         });
       }
       
-      // Legacy single text orbit (disabled for multi-line system)
-      // orbitAccumulator = THREE.MathUtils.euclideanModulo(orbitAccumulator - orbitSpeed, Math.PI * 2);
-      // groupYawOffset += (targetRotationY - groupYawOffset) * 0.08;
-      // groupTiltX += (targetRotationX - groupTiltX) * 0.08;
-      // group.rotation.y = orbitAccumulator + groupYawOffset;
-      // group.rotation.x = groupTiltX;
-      // if (!isPointerDown) {
-      //   targetRotationX *= 0.94;
-      //   targetRotationY *= 0.94;
-      // }
       
       orbitCycleTracker += Math.abs(orbitSpeed);
       if (orbitCycleTracker >= Math.PI * 2) {
