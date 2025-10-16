@@ -17,8 +17,7 @@
             color: #00ff00;
             min-height: 100vh;
       display: flex;
-      flex-direction: column;
-            justify-content: center;
+      justify-content: center;
             align-items: center;
             overflow: hidden;
       position: relative;
@@ -44,15 +43,28 @@
             padding: 2rem;
         }
 
+        .terminal-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .terminal-line {
+            font-size: clamp(1.2rem, 5vw, 3rem);
+            font-weight: 400;
+            line-height: 1.4;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            white-space: nowrap;
+            margin-bottom: 0.5rem;
+        }
+
         .main-text {
             font-size: clamp(1.2rem, 5vw, 3rem);
             font-weight: 400;
-            line-height: 1.2;
-            margin-bottom: 3rem;
-            min-height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            line-height: 1.4;
             text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
             white-space: nowrap;
         }
@@ -91,7 +103,6 @@
         .contact-info {
             font-size: clamp(0.9rem, 2.5vw, 1.2rem);
             color: #00ff00;
-            margin-top: 2rem;
             opacity: 1;
             text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
         }
@@ -143,10 +154,7 @@
 
         .terminal-prompt {
             color: #00ff41;
-            font-size: 0.8em;
-            margin-bottom: 1rem;
-            opacity: 0;
-            animation: fadeIn 1s ease 0.5s forwards;
+            margin-right: 0.5rem;
         }
 
         @keyframes fadeIn {
@@ -178,16 +186,14 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="terminal-prompt">$ kyros --build</div>
-        <div class="main-text" id="mainText">
-            <span class="word" id="word1">build</span><span class="cursor"></span>
+    <div class="terminal-container">
+        <div class="terminal-line">
+            <span class="terminal-prompt">$ kyros --build</span>
+            <span class="main-text" id="mainText"></span><span class="cursor"></span>
         </div>
         
-        <div class="contact-info" id="contactInfo">
-            <div>Kyros Investment Studio</div>
-            <div><a href="mailto:hello@kyros.cc">hello@kyros.cc</a></div>
-            <div><a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a></div>
+        <div class="terminal-line contact-info" id="contactInfo">
+            <span class="terminal-prompt">$ contact</span> Kyros Investment Studio | <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
         </div>
     </div>
 
