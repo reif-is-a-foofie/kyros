@@ -46,8 +46,8 @@
 
         .terminal {
             width: 100%;
-            max-width: 1200px;
-            border-radius: 16px;
+            max-width: 1600px;
+            border-radius: 12px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -64,14 +64,14 @@
         .terminal-header {
             display: flex;
             align-items: center;
-            padding: 16px 20px;
-            background: rgba(248, 250, 252, 0.95);
+            padding: 20px 24px;
+            background: rgba(240, 242, 245, 0.95);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
             border-bottom: 1px solid rgba(229, 231, 235, 0.8);
-            min-height: 48px;
+            min-height: 56px;
         }
 
         .terminal-buttons {
@@ -126,14 +126,14 @@
         }
 
         .terminal-content {
-            padding: 32px;
-            min-height: 400px;
+            padding: 40px;
+            min-height: 500px;
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-start;
             overflow: hidden;
             word-wrap: break-word;
         }
@@ -142,7 +142,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-start;
             margin-bottom: 20px;
         }
 
@@ -503,8 +503,8 @@
                 
                 currentChar++;
           
-                // Variable typing speed for realism (50-100ms)
-                const delay = Math.random() * 50 + 50;
+                // Variable typing speed for realism (100-200ms)
+                const delay = Math.random() * 100 + 100;
                 setTimeout(typeText, delay);
                } else {
                 // Add completed phrase to history
