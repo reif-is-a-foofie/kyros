@@ -123,7 +123,6 @@
             background: #10b981;
             border-color: #10b981;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .terminal-content {
@@ -135,6 +134,8 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
+            overflow: hidden;
+            word-wrap: break-word;
         }
 
         .terminal-history {
@@ -146,10 +147,6 @@
         }
 
         .terminal-history-line {
-            font-size: clamp(1.2rem, 4vw, 2.5rem);
-            font-weight: 400;
-            line-height: 1.4;
-            color: #6b7280;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -162,15 +159,13 @@
         }
 
         .terminal-line {
-            font-size: clamp(1.8rem, 6vw, 4rem);
-            font-weight: 500;
-            line-height: 1.4;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
-            color: #1a1a1a;
             width: 100%;
             justify-content: flex-start;
+            overflow: hidden;
+            white-space: nowrap;
         }
 
         .terminal-line:not(.contact-info) {
