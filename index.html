@@ -155,13 +155,13 @@
 
         .terminal-content {
             padding: 40px;
-            min-height: 500px;
+            height: 500px;
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: flex-end;
             overflow: hidden;
             word-wrap: break-word;
             border-bottom-left-radius: 12px;
@@ -453,54 +453,77 @@
         // Magic UI Terminal Component
         function MagicTerminal() {
             const [currentPhrase, setCurrentPhrase] = useState('');
-            const [currentIndex, setCurrentIndex] = useState(0);
             const [history, setHistory] = useState([]);
+            const [currentWordIndex, setCurrentWordIndex] = useState(0);
+            const [isTyping, setIsTyping] = useState(true);
+            const [iterationCount, setIterationCount] = useState(0);
 
-            const generateRandomPhrase = () => {
-                const words = basePhrase.split(' ');
-                return words.map(word => {
-                    const variations = wordVariations[word] || [word];
-                    return variations[Math.floor(Math.random() * variations.length)];
-                }).join(' ');
+            const baseWords = basePhrase.split(' ');
+            const MAX_LINES = 8; // Terminal height limit
+            const MAX_ITERATIONS = 100; // Reset after 100 iterations
+
+            const generateWordVariation = (word) => {
+                const variations = wordVariations[word] || [word];
+                return variations[Math.floor(Math.random() * variations.length)];
             };
 
-            const phrases = [
-                'build',
-                'build the change',
-                'build the change you wish',
-                'build the change you wish to see',
-                'build the change you wish to see in the world',
-                generateRandomPhrase(),
-                generateRandomPhrase(),
-                generateRandomPhrase()
-            ];
-
             useEffect(() => {
-                if (currentIndex < phrases.length) {
-                    const phrase = phrases[currentIndex];
-                    let charIndex = 0;
+                // Check if we need to reset after 100 iterations
+                if (iterationCount >= MAX_ITERATIONS) {
+                    setTimeout(() => {
+                        setCurrentPhrase('');
+                        setHistory([]);
+                        setCurrentWordIndex(0);
+                        setIterationCount(0);
+                    }, 2000);
+                    return;
+                }
+
+                if (isTyping && currentWordIndex < baseWords.length) {
+                    const currentWord = baseWords[currentWordIndex];
+                    const variation = generateWordVariation(currentWord);
                     
+                    // Build current phrase with variation
+                    const newPhrase = baseWords.map((word, index) => {
+                        if (index < currentWordIndex) {
+                            return generateWordVariation(word);
+                        } else if (index === currentWordIndex) {
+                            return variation;
+                 } else {
+                            return word;
+                        }
+                    }).join(' ');
+
+                    let charIndex = 0;
                     const typeChar = () => {
-                        if (charIndex < phrase.length) {
-                            setCurrentPhrase(phrase.substring(0, charIndex + 1));
+                        if (charIndex < newPhrase.length) {
+                            setCurrentPhrase(newPhrase.substring(0, charIndex + 1));
                             charIndex++;
-                            setTimeout(typeChar, Math.random() * 100 + 100);
-        } else {
+                            setTimeout(typeChar, Math.random() * 50 + 50);
+               } else {
                             setTimeout(() => {
-                                setHistory(prev => [...prev, phrase]);
-                                setCurrentIndex(prev => prev + 1);
+                                // Add to history and manage line limit
+                                setHistory(prev => {
+                                    const newHistory = [...prev, newPhrase];
+                                    return newHistory.length > MAX_LINES ? newHistory.slice(-MAX_LINES) : newHistory;
+                                });
+                                
+                                setCurrentWordIndex(prev => prev + 1);
                                 setCurrentPhrase('');
-                            }, 1000);
+                            }, 1500);
                         }
                     };
                     
                     typeChar();
-           } else {
-                    // Loop back to beginning
-                    setCurrentIndex(0);
-                    setCurrentPhrase('');
+                } else if (currentWordIndex >= baseWords.length) {
+                    // Loop back to beginning and increment iteration count
+                    setTimeout(() => {
+                        setCurrentWordIndex(0);
+                        setCurrentPhrase('');
+                        setIterationCount(prev => prev + 1);
+                    }, 2000);
                 }
-            }, [currentIndex]);
+            }, [currentWordIndex, isTyping, iterationCount]);
 
             return (
                 <div className="magic-terminal">
