@@ -951,12 +951,12 @@
       ];
       
       // Calculate Earth radius
-      let earthRadius = 2; // Default fallback
-      if (earthModel) {
-        earthModel.updateMatrixWorld();
-        const boundingBox = new THREE.Box3().setFromObject(earthModel);
-        const size = boundingBox.getSize(new THREE.Vector3());
-        earthRadius = Math.max(size.x, size.y, size.z) / 2;
+        let earthRadius = 2; // Default fallback
+        if (earthModel) {
+          earthModel.updateMatrixWorld();
+          const boundingBox = new THREE.Box3().setFromObject(earthModel);
+          const size = boundingBox.getSize(new THREE.Vector3());
+          earthRadius = Math.max(size.x, size.y, size.z) / 2;
         } else {
           earthRadius = 13.0; // Use known fallback
         }
@@ -1093,20 +1093,20 @@
       frontLight.castShadow = true;
       frontLight.shadow.mapSize.width = 1024;
       frontLight.shadow.mapSize.height = 1024;
-        frontLight.shadow.camera.near = 0.5;
+      frontLight.shadow.camera.near = 0.5;
       frontLight.shadow.camera.far = 30;
-        scene.add(frontLight);
-        scene.add(frontLight.target);
+      scene.add(frontLight);
+      scene.add(frontLight.target);
         
       // Add super bright flash light at x=0 for transition effect
       const flashLight = new THREE.PointLight(0xffffff, 15, 20, 2);
       flashLight.position.set(0, 0, 0); // Exactly at x=0, y=0, z=0
       scene.add(flashLight);
-        
-        // Enable shadows for Earth model
-        ensureEarthShadowSettings();
-        
-        repaintScene();
+      
+      // Enable shadows for Earth model
+      ensureEarthShadowSettings();
+      
+      repaintScene();
       console.log('✅ Clean 3-line text orbit system created');
       console.log('✅ Lines will counter-rotate with proper Earth-facing direction');
       
@@ -2287,8 +2287,12 @@
         if (renderer && renderer.setAnimationLoop) {
           renderer.setAnimationLoop(null);
         }
+        console.log('📞 Contact overlay opened');
       }
     }
+    
+    // Make showContactOverlay globally accessible
+    window.showContactOverlay = showContactOverlay;
     
     function hideContactOverlay() {
       const overlay = document.getElementById('contact-overlay');
@@ -2299,8 +2303,12 @@
         if (renderer && renderer.setAnimationLoop && window.animate) {
           renderer.setAnimationLoop(window.animate);
         }
+        console.log('📞 Contact overlay closed');
       }
     }
+    
+    // Make hideContactOverlay globally accessible
+    window.hideContactOverlay = hideContactOverlay;
     
     // Make military banner clickable to show contact
     function makeBannerClickable() {
@@ -2315,14 +2323,18 @@
     // Smart contact system - tracks user engagement
     let userEngagementScore = 0;
     let lastContactShown = 0;
-    let contactFrequency = 30000; // Start with 30 second intervals
+    let contactFrequency = 15000; // Start with 15 seconds for more frequent prompts
     
     function updateContactFrequency() {
       // Increase contact frequency based on user engagement
-      if (userEngagementScore > 5) {
-        contactFrequency = 15000; // Show contact every 15 seconds for engaged users
+      if (userEngagementScore > 10) {
+        contactFrequency = 8000; // Show contact every 8 seconds for highly engaged users
+      } else if (userEngagementScore > 5) {
+        contactFrequency = 12000; // Show contact every 12 seconds for engaged users
       } else if (userEngagementScore > 2) {
-        contactFrequency = 20000; // Show contact every 20 seconds
+        contactFrequency = 18000; // Show contact every 18 seconds for moderate users
+      } else {
+        contactFrequency = 25000; // Default 25 seconds for casual users
       }
     }
     
@@ -2396,9 +2408,9 @@
         let currentMessage = 0;
         let currentChar = 0;
         let isTyping = true;
-        let showDuration = 4000; // Show message for 4 seconds (longer)
-        let hideDuration = 1000; // Hide for 1 second (shorter)
-        let clickableShowDuration = 30000; // Show clickable messages for 30 seconds (much longer)
+        let showDuration = 6000; // Show message for 6 seconds (longer)
+        let hideDuration = 800; // Hide for 0.8 seconds (shorter)
+        let clickableShowDuration = 45000; // Show clickable messages for 45 seconds (much longer)
         let isHovering = false;
         let hideTimeout = null;
         let showingTranslation = false;
