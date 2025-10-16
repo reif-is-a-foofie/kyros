@@ -99,7 +99,7 @@
         .terminal-title {
             color: #374151;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 400;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             display: flex;
             align-items: center;
@@ -133,8 +133,32 @@
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .terminal-history {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .terminal-history-line {
+            font-size: clamp(1.2rem, 4vw, 2.5rem);
+            font-weight: 400;
+            line-height: 1.4;
+            color: #6b7280;
+            margin-bottom: 8px;
+            display: flex;
             align-items: center;
-            justify-content: center;
+        }
+
+        .terminal-history-line .terminal-prompt {
+            color: #10b981;
+            margin-right: 8px;
+            font-weight: 500;
         }
 
         .terminal-line {
@@ -310,7 +334,8 @@
             background: #10b981;
             animation: blink 1s infinite;
             margin-left: 2px;
-            vertical-align: baseline;
+            vertical-align: bottom;
+            margin-bottom: 2px;
         }
 
         @keyframes blink {
@@ -360,6 +385,7 @@
             </div>
         </div>
         <div class="terminal-content">
+            <div class="terminal-history" id="terminalHistory"></div>
             <div class="terminal-line">
                 <span class="main-text" id="mainText"></span><span class="cursor"></span>
             </div>
@@ -415,6 +441,7 @@
         let currentPhrase = 0;
         let currentChar = 0;
         let isTyping = true;
+        let terminalHistory = [];
       
       function typeText() {
         if (!isTyping) return;
@@ -453,6 +480,9 @@
                 const delay = Math.random() * 50 + 50;
                 setTimeout(typeText, delay);
                } else {
+                // Add completed phrase to history
+                addToHistory(phrase);
+                
                 // Move to next phrase
                 currentPhrase++;
               currentChar = 0;
@@ -466,7 +496,21 @@
         }
 
 
-        // Removed transformation functions - now using continuous cycling
+        function addToHistory(text) {
+            const historyContainer = document.getElementById('terminalHistory');
+            const historyLine = document.createElement('div');
+            historyLine.className = 'terminal-history-line';
+            historyLine.innerHTML = `<span class="terminal-prompt">$</span> ${text}`;
+            historyContainer.appendChild(historyLine);
+            
+            // Keep only last 5 lines in history
+            if (historyContainer.children.length > 5) {
+                historyContainer.removeChild(historyContainer.firstChild);
+            }
+            
+            // Scroll to bottom
+            historyContainer.scrollTop = historyContainer.scrollHeight;
+        }
 
         function startContinuousTransforms() {
             const mainText = document.getElementById('mainText');
