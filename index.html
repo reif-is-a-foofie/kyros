@@ -114,10 +114,47 @@
             height: 12px;
             border-radius: 50%;
             transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
         }
 
         .button:hover {
             transform: scale(1.1);
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        .easter-egg-tooltip {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .easter-egg-tooltip.show {
+            opacity: 1;
+        }
+
+        .easter-egg-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
         }
 
         .red { background-color: #ff5f56; }
@@ -132,8 +169,9 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            flex: 1;
-            margin-left: 8px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .terminal-title a {
@@ -421,9 +459,15 @@
     <div class="terminal">
         <div class="terminal-header">
             <div class="terminal-buttons">
-                <span class="button red"></span>
-                <span class="button yellow"></span>
-                <span class="button green"></span>
+                <span class="button red" onclick="showEasterEgg('red')" title="Click for a musical surprise!">
+                    <div class="easter-egg-tooltip" id="red-tooltip">🎵 Red Red Wine - UB40</div>
+                </span>
+                <span class="button yellow" onclick="showEasterEgg('yellow')" title="Click for a musical surprise!">
+                    <div class="easter-egg-tooltip" id="yellow-tooltip">🎵 Yellow - Coldplay</div>
+                </span>
+                <span class="button green" onclick="showEasterEgg('green')" title="Click for a musical surprise!">
+                    <div class="easter-egg-tooltip" id="green-tooltip">🎬 YouTube Shorts</div>
+                </span>
             </div>
             <div class="terminal-title">
                 Kyros: an investment studio | <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
@@ -433,6 +477,50 @@
             <div id="magic-terminal-content"></div>
         </div>
     </div>
+
+    <script>
+        // Easter Egg System
+        function showEasterEgg(color) {
+            const tooltip = document.getElementById(`${color}-tooltip`);
+            const button = tooltip.parentElement;
+            
+            // Add click animation
+            button.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                }, 150);
+            }, 100);
+            
+            // Show tooltip
+            tooltip.classList.add('show');
+            
+            // Handle different easter eggs
+            switch(color) {
+                case 'red':
+                    setTimeout(() => {
+                        window.open('https://www.youtube.com/watch?v=zXt56MB-3vc', '_blank');
+                    }, 500);
+                    break;
+                case 'yellow':
+                    setTimeout(() => {
+                        window.open('https://www.youtube.com/watch?v=yKNxeF4KMsY', '_blank');
+                    }, 500);
+                    break;
+                case 'green':
+                    setTimeout(() => {
+                        window.open('https://www.youtube.com/shorts/SnUjPX_LrZE', '_blank');
+                    }, 500);
+                    break;
+            }
+            
+            // Hide tooltip after 3 seconds
+            setTimeout(() => {
+                tooltip.classList.remove('show');
+            }, 3000);
+        }
+    </script>
 
     <script type="text/babel">
         // Magic UI Terminal with React components
