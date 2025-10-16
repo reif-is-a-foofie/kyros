@@ -479,6 +479,16 @@
     let targetRotationX = 0, targetRotationY = 0;
     let targetRotationXOnPointerDown = 0, targetRotationYOnPointerDown = 0;
     let isPointerDown = false;
+    
+    // Live camera system with orbital motion and parallax
+    let cameraOrbitRadius = 28;
+    let cameraOrbitAngle = 0;
+    let cameraDriftX = 0;
+    let cameraDriftY = 0;
+    let cameraDriftZ = 0;
+    let mouseInfluenceX = 0;
+    let mouseInfluenceY = 0;
+    let time = 0;
     let isMobile = window.innerWidth < 768;
     let isSmallMobile = window.innerWidth < 480;
     let orbitAccumulator = 0;
@@ -941,12 +951,12 @@
       ];
       
       // Calculate Earth radius
-        let earthRadius = 2; // Default fallback
-        if (earthModel) {
-          earthModel.updateMatrixWorld();
-          const boundingBox = new THREE.Box3().setFromObject(earthModel);
-          const size = boundingBox.getSize(new THREE.Vector3());
-          earthRadius = Math.max(size.x, size.y, size.z) / 2;
+      let earthRadius = 2; // Default fallback
+      if (earthModel) {
+        earthModel.updateMatrixWorld();
+        const boundingBox = new THREE.Box3().setFromObject(earthModel);
+        const size = boundingBox.getSize(new THREE.Vector3());
+        earthRadius = Math.max(size.x, size.y, size.z) / 2;
         } else {
           earthRadius = 13.0; // Use known fallback
         }
@@ -1020,19 +1030,18 @@
           emissiveIntensity: 0.1
         });
         
-        // Create single text mesh that will rotate dynamically
+        // Create single text mesh - clean and simple
         const textMesh = new THREE.Mesh(textGeometry, goldMaterial);
         textMesh.castShadow = true;
         textMesh.receiveShadow = true;
         textMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
         textMesh.userData.originalMaterial = goldMaterial.clone();
-        textMesh.userData.lineIndex = index;
         
         // Add single mesh to orbit group
         orbitGroup.add(textMesh);
         textMeshes.push(textMesh);
         
-        console.log(`✅ Line ${index + 1} created with single text mesh ("${lineText}") - will rotate dynamically for readability`);
+        console.log(`✅ Line ${index + 1} created with front and back text ("${lineText}") - instant switching for readability`);
       });
       
       // Store text meshes globally
@@ -1044,10 +1053,10 @@
       orbitGroup3.position.set(0, 0, 0);
       
       // Use existing orbit method - just split into 3 groups
-      // Position all lines to start visible in an engaging formation
+      // Position lines so they don't disappear quickly - more balanced formation
       orbitGroup1.rotation.y = Math.PI * 0.1;   // Start slightly off front (top line)
-      orbitGroup2.rotation.y = Math.PI * 0.05;  // Start very close to front (middle line)
-      orbitGroup3.rotation.y = Math.PI * 0.15;  // Start slightly off front (bottom line)
+      orbitGroup2.rotation.y = Math.PI * 0.5;   // Start at back (middle line) - half rotation back
+      orbitGroup3.rotation.y = Math.PI * 0.9;   // Start near back (bottom line) - almost half rotation back
       
       // Store Earth radius globally
       window.earthRadius = earthRadius;
@@ -1074,15 +1083,15 @@
       frontLight.castShadow = true;
       frontLight.shadow.mapSize.width = 1024;
       frontLight.shadow.mapSize.height = 1024;
-      frontLight.shadow.camera.near = 0.5;
+        frontLight.shadow.camera.near = 0.5;
       frontLight.shadow.camera.far = 30;
-      scene.add(frontLight);
-      scene.add(frontLight.target);
-      
-      // Enable shadows for Earth model
-      ensureEarthShadowSettings();
-      
-      repaintScene();
+        scene.add(frontLight);
+        scene.add(frontLight.target);
+        
+        // Enable shadows for Earth model
+        ensureEarthShadowSettings();
+        
+        repaintScene();
       console.log('✅ Clean 3-line text orbit system created');
       console.log('✅ Lines will counter-rotate with proper Earth-facing direction');
       
@@ -1272,24 +1281,10 @@
         if (window.textMeshes && window.textMeshes.length > 0) {
           window.textMeshes.forEach((mesh, index) => {
             if (mesh && mesh.userData.originalMaterial) {
-              const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-              const originalMaterials = mesh.userData.originalMaterial;
-              
-              // Check if materials need restoration
-              let needsUpdate = false;
-              currentMaterials.forEach((currentMaterial, matIndex) => {
-                const originalMaterial = originalMaterials[matIndex];
-                if (originalMaterial) {
-                  // Check gold material for both front and back
-                  if (currentMaterial.color.getHex() !== 0xd4af37) {
-                    needsUpdate = true;
-                  }
-                }
-              });
-              
-              if (needsUpdate) {
-                mesh.material = [originalMaterials[0].clone(), originalMaterials[1].clone()];
-                mesh.material.forEach(mat => mat.needsUpdate = true);
+              // Check if material needs restoration (single material per mesh now)
+              if (mesh.material.color.getHex() !== 0xd4af37) {
+                mesh.material = mesh.userData.originalMaterial.clone();
+                mesh.material.needsUpdate = true;
               }
             }
           });
@@ -1770,25 +1765,62 @@
     }
 
 
-    // Create circular star texture
-
+    // Create authentic star texture with cross-spike pattern
     function createStarTexture() {
       const canvas = document.createElement('canvas');
-      canvas.width = 64;
-      canvas.height = 64;
+      canvas.width = 128;
+      canvas.height = 128;
       const context = canvas.getContext('2d');
       
-      // Create radial gradient for circular star
-      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+      // Clear canvas
+      context.clearRect(0, 0, 128, 128);
+      
+      // Create star spike pattern
+      const centerX = 64;
+      const centerY = 64;
+      
+      // Draw multiple spikes for authentic star look
+      context.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+      context.lineWidth = 2;
+      context.lineCap = 'round';
+      
+      // Main cross spikes
+      context.beginPath();
+      context.moveTo(centerX, centerY - 40);
+      context.lineTo(centerX, centerY + 40);
+      context.moveTo(centerX - 40, centerY);
+      context.lineTo(centerX + 40, centerY);
+      context.stroke();
+      
+      // Diagonal spikes
+      context.beginPath();
+      context.moveTo(centerX - 28, centerY - 28);
+      context.lineTo(centerX + 28, centerY + 28);
+      context.moveTo(centerX - 28, centerY + 28);
+      context.lineTo(centerX + 28, centerY - 28);
+      context.stroke();
+      
+      // Small inner cross for detail
+      context.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(centerX, centerY - 20);
+      context.lineTo(centerX, centerY + 20);
+      context.moveTo(centerX - 20, centerY);
+      context.lineTo(centerX + 20, centerY);
+      context.stroke();
+      
+      // Add central bright core
+      const gradient = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, 8);
       gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
-      gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.4)');
+      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
       gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
       
       context.fillStyle = gradient;
-      context.fillRect(0, 0, 64, 64);
+      context.fillRect(0, 0, 128, 128);
       
       const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
       return texture;
     }
 
@@ -1853,30 +1885,30 @@
         starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
         starPositions[i3 + 2] = radius * Math.cos(phi);
         
-        // Enhanced stellar colors with more yellow emphasis and dramatic brightness
+        // Yellow-focused stellar colors with warm golden emphasis
         const paletteRoll = Math.random();
-        const brightnessVariation = 0.2 + Math.random() * 0.8; // 20-100% brightness for more contrast
+        const brightnessVariation = 0.3 + Math.random() * 0.7; // 30-100% brightness for more contrast
         
-        if (paletteRoll < 0.1) {             // Hot blue-white stars (O/B type) - rare
+        if (paletteRoll < 0.05) {            // Hot blue-white stars (O/B type) - very rare
           starColors[i3] = 0.7 + Math.random() * 0.3;
           starColors[i3 + 1] = 0.8 + Math.random() * 0.2;
           starColors[i3 + 2] = 1.0;
-        } else if (paletteRoll < 0.25) {     // White stars (A type) - less common
+        } else if (paletteRoll < 0.15) {     // White stars (A type) - rare
           starColors[i3] = 0.9 + Math.random() * 0.1;
           starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
           starColors[i3 + 2] = 1.0;
-        } else if (paletteRoll < 0.7) {      // Yellow-white stars (F/G type) - more common, brighter
+        } else if (paletteRoll < 0.8) {      // Bright yellow stars (G type like our Sun) - most common
           starColors[i3] = 1.0;
           starColors[i3 + 1] = 1.0;
-          starColors[i3 + 2] = 0.7 + Math.random() * 0.3;
-        } else if (paletteRoll < 0.9) {      // Golden-yellow stars (G/K type) - warm and bright
+          starColors[i3 + 2] = 0.6 + Math.random() * 0.4;
+        } else if (paletteRoll < 0.95) {     // Golden-yellow stars (K type) - warm and bright
           starColors[i3] = 1.0;
-          starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
-          starColors[i3 + 2] = 0.5 + Math.random() * 0.3;
+          starColors[i3 + 1] = 0.85 + Math.random() * 0.15;
+          starColors[i3 + 2] = 0.4 + Math.random() * 0.4;
         } else {                            // Deep golden stars (K type) - warmest
           starColors[i3] = 1.0;
-          starColors[i3 + 1] = 0.8 + Math.random() * 0.2;
-          starColors[i3 + 2] = 0.3 + Math.random() * 0.3;
+          starColors[i3 + 1] = 0.7 + Math.random() * 0.3;
+          starColors[i3 + 2] = 0.2 + Math.random() * 0.4;
         }
         
         // Apply dramatic brightness variation for scintillation effect
@@ -1894,13 +1926,13 @@
         let starSize;
         if (i < starCount * 0.3) {
           // Close stars: larger and more prominent
-          starSize = 4.0 + Math.random() * 6.0; // 4.0 - 10.0
+          starSize = 1.5 + Math.random() * 2.5; // 1.5 - 4.0
         } else if (i < starCount * 0.7) {
           // Medium stars: moderate size
-          starSize = 2.5 + Math.random() * 4.5; // 2.5 - 7.0
+          starSize = 1.0 + Math.random() * 2.0; // 1.0 - 3.0
         } else {
           // Far stars: smaller points
-          starSize = 1.2 + Math.random() * 3.0; // 1.2 - 4.2
+          starSize = 0.5 + Math.random() * 1.5; // 0.5 - 2.0
         }
         starSizes[i] = starSize;
       }
@@ -1910,12 +1942,12 @@
       starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
       
       const starMaterial = new THREE.PointsMaterial({
-        size: 5.0, // Increased for better visibility
+        size: 3.0, // Smaller for more realistic star appearance
         transparent: true,
         opacity: 1.0, // Start with visible stars
         vertexColors: true,
         sizeAttenuation: true,
-        alphaTest: 0.01,
+        alphaTest: 0.001, // Lower alpha test for crisp edges
         blending: THREE.AdditiveBlending,
         map: createStarTexture(),
         depthWrite: false,
@@ -2080,30 +2112,7 @@
           }
         });
         
-        // Dynamic text rotation for smooth readability
-        // Rotate text 180° when it's on the back side to keep it readable left-to-right
-        window.textOrbitGroups.forEach((orbitGroup, index) => {
-          const children = orbitGroup.children;
-          if (children.length >= 1) {
-            const textMesh = children[0]; // Single text mesh
-            
-            // Calculate if text is on the front side (facing camera) or back side
-            const normalizedRotation = ((orbitGroup.rotation.y % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
-            const isOnFrontSide = normalizedRotation < Math.PI / 2 || normalizedRotation > (3 * Math.PI / 2);
-            
-            // Smoothly rotate text to keep it readable with gentle easing
-            const targetRotation = isOnFrontSide ? 0 : Math.PI;
-            const rotationDiff = targetRotation - textMesh.rotation.y;
-            
-            // Normalize rotation difference to shortest path
-            let normalizedDiff = rotationDiff;
-            if (normalizedDiff > Math.PI) normalizedDiff -= Math.PI * 2;
-            if (normalizedDiff < -Math.PI) normalizedDiff += Math.PI * 2;
-            
-            // Very gentle interpolation to avoid violent switching
-            textMesh.rotation.y += normalizedDiff * 0.03;
-          }
-        });
+        // Text orbits without rotation - simple and clean
       }
       
       // Legacy single text orbit (disabled for multi-line system)
