@@ -409,7 +409,7 @@
   <div id="contact-overlay" class="contact-overlay hidden">
     <div class="contact-content">
       <div class="contact-header">
-        <h2>BUILD THE CHANGE YOU WISH TO SEE IN THE WORLD</h2>
+        <h2>CONTACT KYROS</h2>
         <button class="close-contact" onclick="hideContactOverlay()">×</button>
       </div>
       
@@ -969,8 +969,8 @@
           earthRadius = 13.0; // Use known fallback
         }
         
-      // Set uniform tight orbit radius for all lines - hugging Earth's surface
-      const orbitRadius = earthRadius * 1.05; // Tight to Earth surface
+      // Set uniform tight orbit radius for all lines - very close to Earth's surface
+      const orbitRadius = earthRadius * 1.02; // Very tight to Earth surface
       const orbitRadii = [orbitRadius, orbitRadius, orbitRadius]; // All same radius
       
       // Create orbit groups for each line
@@ -1106,8 +1106,8 @@
       scene.add(frontLight);
       scene.add(frontLight.target);
         
-      // Add super bright flash light at x=0 for transition effect
-      const flashLight = new THREE.PointLight(0xffffff, 15, 20, 2);
+      // Add super bright gold flash light at x=0 for transition effect
+      const flashLight = new THREE.PointLight(0xd4af37, 15, 20, 2); // Gold color to match text
       flashLight.position.set(0, 0, 0); // Exactly at x=0, y=0, z=0
       scene.add(flashLight);
       
@@ -2381,31 +2381,28 @@
           '4B 79 72 6F 73',
           'SYS>INIT_CONNECTION',
           'ACCESS_GRANTED',
-          'WELCOME TO THE FUTURE',
-          'BUILD THE CHANGE YOU WISH TO SEE IN THE WORLD',
           'CONTACT KYROS: hello@kyros.cc',
-          'SCHEDULE MEETING: calendly.com/reif-kyros/30min',
-          'PITCH YOUR IDEA TO KYROS',
-          'INVESTMENT OPPORTUNITIES AWAIT',
-          'CLICK TO CONNECT WITH KYROS'
+          'BOOK A MEETING: calendly.com/reif-kyros/30min',
+          'GET IN TOUCH',
+          'BOOK A MEETING',
+          'CONTACT KYROS'
         ];
         
         // Translation messages to show after encrypted ones
         const translationPhrases = [
           'BINARY>HELLO',
           'HEX>KYROS',
-          null, null, null,
-          'CLICK TO BUILD',
+          null, null,
           'EMAIL: hello@kyros.cc',
           'MEETING: calendly.com/reif-kyros/30min',
-          'CLICK TO PITCH',
-          'CLICK TO INVEST',
-          'CLICK TO CONNECT'
+          'GET IN TOUCH',
+          'BOOK A MEETING',
+          'CONTACT KYROS'
         ];
         
         // Store clickable actions for contact-focused messages
         const clickableActions = [
-          null, null, null, null, null, null,
+          null, null, null, null,
           () => window.open('mailto:hello@kyros.cc?subject=Partnership%20Inquiry'),
           () => window.open('https://calendly.com/reif-kyros/30min', '_blank'),
           () => showContactOverlay(),
@@ -2578,15 +2575,13 @@
       
       if (!banner || !content) return;
       
-      // Clear, action-oriented contact messages
+      // Direct contact messages
       const contactMessages = [
-        '📧 EMAIL: hello@kyros.cc',
-        '📅 BOOK A MEETING: calendly.com/reif-kyros/30min',
-        '💡 CLICK TO PITCH YOUR IDEA',
-        '💰 INVESTMENT OPPORTUNITIES AWAIT',
-        '🚀 READY TO BUILD SOMETHING AMAZING?',
-        '💬 LET\'S TALK ABOUT YOUR PROJECT',
-        '🎯 PARTNER WITH KYROS TODAY'
+        'EMAIL: hello@kyros.cc',
+        'BOOK A MEETING: calendly.com/reif-kyros/30min',
+        'GET IN TOUCH',
+        'BOOK A MEETING',
+        'CONTACT KYROS'
       ];
       
       const randomMessage = contactMessages[Math.floor(Math.random() * contactMessages.length)];
