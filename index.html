@@ -198,7 +198,9 @@
         </div>
         
         <div class="terminal-line contact-info" id="contactInfo">
-            Kyros Investment Studio | <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
+            contact() Kyros Investment Studio<br>
+            &nbsp;&nbsp;--- <a href="mailto:hello@kyros.cc">hello@kyros.cc</a><br>
+            &nbsp;&nbsp;--- <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
         </div>
     </div>
 
@@ -214,14 +216,14 @@
         const transformSets = {
             // Language variations
             languages: {
-                'build': ['construir', 'bâtir', 'bauen', 'строить', 'بناء', '建てる'],
-                'the': ['el', 'le', 'der', 'тот', 'ال', 'その'],
-                'change': ['cambio', 'changement', 'Wandel', 'изменение', 'تغيير', '変化'],
-                'you': ['tú', 'vous', 'du', 'ты', 'أنت', 'あなた'],
-                'wish': ['deseo', 'souhait', 'Wunsch', 'желание', 'أمنية', '願い'],
-                'see': ['ver', 'voir', 'sehen', 'видеть', 'رؤية', '見る'],
-                'in': ['en', 'dans', 'in', 'в', 'في', 'で'],
-                'world': ['mundo', 'monde', 'Welt', 'мир', 'عالم', '世界']
+                'build': ['construir', 'bâtir', 'bauen', 'строить', 'بناء', '建てる', 'construire', 'errichten', 'edificare', 'construir', 'bygge', 'bygga'],
+                'the': ['el', 'le', 'der', 'тот', 'ال', 'その', 'il', 'das', 'il', 'o', 'den', 'det'],
+                'change': ['cambio', 'changement', 'Wandel', 'изменение', 'تغيير', '変化', 'cambiamento', 'verandering', 'förändring', 'mudança', 'zmiana'],
+                'you': ['tú', 'vous', 'du', 'ты', 'أنت', 'あなた', 'tu', 'Sie', 'tu', 'você', 'ty', 'du'],
+                'wish': ['deseo', 'souhait', 'Wunsch', 'желание', 'أمنية', '願い', 'desiderio', 'wens', 'önskan', 'desejo', 'życzenie', 'önskning'],
+                'see': ['ver', 'voir', 'sehen', 'видеть', 'رؤية', '見る', 'vedere', 'zien', 'se', 'ver', 'widzieć', 'se'],
+                'in': ['en', 'dans', 'in', 'в', 'في', 'で', 'in', 'in', 'i', 'em', 'w', 'i'],
+                'world': ['mundo', 'monde', 'Welt', 'мир', 'عالم', '世界', 'mondo', 'wereld', 'värld', 'mundo', 'świat', 'verden']
             },
             
             // Number substitutions
@@ -236,7 +238,12 @@
             
             // Emoji transformations
             emojis: {
-                'build': '🔨', 'change': '⚡', 'wish': '✨', 'see': '👁️', 'world': '🌍', 'you': '👤'
+                'build': ['🔨', '🏗️', '⚒️', '🛠️', '🔧', '🏭'],
+                'change': ['⚡', '🔄', '✨', '💫', '🌟', '🎯'],
+                'wish': ['✨', '🌟', '💫', '⭐', '🎆', '🌈'],
+                'see': ['👁️', '👀', '🔍', '🔎', '👁', '👁‍🗨️'],
+                'world': ['🌍', '🌎', '🌏', '🗺️', '🌐', '🌌'],
+                'you': ['👤', '👥', '🧑', '👨', '👩', '🤝']
             }
         };
 
@@ -412,7 +419,9 @@
             words.forEach((word, index) => {
                 const wordLower = word.toLowerCase();
                 if (transformSets.emojis[wordLower]) {
-                    fullText += transformSets.emojis[wordLower];
+                    const emojiArray = transformSets.emojis[wordLower];
+                    const randomEmoji = emojiArray[Math.floor(Math.random() * emojiArray.length)];
+                    fullText += randomEmoji;
         } else {
                     fullText += word;
                 }
