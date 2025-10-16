@@ -207,8 +207,14 @@
 
         const charTransforms = {
             'build': '🔨',
-            'world': '🌍'
+            'world': '🌍',
+            'change': '⚡',
+            'wish': '✨',
+            'see': '👁️'
         };
+
+        // Terminal glitch characters for random switching
+        const glitchChars = ['█', '▓', '▒', '░', '▄', '▀', '▌', '▐', '■', '□', '▪', '▫', '●', '○', '◆', '◇'];
 
         let currentPhrase = 0;
         let currentChar = 0;
@@ -227,14 +233,21 @@
             const phrase = phrases[currentPhrase];
             
             if (currentChar < phrase.length) {
-                // Type next character with realistic timing
+                // Type next character with glitch effect
                 const char = phrase[currentChar];
-                mainText.textContent += char;
-          currentChar++;
+                const charSpan = document.createElement('span');
+                charSpan.className = 'char';
+                charSpan.textContent = char;
+                mainText.appendChild(charSpan);
+                
+                // Add glitch effect during typing
+                addGlitchEffect(charSpan, 3);
+                
+                currentChar++;
           
-                // Variable typing speed for realism (20-50ms)
-                const delay = Math.random() * 30 + 20;
-          setTimeout(typeText, delay);
+                // Variable typing speed for realism (50-100ms)
+                const delay = Math.random() * 50 + 50;
+                setTimeout(typeText, delay);
         } else {
                 // Move to next phrase
                 currentPhrase++;
@@ -242,40 +255,87 @@
                 
                 // Clear and start next phrase
                 setTimeout(() => {
-                    mainText.textContent = '';
+                    mainText.innerHTML = '';
                     typeText();
                 }, 1500); // Pause between phrases
             }
         }
 
+        function addGlitchEffect(element, iterations) {
+            let count = 0;
+            const originalText = element.textContent;
+            
+            const glitchInterval = setInterval(() => {
+                if (count >= iterations) {
+                    element.textContent = originalText;
+                    clearInterval(glitchInterval);
+                    return;
+                }
+                
+                element.textContent = glitchChars[Math.floor(Math.random() * glitchChars.length)];
+                count++;
+            }, 50);
+        }
+
         function transformChars() {
             const mainText = document.getElementById('mainText');
             const text = mainText.textContent;
+            const words = text.split(' ');
             mainText.innerHTML = '';
-            
-            // Convert each character to a span for individual transformation
+
+            // Create spans for each character
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
                 const span = document.createElement('span');
                 span.textContent = char;
                 span.className = 'char';
-                span.dataset.char = char;
                 mainText.appendChild(span);
             }
-            
-            // Transform specific characters
+
+            // Start continuous transformations
+            startContinuousTransforms();
+        }
+
+        function startContinuousTransforms() {
+            const mainText = document.getElementById('mainText');
             const chars = mainText.querySelectorAll('.char');
-            chars.forEach((char, index) => {
-                const charValue = char.dataset.char;
-                if (charTransforms[charValue]) {
-        setTimeout(() => {
-                        char.classList.add('transform');
-          setTimeout(() => {
-                            char.innerHTML = `<span class="emoji">${charTransforms[charValue]}</span>`;
-                        }, 500);
-                    }, index * 100);
-                }
-            });
+            
+            // Transform words to emojis
+            setTimeout(() => {
+                const text = mainText.textContent;
+                const words = text.split(' ');
+                let charIndex = 0;
+                
+                words.forEach((word, wordIndex) => {
+                    if (charTransforms[word]) {
+                        // Find the start of this word
+                        const wordStart = text.indexOf(word, charIndex);
+                        const wordEnd = wordStart + word.length;
+                        
+                        // Replace each character in the word with the emoji
+                        for (let i = wordStart; i < wordEnd; i++) {
+                            if (chars[i]) {
+                                setTimeout(() => {
+                                    chars[i].textContent = charTransforms[word];
+                                    chars[i].classList.add('transform');
+                                }, wordIndex * 200);
+                            }
+                        }
+                        charIndex = wordEnd;
+                    } else {
+                        charIndex += word.length + 1; // +1 for space
+                    }
+                });
+            }, 1000);
+
+            // Start random glitch effects on all characters
+            setInterval(() => {
+                chars.forEach((char, index) => {
+                    if (Math.random() < 0.1) { // 10% chance per character
+                        addGlitchEffect(char, 2);
+                    }
+                });
+            }, 2000);
         }
 
         // Start the typing animation

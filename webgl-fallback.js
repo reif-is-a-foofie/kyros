@@ -385,3 +385,4 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
   window.WebGLFallback = WebGLFallback;
 }
+
