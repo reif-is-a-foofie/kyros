@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kyros Investment Studio</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/magicuidesign/magicui/dist/magic.min.css" />
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
         * {
       margin: 0;
@@ -64,14 +67,15 @@
         .terminal-header {
             display: flex;
             align-items: center;
-            padding: 20px 24px;
+            padding: 18px 24px;
             background: rgba(240, 242, 245, 0.95);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
             border-bottom: 1px solid rgba(229, 231, 235, 0.8);
-            min-height: 56px;
+            min-height: 52px;
+            gap: 16px;
         }
 
         .terminal-buttons {
@@ -136,6 +140,8 @@
             justify-content: flex-start;
             overflow: hidden;
             word-wrap: break-word;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
         }
 
         .terminal-history {
@@ -184,6 +190,8 @@
             justify-content: flex-start;
             overflow: hidden;
             white-space: nowrap;
+            max-width: 100%;
+            word-break: break-all;
         }
 
         .terminal-line:not(.contact-info) {
@@ -399,14 +407,17 @@
         </div>
         <div class="terminal-content">
             <div class="terminal-line">
-                <span class="main-text" id="mainText"></span><span class="cursor"></span>
+                <span class="terminal-prompt">$</span>
+                <div id="magic-terminal-content"></div>
             </div>
             <div class="terminal-history" id="terminalHistory"></div>
         </div>
     </div>
 
-    <script>
-        // Terminal typing animation with word permutations
+    <script type="text/babel">
+        // Magic UI Terminal with React components
+        const { useState, useEffect } = React;
+        
         const basePhrase = 'build the change you wish to see in the world';
         const wordVariations = {
             'build': ['build', 'construir', 'bâtir', 'bauen', 'строить', 'بناء', '建てる', '🔨', '🏗️', '⚒️'],
