@@ -697,44 +697,57 @@
                 const words = basePhrase.split(' ');
                 
                 switch(language) {
-                    // Real Languages
+                    // Real Languages - Pure translations
                     case 'spanish':
-                        return `Spanish: ${words.map(word => {
-                            const variations = wordVariations[word] || [word];
-                            return variations.find(v => v === 'construir' || v === 'cambio' || v === 'mundo') || word;
-                        }).join(' ')}`;
+                        return `Spanish: construir el cambio que deseas ver en el mundo`;
                     case 'french':
-                        return `French: ${words.map(word => {
-                            const variations = wordVariations[word] || [word];
-                            return variations.find(v => v === 'bâtir' || v === 'changement' || v === 'monde') || word;
-                        }).join(' ')}`;
+                        return `French: construire le changement que vous souhaitez voir dans le monde`;
                     case 'german':
-                        return `German: ${words.map(word => {
-                            const variations = wordVariations[word] || [word];
-                            return variations.find(v => v === 'bauen' || v === 'Wandel' || v === 'Welt') || word;
-                        }).join(' ')}`;
+                        return `German: baue den Wandel, den du in der Welt sehen möchtest`;
                     case 'japanese':
-                        return `Japanese: ${words.map(word => {
-                            const variations = wordVariations[word] || [word];
-                            return variations.find(v => v === '建てる' || v === '変化' || v === '世界') || word;
-                        }).join(' ')}`;
+                        return `Japanese: 世界で見たい変化を築く`;
                     case 'arabic':
-                        return `Arabic: ${words.map(word => {
-                            const variations = wordVariations[word] || [word];
-                            return variations.find(v => v === 'بناء' || v === 'تغيير' || v === 'عالم') || word;
-                        }).join(' ')}`;
+                        return `Arabic: بناء التغيير الذي تريد رؤيته في العالم`;
                     case 'russian':
-                        return `Russian: ${words.map(word => {
-                            const variations = wordVariations[word] || [word];
-                            return variations.find(v => v === 'строить' || v === 'изменение' || v === 'мир') || word;
-                        }).join(' ')}`;
+                        return `Russian: стройте изменения, которые вы хотите видеть в мире`;
                     case 'chinese':
-                        return `Chinese: ${words.map(word => {
-                            const variations = wordVariations[word] || [word];
-                            return variations.find(v => v === '建' || v === '变' || v === '世界') || word;
-                        }).join(' ')}`;
+                        return `Chinese: 建设你希望在世界上看到的改变`;
                     case 'swahili':
                         return `Swahili: jenga mabadiliko unayotaka kuona ulimwenguni`;
+                    case 'italian':
+                        return `Italian: costruisci il cambiamento che vuoi vedere nel mondo`;
+                    case 'portuguese':
+                        return `Portuguese: construa a mudança que você quer ver no mundo`;
+                    case 'korean':
+                        return `Korean: 세상에서 보고 싶은 변화를 만들어라`;
+                    case 'hindi':
+                        return `Hindi: दुनिया में जो बदलाव आप देखना चाहते हैं उसे बनाएं`;
+                    case 'polish':
+                        return `Polish: buduj zmianę, którą chcesz widzieć na świecie`;
+                    case 'dutch':
+                        return `Dutch: bouw de verandering die je in de wereld wilt zien`;
+                    case 'swedish':
+                        return `Swedish: bygg förändringen du vill se i världen`;
+                    case 'norwegian':
+                        return `Norwegian: bygg endringen du vil se i verden`;
+                    case 'finnish':
+                        return `Finnish: rakentaa muutoksen, jonka haluat nähdä maailmassa`;
+                    case 'turkish':
+                        return `Turkish: dünyada görmek istediğin değişimi inşa et`;
+                    case 'greek':
+                        return `Greek: χτίσε την αλλαγή που θέλεις να δεις στον κόσμο`;
+                    case 'hebrew':
+                        return `Hebrew: בנה את השינוי שאתה רוצה לראות בעולם`;
+                    case 'thai':
+                        return `Thai: สร้างการเปลี่ยนแปลงที่คุณต้องการเห็นในโลก`;
+                    case 'vietnamese':
+                        return `Vietnamese: xây dựng sự thay đổi bạn muốn thấy trên thế giới`;
+                    case 'indonesian':
+                        return `Indonesian: bangun perubahan yang ingin Anda lihat di dunia`;
+                    case 'malay':
+                        return `Malay: bina perubahan yang anda mahu lihat di dunia`;
+                    case 'tagalog':
+                        return `Tagalog: itayo ang pagbabago na nais mong makita sa mundo`;
                     
                     // Fun Transformations
                     case 'emoji':
