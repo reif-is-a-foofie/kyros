@@ -280,6 +280,10 @@
                 const charSpan = document.createElement('span');
                 charSpan.className = 'char';
                 charSpan.textContent = char;
+                // Preserve spaces by using &nbsp; for actual spaces
+                if (char === ' ') {
+                    charSpan.innerHTML = '&nbsp;';
+                }
                 mainText.appendChild(charSpan);
                 
                 currentChar++;
@@ -450,8 +454,13 @@
                 
                 const char = text[charIndex];
                 const span = document.createElement('span');
-                span.textContent = char;
                 span.className = 'char';
+                // Preserve spaces by using &nbsp; for actual spaces
+                if (char === ' ') {
+                    span.innerHTML = '&nbsp;';
+                } else {
+                    span.textContent = char;
+                }
                 mainText.appendChild(span);
                 charIndex++;
             }, 50);
