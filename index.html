@@ -849,28 +849,28 @@
           emissiveIntensity: 0.1
         });
         
-        // Darker gold material for back (extrusion effect)
+        // Same bright gold material for back (no contrast needed)
         const backGoldMaterial = new THREE.MeshPhysicalMaterial({
-          color: 0x8b6914, // Much darker gold
-          metalness: 0.8,
-          roughness: 0.6, // Much rougher for darker appearance
-          clearcoat: 0.2, // Less clearcoat
-          clearcoatRoughness: 0.5,
-          envMapIntensity: 0.3, // Much less environment reflection
-          reflectivity: 0.3, // Less reflective
-          sheen: 0.1, // Minimal sheen
-          sheenRoughness: 0.6,
-          sheenColor: 0x5d4a0f, // Very dark gold sheen
+          color: 0xd4af37, // Same bright gold as front
+          metalness: 0.6,
+          roughness: 0.35,
+          clearcoat: 0.5,
+          clearcoatRoughness: 0.2,
+          envMapIntensity: 1.2,
+          reflectivity: 0.8,
+          sheen: 0.3,
+          sheenRoughness: 0.3,
+          sheenColor: 0xd4af37, // Same gold sheen
           side: THREE.FrontSide,
           transparent: false,
           opacity: 1.0,
           thickness: 0.6,
           transmission: 0.0,
           ior: 1.5,
-          specularIntensity: 0.2, // Much less specular
-          specularColor: 0x5d4a0f, // Very dark gold specular
-          emissive: 0x0a0500, // Very dark emissive
-          emissiveIntensity: 0.02 // Minimal emissive
+          specularIntensity: 0.8,
+          specularColor: 0xd4af37, // Same gold specular
+          emissive: 0x221100,
+          emissiveIntensity: 0.1
         });
         
         // Create front text mesh (normal orientation) with bright gold
@@ -2005,38 +2005,48 @@
       }
       
          // Animate elliptical orbits with individual speeds and tumbling
-         if (window.orbitalGroups && window.orbitalGroups.length > 0) {
+         if (Array.isArray(window.orbitalGroups) && window.orbitalGroups.length > 0) {
            console.log('🎬 Orbital groups found:', window.orbitalGroups.length);
+           window.orbitalGroups.forEach((orbitalGroup, index) => {
+             const model = orbitalGroup.children[0];
+             if (!model || !model.userData.semiMajorAxis) return;
+             
+             // Use individual orbital speed for each object
+             const groupSpeed = model.userData.orbitalSpeed || 0.28;
+             const currentAngle = model.userData.initialAngle + (t * 0.001 * groupSpeed);
+             
+             // Calculate elliptical position
+             const semiMajorAxis = model.userData.semiMajorAxis;
+             const semiMinorAxis = model.userData.semiMinorAxis;
+             const eccentricity = model.userData.eccentricity;
+             
+             // Elliptical orbit equation: r = a(1-e²)/(1+e*cos(θ))
+             const r = semiMajorAxis * (1 - eccentricity * eccentricity) / (1 + eccentricity * Math.cos(currentAngle));
+             const x = r * Math.cos(currentAngle);
+             const z = r * Math.sin(currentAngle) * (semiMinorAxis / semiMajorAxis);
+             
+             // Update position (account for centering offset)
+             const originalCenter = model.userData.originalCenter || new THREE.Vector3();
+             model.position.set(x - originalCenter.x, 0, z - originalCenter.z);
+             
+             // Add tumbling motion
+             if (model.userData.tumbleX !== undefined) {
+               model.rotation.x += model.userData.tumbleX;
+               model.rotation.y += model.userData.tumbleY;
+               model.rotation.z += model.userData.tumbleZ;
+             }
+           });
          }
-         window.orbitalGroups.forEach((orbitalGroup, index) => {
-           const model = orbitalGroup.children[0];
-           if (!model || !model.userData.semiMajorAxis) return;
-           
-           // Use individual orbital speed for each object
-           const groupSpeed = model.userData.orbitalSpeed || 0.28;
-           const currentAngle = model.userData.initialAngle + (t * 0.001 * groupSpeed);
-           
-           // Calculate elliptical position
-           const semiMajorAxis = model.userData.semiMajorAxis;
-           const semiMinorAxis = model.userData.semiMinorAxis;
-           const eccentricity = model.userData.eccentricity;
-           
-           // Elliptical orbit equation: r = a(1-e²)/(1+e*cos(θ))
-           const r = semiMajorAxis * (1 - eccentricity * eccentricity) / (1 + eccentricity * Math.cos(currentAngle));
-           const x = r * Math.cos(currentAngle);
-           const z = r * Math.sin(currentAngle) * (semiMinorAxis / semiMajorAxis);
-           
-           // Update position (account for centering offset)
-           const originalCenter = model.userData.originalCenter || new THREE.Vector3();
-           model.position.set(x - originalCenter.x, 0, z - originalCenter.z);
-           
-           // Add tumbling motion
-           if (model.userData.tumbleX !== undefined) {
-             model.rotation.x += model.userData.tumbleX;
-             model.rotation.y += model.userData.tumbleY;
-             model.rotation.z += model.userData.tumbleZ;
-           }
-         });
+      
+      // Camera stays fixed for clean, focused view
+      const screenArea = window.innerWidth * window.innerHeight;
+      const baseCameraDistance = 26;
+      let targetCameraZ = baseCameraDistance;
+      if (screenArea < 800000) {
+        targetCameraZ = baseCameraDistance * 0.78;
+      } else if (screenArea > 2000000) {
+        targetCameraZ = baseCameraDistance * 1.18;
+      }
       
       // Earth rotates slowly in opposite direction (1/4 speed of text)
       if (earthModel) {
@@ -2054,22 +2064,12 @@
       
       // Curved text doesn't need to face camera - it's already oriented outward
       
-      // Camera stays fixed for clean, focused view
-      const screenArea = window.innerWidth * window.innerHeight;
-      const baseCameraDistance = 26;
-      let targetCameraZ = baseCameraDistance;
-      if (screenArea < 800000) {
-        targetCameraZ = baseCameraDistance * 0.78;
-      } else if (screenArea > 2000000) {
-        targetCameraZ = baseCameraDistance * 1.18;
-      }
-      
       // Z position is handled in the manual panning section above
       
-      // Noticeable automatic camera pan for depth (much more visible)
-      const panTime = (t || 0) * 0.001; // Much faster time multiplier for visible movement
-      const panRadius = 3.0; // Much larger pan radius for obvious movement
-      const panSpeed = 0.8; // Faster pan speed
+      // Very slow, subtle automatic camera pan for depth
+      const panTime = (t || 0) * 0.0001; // Much slower time multiplier (1/10th speed)
+      const panRadius = 3.0; // Keep same pan radius
+      const panSpeed = 0.08; // Much slower pan speed (1/10th speed)
       
       // Strong vertical and horizontal movement
       const panX = Math.sin(panTime * panSpeed) * panRadius * 0.5; // Moderate horizontal movement
@@ -2157,30 +2157,6 @@
       }
     }
 
-    // Smart contact system - tracks user engagement
-    let userEngagementScore = 0;
-    let lastContactShown = 0;
-    let contactFrequency = 15000; // Start with 15 seconds for more frequent prompts
-    
-    function updateContactFrequency() {
-      // Increase contact frequency based on user engagement
-      if (userEngagementScore > 10) {
-        contactFrequency = 8000; // Show contact every 8 seconds for highly engaged users
-      } else if (userEngagementScore > 5) {
-        contactFrequency = 12000; // Show contact every 12 seconds for engaged users
-      } else if (userEngagementScore > 2) {
-        contactFrequency = 18000; // Show contact every 18 seconds for moderate users
-      } else {
-        contactFrequency = 25000; // Default 25 seconds for casual users
-      }
-    }
-    
-    function trackUserEngagement() {
-      userEngagementScore++;
-      updateContactFrequency();
-      console.log('📊 User engagement score:', userEngagementScore, 'Contact frequency:', contactFrequency);
-    }
-
     function startMilitaryBanner() {
       const banner = document.getElementById('military-banner');
       const content = document.getElementById('banner-content');
@@ -2199,9 +2175,6 @@
       setTimeout(() => {
         startMessageSequence();
       }, 10000);
-      
-      // Start smart contact system
-      startSmartContactSystem();
       
       function startMessageSequence() {
         // Enhanced contact-focused messages with frequent contact prompts
@@ -2382,80 +2355,6 @@
       console.log('🎖️ Military banner sequence started with 10-second cursor delay');
     }
     
-    function startSmartContactSystem() {
-      // Track user interactions to increase contact frequency
-      document.addEventListener('click', trackUserEngagement);
-      document.addEventListener('mousemove', trackUserEngagement);
-      document.addEventListener('keydown', trackUserEngagement);
-      
-      // Show contact info more frequently
-      setInterval(() => {
-        const now = Date.now();
-        if (now - lastContactShown > contactFrequency) {
-          // Show contact message in banner
-          showContactMessage();
-          lastContactShown = now;
-        }
-      }, 5000); // Check every 5 seconds
-      
-      console.log('📞 Smart contact system started - will show contact info every', contactFrequency / 1000, 'seconds');
-    }
-    
-    function showContactMessage() {
-      const banner = document.getElementById('military-banner');
-      const content = document.getElementById('banner-content');
-      
-      if (!banner || !content) return;
-      
-      // Clear, action-oriented contact messages
-      const contactMessages = [
-        '📧 EMAIL: hello@kyros.cc',
-        '📅 BOOK A MEETING: calendly.com/reif-kyros/30min',
-        '💡 CLICK TO PITCH YOUR IDEA',
-        '💰 INVESTMENT OPPORTUNITIES AWAIT',
-        '🚀 READY TO BUILD SOMETHING AMAZING?',
-        '💬 LET\'S TALK ABOUT YOUR PROJECT',
-        '🎯 PARTNER WITH KYROS TODAY'
-      ];
-      
-      const randomMessage = contactMessages[Math.floor(Math.random() * contactMessages.length)];
-      const messageIndex = contactMessages.indexOf(randomMessage);
-      
-      banner.classList.add('show');
-      content.textContent = randomMessage;
-      
-      // Add clickable styling and functionality
-      banner.classList.add('clickable');
-      banner.onclick = () => {
-        // Handle different contact actions based on message content
-        if (randomMessage.includes('EMAIL') || randomMessage.includes('hello@kyros.cc')) {
-          window.open('mailto:hello@kyros.cc?subject=Partnership%20Inquiry');
-        } else if (randomMessage.includes('MEETING') || randomMessage.includes('calendly.com')) {
-          window.open('https://calendly.com/reif-kyros/30min', '_blank');
-        } else {
-          window.open('mailto:hello@kyros.cc?subject=Partnership%20Inquiry');
-        }
-        // Hide banner after click
-        banner.classList.remove('show');
-        setTimeout(() => {
-          content.textContent = '';
-          banner.classList.remove('clickable');
-          banner.onclick = null;
-        }, 500);
-      };
-      
-      // Show for 45 seconds then hide (ample time for interaction)
-      setTimeout(() => {
-        banner.classList.remove('show');
-        setTimeout(() => {
-          content.textContent = '';
-          banner.classList.remove('clickable');
-          banner.onclick = null;
-        }, 500);
-      }, 45000);
-      
-      console.log('📞 Showing contact message:', randomMessage);
-    }
   </script>
 </body>
 </html>
