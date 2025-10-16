@@ -861,7 +861,7 @@
                     typeChar();
                 } else if (currentCommandIndex >= commands.length) {
                     // Loop back to beginning and increment iteration count
-              setTimeout(() => {
+        setTimeout(() => {
                         setCurrentCommandIndex(0);
                         setCurrentCommand('');
                         setIterationCount(prev => prev + 1);
@@ -874,7 +874,7 @@
                     <div className="terminal-line">
                         <span className="terminal-prompt">$</span>
                         <span className="animated-text">
-                            {currentPhrase}
+                            {currentCommand}
                             <span className="cursor">_</span>
                         </span>
                     </div>
@@ -891,8 +891,18 @@
             );
         }
 
-        // Render the Magic Terminal
-        ReactDOM.render(<MagicTerminal />, document.getElementById('magic-terminal-content'));
+        // Render the Magic Terminal with React 18 createRoot
+        console.log('Starting React render...');
+        const container = document.getElementById('magic-terminal-content');
+        console.log('Container found:', container);
+        
+        if (container) {
+            const root = ReactDOM.createRoot(container);
+            root.render(<MagicTerminal />);
+            console.log('React component rendered');
+        } else {
+            console.error('Container not found!');
+    }
   </script>
 </body>
 </html>
