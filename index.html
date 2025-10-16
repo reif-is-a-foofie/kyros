@@ -1,28 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kyros Investment Studio</title>
-    <style>
+  <style>
         * {
-            margin: 0;
-            padding: 0;
+      margin: 0;
+      padding: 0;
             box-sizing: border-box;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-            color: #fff;
+            font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+            background: #000;
+            color: #00ff00;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+      display: flex;
+      flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow: hidden;
+      position: relative;
         }
 
+        body::before {
+            content: '';
+            position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+      z-index: -1;
+    }
+    
         .container {
             text-align: center;
             max-width: 1200px;
@@ -30,65 +45,71 @@
         }
 
         .main-text {
-            font-size: clamp(2rem, 8vw, 6rem);
-            font-weight: 300;
+            font-size: clamp(1.2rem, 5vw, 3rem);
+            font-weight: 400;
             line-height: 1.2;
             margin-bottom: 3rem;
-            min-height: 200px;
+            min-height: 100px;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            white-space: nowrap;
         }
 
-        .word {
+        .char {
             display: inline-block;
-            margin: 0 0.5rem;
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: typeIn 0.1s ease forwards;
         }
 
-        .word.visible {
-            opacity: 1;
-            transform: translateY(0);
+        @keyframes typeIn {
+            to {
+                opacity: 1;
+            }
         }
 
-        .word.highlight {
-            color: #ffd700;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        .char.highlight {
+            color: #00ff41;
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.8);
+            animation: terminalGlow 2s ease-in-out infinite alternate;
         }
 
-        .word.transform {
-            animation: transformWord 1s ease-in-out forwards;
+        @keyframes terminalGlow {
+            from {
+                text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            }
+            to {
+                text-shadow: 0 0 30px rgba(0, 255, 65, 1);
+            }
+        }
+
+        .char.transform {
+            animation: transformChar 1s ease-in-out forwards;
         }
 
         .contact-info {
-            font-size: clamp(1rem, 3vw, 1.5rem);
-            color: #ccc;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            color: #00ff00;
             margin-top: 2rem;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.8s ease 3s;
-        }
-
-        .contact-info.visible {
             opacity: 1;
-            transform: translateY(0);
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
         }
 
         .contact-info a {
-            color: #ffd700;
+            color: #00ff41;
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid transparent;
         }
 
         .contact-info a:hover {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            color: #00ff00;
+            text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+            border-bottom: 1px solid #00ff00;
         }
 
-        @keyframes transformWord {
+        @keyframes transformChar {
             0% {
                 transform: scale(1);
             }
@@ -104,6 +125,32 @@
             font-size: 1.2em;
             display: inline-block;
             animation: bounce 2s infinite;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: #00ff00;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .terminal-prompt {
+            color: #00ff41;
+            font-size: 0.8em;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeIn 1s ease 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
 
         @keyframes bounce {
@@ -132,8 +179,9 @@
 </head>
 <body>
     <div class="container">
+        <div class="terminal-prompt">$ kyros --build</div>
         <div class="main-text" id="mainText">
-            <span class="word" id="word1">build</span>
+            <span class="word" id="word1">build</span><span class="cursor"></span>
         </div>
         
         <div class="contact-info" id="contactInfo">
@@ -144,84 +192,95 @@
     </div>
 
     <script>
-        // Progressive text animation
-        const words = [
+        // Terminal typing animation - improved version
+        const phrases = [
             'build',
             'build the change',
             'build the change you wish to see in the world'
         ];
 
-        const wordTransforms = {
+        const charTransforms = {
             'build': '🔨',
             'world': '🌍'
         };
 
-        let currentPhase = 0;
-        let currentWordIndex = 0;
+        let currentPhrase = 0;
+        let currentChar = 0;
+        let isTyping = true;
+      
+      function typeText() {
+        if (!isTyping) return;
+        
+            if (currentPhrase >= phrases.length) {
+                // Start character transformations
+                setTimeout(transformChars, 2000);
+                return;
+            }
 
-        function showNextPhase() {
             const mainText = document.getElementById('mainText');
-            const currentText = words[currentPhase];
-            const wordElements = currentText.split(' ').map(word => 
-                `<span class="word" data-word="${word}">${word}</span>`
-            );
+            const phrase = phrases[currentPhrase];
             
-            mainText.innerHTML = wordElements.join(' ');
-            
-            // Animate words in sequence
-            const wordSpans = mainText.querySelectorAll('.word');
-            wordSpans.forEach((span, index) => {
+            if (currentChar < phrase.length) {
+                // Type next character with realistic timing
+                const char = phrase[currentChar];
+                mainText.textContent += char;
+          currentChar++;
+          
+                // Variable typing speed for realism (20-50ms)
+                const delay = Math.random() * 30 + 20;
+          setTimeout(typeText, delay);
+        } else {
+                // Move to next phrase
+                currentPhrase++;
+              currentChar = 0;
+                
+                // Clear and start next phrase
                 setTimeout(() => {
-                    span.classList.add('visible');
-                    
-                    // Add highlight effect to key words
-                    if (span.dataset.word === 'build' || span.dataset.word === 'world') {
-                        setTimeout(() => {
-                            span.classList.add('highlight');
-                        }, 300);
-                    }
-                }, index * 200);
-            });
-
-            currentPhase++;
-            
-            if (currentPhase < words.length) {
-                setTimeout(showNextPhase, 3000);
-            } else {
-                // Start word transformations
-                setTimeout(transformWords, 2000);
+                    mainText.textContent = '';
+                    typeText();
+                }, 1500); // Pause between phrases
             }
         }
 
-        function transformWords() {
-            const wordSpans = document.querySelectorAll('.word');
+        function transformChars() {
+            const mainText = document.getElementById('mainText');
+            const text = mainText.textContent;
+            mainText.innerHTML = '';
             
-            wordSpans.forEach((span, index) => {
-                const word = span.dataset.word;
-                if (wordTransforms[word]) {
-                    setTimeout(() => {
-                        span.classList.add('transform');
-                        setTimeout(() => {
-                            span.innerHTML = `<span class="emoji">${wordTransforms[word]}</span>`;
+            // Convert each character to a span for individual transformation
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.className = 'char';
+                span.dataset.char = char;
+                mainText.appendChild(span);
+            }
+            
+            // Transform specific characters
+            const chars = mainText.querySelectorAll('.char');
+            chars.forEach((char, index) => {
+                const charValue = char.dataset.char;
+                if (charTransforms[charValue]) {
+        setTimeout(() => {
+                        char.classList.add('transform');
+          setTimeout(() => {
+                            char.innerHTML = `<span class="emoji">${charTransforms[charValue]}</span>`;
                         }, 500);
-                    }, index * 300);
+                    }, index * 100);
                 }
             });
         }
 
-        // Start the animation sequence
-        setTimeout(() => {
-            showNextPhase();
-            // Show contact info after all phases
-            setTimeout(() => {
-                document.getElementById('contactInfo').classList.add('visible');
-            }, 8000);
-        }, 1000);
+        // Start the typing animation
+          setTimeout(() => {
+            typeText();
+          }, 1000);
 
         // Add click interaction to restart animation
         document.addEventListener('click', () => {
             location.reload();
         });
-    </script>
+  </script>
 </body>
 </html>
