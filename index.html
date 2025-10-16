@@ -704,11 +704,21 @@
       scene.add(rimLight);
       
       // 4. Text-specific light for readability (boosted)
-      const textLight = new THREE.PointLight(0xfff8e7, 5, 30, 2); // Increased from 2 to 5, range from 25 to 30
+      const textLight = new THREE.PointLight(0xfff8e7, 8, 40, 2); // Increased intensity for 3D depth
       textLight.position.set(0, 0, 15);
       scene.add(textLight);
       
-      console.log('✅ Added optimized 4-light setup with boosted intensity for performance');
+      // 5. Additional rim light for text depth
+      const textRimLight = new THREE.DirectionalLight(0xffd700, 4);
+      textRimLight.position.set(8, 4, 12);
+      scene.add(textRimLight);
+      
+      // 6. Volumetric light for text interior glow
+      const textVolumetricLight = new THREE.PointLight(0xffd700, 3, 25, 1.5);
+      textVolumetricLight.position.set(0, 0, 8);
+      scene.add(textVolumetricLight);
+      
+      console.log('✅ Added optimized 6-light setup with enhanced 3D text depth lighting');
 
       // Renderer (must be created first) - optimized for performance
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -848,7 +858,7 @@
             markLoadingStep('Text ready (timeout fallback)');
           }
         }
-      }, 2000); // 2 second timeout
+      }, 5000); // 5 second timeout to ensure font loads
 
       // Load font and create bubble text
       const loader = new FontLoader();
@@ -858,9 +868,10 @@
       fontLoaded = true;
       clearTimeout(fontTimeout);
       console.log('✅ Universal font loaded successfully');
+      console.log('🎯 Creating 3D text with enhanced depth...');
       
-      // Create multi-line text system
-      createMultiLineText(font);
+      // Create clean 3-line text system
+      createCleanThreeLineText(font);
       
       // Show text immediately when created
       if (!loadingFlags.text) {
@@ -886,9 +897,15 @@
       for (let i = 0; i < pos.count; i++) {
         const x = pos.getX(i);
         const y = pos.getY(i);
-        const angle = x / radius;
-        const newX = Math.sin(angle) * radius;
-        const newZ = Math.cos(angle) * radius;
+        
+        // Calculate tighter bend radius for text above/below equator
+        // When yOffset is non-zero, we need a smaller radius to follow Earth's curvature
+        const effectiveRadius = yOffset !== 0 ? radius * 0.8 : radius;
+        
+        const angle = x / effectiveRadius;
+        const newX = Math.sin(angle) * effectiveRadius;
+        const newZ = Math.cos(angle) * effectiveRadius;
+        
         pos.setX(i, newX);
         pos.setY(i, y + yOffset); // Add vertical offset for line separation
         pos.setZ(i, newZ);
@@ -910,158 +927,169 @@
       repaintScene();
     }
 
-    function createMultiLineText(font) {
-      // Define the three lines of text
+    function createCleanThreeLineText(font) {
+      console.log('🎯 Creating clean 3-line orbit text system...');
+      
+      // Define the three lines of text in correct order
       const textLines = [
         "build the change",
         "you wish to see", 
         "in the world"
       ];
       
+      // Calculate Earth radius
+      let earthRadius = 2; // Default fallback
+      if (earthModel) {
+        earthModel.updateMatrixWorld();
+        const boundingBox = new THREE.Box3().setFromObject(earthModel);
+        const size = boundingBox.getSize(new THREE.Vector3());
+        earthRadius = Math.max(size.x, size.y, size.z) / 2;
+      } else {
+        earthRadius = 13.0; // Use known fallback
+      }
+      
+      // Set different orbit radii for each line (tighter system)
+      const baseOrbitRadius = earthRadius * 1.02; // Base radius closer to Earth
+      const orbitRadii = [
+        baseOrbitRadius * 1.1,  // "build the change" - farthest out
+        baseOrbitRadius * 1.05, // "you wish to see" - middle distance
+        baseOrbitRadius * 1.0   // "in the world" - closest to Earth
+      ];
+      
       // Create orbit groups for each line
-      const orbitGroups = [];
+      const orbitGroup1 = new THREE.Group();
+      const orbitGroup2 = new THREE.Group();
+      const orbitGroup3 = new THREE.Group();
+      
+      // Store orbit groups for animation
+      window.textOrbitGroups = [orbitGroup1, orbitGroup2, orbitGroup3];
+      
+      // Add orbit groups to scene
+      scene.add(orbitGroup1, orbitGroup2, orbitGroup3);
+      
+      // Create text meshes for each line
       const textMeshes = [];
       
       textLines.forEach((lineText, index) => {
-        // Create orbit group for this line
-        const orbitGroup = new THREE.Group();
-        orbitGroups.push(orbitGroup);
+        const orbitGroup = window.textOrbitGroups[index];
         
-        // Create text geometry for this line
+        // Create text geometry with readable 3D depth
+        console.log(`🎯 Creating 3D text geometry for: "${lineText}"`);
         const textGeometry = new TextGeometry(lineText, {
           font: font,
-          size: isMobile ? 0.4 : 0.6,    // Smaller per line
-          depth: 1.0,                    // Slightly reduced depth per line
-          curveSegments: 16,             // Optimized segments
-          letterSpacing: -0.2,           // Tight letter spacing
-          bevelEnabled: true,            // Enhanced bevels
-          bevelThickness: 0.12,          // Thick bevels
-          bevelSize: 0.06,               // Moderate bevels
-          bevelSegments: 6               // Smooth bevels
+          size: isMobile ? 0.5 : 0.7,
+          depth: 0.8, // Moderate depth for readability
+          curveSegments: 16, // Good quality curves
+          letterSpacing: -0.15,
+          bevelEnabled: true,
+          bevelThickness: 0.15, // Subtle bevels for depth
+          bevelSize: 0.08, // Small bevels to maintain readability
+          bevelSegments: 6, // Smooth bevels
+          bevelOffset: 0.05 // Small offset for depth perception
         });
+        console.log(`✅ Text geometry created with depth: ${textGeometry.parameters.depth}`);
         
         textGeometry.computeBoundingBox();
         textGeometry.center();
-        textGeometry.computeBoundingBox();
         
-        // Calculate orbit radius (same for all lines)
-        let earthRadius = 2; // Default fallback
+        // Calculate vertical offset for line separation (correct order)
+        // Index 0 = "build the change" = TOP (positive Y)
+        // Index 1 = "you wish to see" = MIDDLE (zero Y) 
+        // Index 2 = "in the world" = BOTTOM (negative Y)
+        const yOffset = index === 0 ? 2.5 : index === 1 ? 0 : -2.5;
         
-        if (earthModel) {
-          earthModel.updateMatrixWorld();
-          const boundingBox = new THREE.Box3().setFromObject(earthModel);
-          const size = boundingBox.getSize(new THREE.Vector3());
-          earthRadius = Math.max(size.x, size.y, size.z) / 2;
-        } else {
-          earthRadius = 13.0; // Use known fallback
-        }
-        
-        // Calculate orbit radius for this line
-        const textDepth = 1.0; // Must match depth in TextGeometry
-        const bendOffset = 1.5; // Adjusted for multi-line system
-        const lineOrbitRadius = earthRadius - (textDepth / 2) - bendOffset;
-        
-        // Store original positions for this line
-        const pos = textGeometry.attributes.position;
+        // Store original flat positions for rebending
+      const pos = textGeometry.attributes.position;
         const originalPositions = new Float32Array(pos.array.length);
         originalPositions.set(pos.array, 0);
+      
+      // Bend text geometry to curve around Earth (facing outward)
+        const lineOrbitRadius = orbitRadii[index];
+        bendTextGeometry(textGeometry, lineOrbitRadius, yOffset);
         
-        // Bend text geometry to curve around Earth (facing outward)
-        bendTextGeometry(textGeometry, lineOrbitRadius, 0);
-        
-        // Calculate vertical spacing - spread lines evenly
-        const totalVerticalSpread = 6; // Total vertical space between all lines
-        const lineSpacing = totalVerticalSpread / (textLines.length - 1);
-        const verticalOffset = (index - (textLines.length - 1) / 2) * lineSpacing;
-        
-        // Create spectacular gold material for this line
-        const textMaterial = new THREE.MeshPhysicalMaterial({
+        // Create readable gold material with subtle 3D depth
+        console.log(`🎨 Creating enhanced 3D material for: "${lineText}"`);
+      const textMaterial = new THREE.MeshPhysicalMaterial({
           color: 0xffd700,        // Rich gold base color
-          metalness: 0.98,        // Near-perfect metalness for gold
-          roughness: 0.02,        // Ultra-smooth for maximum reflections
-          clearcoat: 1.0,         // Maximum clearcoat for extra shine
-          clearcoatRoughness: 0.0, // Perfect clearcoat smoothness
-          envMapIntensity: 5.0,   // Maximum environment reflections for depth
-          emissive: 0x442200,     // Stronger warm gold interior glow
-          emissiveIntensity: 1.2, // Enhanced glow for depth perception
-          reflectivity: 1.0,      // Maximum reflectivity
-          sheen: 0.9,             // Maximum sheen for dramatic luster
-          sheenRoughness: 0.05,   // Ultra-smooth sheen
+          emissive: 0x221100,     // Subtle warm gold interior glow
+          emissiveIntensity: 0.8, // Moderate glow for readability
+          metalness: 0.8,         // Good metalness for gold
+          roughness: 0.2,         // Slightly rough for better visibility
+          clearcoat: 0.8,         // Good clearcoat for shine
+          clearcoatRoughness: 0.1, // Slight roughness for realism
+          envMapIntensity: 2.5,   // Good environment reflections
+          reflectivity: 0.8,      // Good reflectivity
+          sheen: 0.6,             // Moderate sheen for luster
+          sheenRoughness: 0.2,    // Slight sheen roughness
+          sheenColor: 0xffd700,   // Gold sheen color
           side: THREE.DoubleSide, // Ensure both sides are rendered
           transparent: false,     // Ensure no transparency issues
-          opacity: 1.0           // Fully opaque
+          opacity: 1.0,           // Fully opaque
+          thickness: 0.8,         // Match geometry depth
+          transmission: 0.0,      // No transmission for solid gold
+          ior: 1.5,               // Gold's index of refraction
+          specularIntensity: 0.8, // Good specular intensity
+          specularColor: 0xffd700 // Gold specular color
         });
+        console.log(`✨ Enhanced 3D material created with depth: ${textMaterial.thickness}`);
         
-        // Create text mesh for this line
+        // Create text mesh
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        console.log(`🎯 3D text mesh created for: "${lineText}"`);
         
-        // Enable shadow casting for dramatic effect
-        textMesh.castShadow = true;
-        textMesh.receiveShadow = false;
+        // Position text at orbit radius (bending handles the curve)
+        textMesh.position.set(0, 0, 0); // Centered, bending handles positioning
         
-        // Position text at orbit radius with vertical offset
-        textMesh.position.set(lineOrbitRadius, verticalOffset, 0);
-        
-        // Make text face outward from Earth
-        textMesh.rotation.y = Math.PI;
-        
-        // Add unique tilt to each orbit group for cinematic depth
-        const tiltX = (Math.random() - 0.5) * 0.3; // Random X tilt
-        const tiltZ = (Math.random() - 0.5) * 0.3; // Random Z tilt
-        orbitGroup.rotation.x = tiltX;
-        orbitGroup.rotation.z = tiltZ;
-        
-        // Set initial phase offset for perfect synchronization
-        // Each line starts at a different phase so they converge at front
-        const phaseOffset = (index / textLines.length) * Math.PI * 2;
-        orbitGroup.rotation.y = phaseOffset;
-        
-        // Store orbital parameters
-        orbitGroup.userData = {
-          originalMaterial: textMaterial.clone(),
-          originalPositions: originalPositions,
-          orbitRadius: lineOrbitRadius,
-          phaseOffset: phaseOffset,
-          direction: index % 2 === 0 ? 1 : -1, // Alternate directions
-          speed: 0.002 // Base orbital speed
-        };
+        // Make text face outward from Earth (fixes direction issue)
+        // Remove the lookAt and rotateY - they're causing the text to be reversed
+        // The bendTextGeometry already positions text correctly
         
         // Add text mesh to orbit group
         orbitGroup.add(textMesh);
         textMeshes.push(textMesh);
         
-        // Add orbit group to scene
-        scene.add(orbitGroup);
+        // Store material for protection
+        textMesh.userData.originalMaterial = textMaterial.clone();
         
-        console.log(`✅ Line ${index + 1} ("${lineText}") created with orbit radius ${lineOrbitRadius.toFixed(2)}`);
+        console.log(`✅ Line ${index + 1} ("${lineText}") positioned at radius ${lineOrbitRadius.toFixed(2)}, Y offset ${yOffset}`);
       });
       
-      // Store orbit groups globally for animation
-      window.textOrbitGroups = orbitGroups;
+      // Store text meshes globally
       window.textMeshes = textMeshes;
+      
+      // Apply cinematic tilt to each orbit group (toward/away from Earth)
+      orbitGroup1.rotation.z = 0.15;  // Tilt toward Earth
+      orbitGroup2.rotation.z = -0.1;  // Tilt away from Earth  
+      orbitGroup3.rotation.z = 0.2;   // Tilt toward Earth more
+      
+      // Set initial positions so they converge at front-center
+      // Calculate positions based on their different speeds for perfect convergence
+      orbitGroup1.rotation.y = Math.PI * 0.7;   // "build the change" starts 70% around
+      orbitGroup2.rotation.y = Math.PI * 0.3;   // "you wish to see" starts 30% around  
+      orbitGroup3.rotation.y = Math.PI * 0.5;   // "in the world" starts 50% around
       
       // Store Earth radius globally
       window.earthRadius = earthRadius;
-      window.textOrbitRadius = textOrbitRadius;
+      window.textOrbitRadius = orbitRadii[1]; // Use middle radius as reference
       
-      // Add bright front spotlight for text shadows and visibility
-      const frontLight = new THREE.SpotLight(0xffffff, 10, 60, Math.PI / 4, 0.2, 1);
-      frontLight.position.set(0, 0, textOrbitRadius + 8);
+      // Add front spotlight for text visibility
+      const frontLight = new THREE.SpotLight(0xffffff, 8, 50, Math.PI / 4, 0.2, 1);
+      frontLight.position.set(0, 0, orbitRadii[0] + 6); // Position in front of farthest line
       frontLight.target.position.set(0, 0, 0);
       frontLight.castShadow = true;
-      frontLight.shadow.mapSize.width = 2048;
-      frontLight.shadow.mapSize.height = 2048;
-      frontLight.shadow.camera.near = 0.5;
-      frontLight.shadow.camera.far = 50;
-      scene.add(frontLight);
-      scene.add(frontLight.target);
-      
-      // Enable shadows for Earth model
-      ensureEarthShadowSettings();
-      
-      repaintScene();
-      console.log('✅ Multi-line text orbit system created with', textLines.length, 'lines');
-      console.log('✅ All lines will converge at front-center every full rotation');
+      frontLight.shadow.mapSize.width = 1024;
+      frontLight.shadow.mapSize.height = 1024;
+        frontLight.shadow.camera.near = 0.5;
+      frontLight.shadow.camera.far = 30;
+        scene.add(frontLight);
+        scene.add(frontLight.target);
+        
+        // Enable shadows for Earth model
+        ensureEarthShadowSettings();
+        
+        repaintScene();
+      console.log('✅ Clean 3-line text orbit system created');
+      console.log('✅ Lines will counter-rotate with proper Earth-facing direction');
       
       // Start material protection loop
       startMaterialProtection();
@@ -1274,6 +1302,32 @@
             mesh.material.needsUpdate = true;
           }
         });
+        
+        // Protect K object material - ensure it stays royal blue
+        if (window.orbitalObjects && window.orbitalObjects.length > 0) {
+          window.orbitalObjects.forEach((object, index) => {
+            if (index === 4) { // K object (index 4)
+              object.traverse((child) => {
+                if (child.isMesh && child.material) {
+                  const materials = Array.isArray(child.material) ? child.material : [child.material];
+                  materials.forEach((material) => {
+                    // Force K object to stay royal blue
+                    if (material.color.getHex() !== 0x0066ff) {
+                      material.color.set(0x0066ff);
+                      material.metalness = 0.95;
+                      material.roughness = 0.05;
+                      material.emissive.set(0x0033cc);
+                      material.emissiveIntensity = 0.8;
+                      material.envMapIntensity = 4.0;
+                      material.needsUpdate = true;
+                      console.log('🔷 K object material restored to royal blue');
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
       }, 1000); // Check every 1000ms instead of 100ms
     }
 
@@ -1477,35 +1531,44 @@
                }
 
                // Special materials for specific objects
-               if (index === 2) { // Gameboy Classic
+               if (index === 3) { // Gameboy Classic
                  material.color.set(0x444444); // Dark gray for authentic Gameboy color
                  material.metalness = 0.0; // Not metallic
                  material.roughness = 0.8; // Matte plastic surface
                  material.emissive.set(0x111111); // Very subtle emissive
                  material.emissiveIntensity = 0.1;
                  console.log('🎮 Gameboy material - dark gray plastic');
-               } else if (index === 3) { // K object
-                 material.color.set(0x4169e1); // Royal blue base color
-                 material.metalness = 1.0; // 100% metalness - fully metallic
-                 material.roughness = 0.2; // Slightly rougher for better visibility
-                 material.clearcoat = 1.0; // Full clearcoat for shine
-                 material.clearcoatRoughness = 0.1; // Smooth clearcoat
-                 material.emissive.set(0x2040a0); // Royal blue emissive for visibility
-                 material.emissiveIntensity = 0.6; // Moderate emissive to brighten object
-                 material.envMapIntensity = 3.0; // Strong environment reflections
+               } else if (index === 4) { // K object
+                 // Force complete material override for K object
+                 material.color.set(0x0066ff); // Bright royal blue base color
+                 material.metalness = 0.95; // 95% metalness - highly metallic
+                 material.roughness = 0.05; // Ultra-smooth for maximum shine
+                 material.clearcoat = 1.0; // Full clearcoat for extra shine
+                 material.clearcoatRoughness = 0.0; // Perfect clearcoat smoothness
+                 material.emissive.set(0x0033cc); // Deep blue emissive glow
+                 material.emissiveIntensity = 0.8; // Strong emissive for visibility
+                 material.envMapIntensity = 4.0; // Maximum environment reflections
                  material.reflectivity = 1.0; // Maximum reflectivity
-                 material.sheen = 0.5; // Add sheen for extra shine
-                 material.sheenRoughness = 0.2; // Smooth sheen
+                 material.sheen = 0.8; // High sheen for dramatic luster
+                 material.sheenRoughness = 0.1; // Ultra-smooth sheen
+                 material.sheenColor.set(0x0066ff); // Blue sheen color
+                 
+                 // Override any textures that might be causing white appearance
+                 material.map = null;
+                 material.normalMap = null;
+                 material.roughnessMap = null;
+                 material.metalnessMap = null;
+                 material.emissiveMap = null;
                  
                  // Ensure the material uses the scene environment for reflections
                  if (scene.environment) {
                    material.envMap = scene.environment;
                  }
-                 console.log('🔷 K object material - royal blue metallic');
+                 console.log('🔷 K object material - FORCED bright royal blue metallic');
                  
                  // Force material update for immediate effect
                  material.needsUpdate = true;
-                 console.log('✨ Applied bright golden material to K object with enhanced visibility');
+                 console.log('✨ FORCED bright royal blue material to K object with maximum visibility');
                } else {
                  // Standard material optimization for other objects
                  if (material.map) {
@@ -1557,6 +1620,7 @@
 
     function createFallbackText() {
       // Fallback canvas text if font fails
+      console.log('⚠️ Using fallback canvas text - 3D depth not available');
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
@@ -1967,17 +2031,18 @@
         animate.logged = true;
       }
       
-      // Multi-line text orbit animation
-      if (window.textOrbitGroups && window.textOrbitGroups.length > 0) {
-        window.textOrbitGroups.forEach((orbitGroup, index) => {
-          const userData = orbitGroup.userData;
-          if (!userData) return;
-          
-          // Counter-rotate each orbit group at different speeds
-          const speed = userData.speed * userData.direction;
-          orbitGroup.rotation.y += speed;
-          
-          // Optional: Reset rotation to prevent overflow and maintain precision
+      // Clean 3-line text orbit animation with synchronized convergence
+      if (window.textOrbitGroups && window.textOrbitGroups.length >= 3) {
+        // Different speeds to account for different orbit radii
+        // Line 1 (farthest): Slower speed for larger orbit
+        window.textOrbitGroups[0].rotation.y += 0.0018;
+        // Line 2 (middle): Base speed
+        window.textOrbitGroups[1].rotation.y -= 0.002;
+        // Line 3 (closest): Faster speed for smaller orbit
+        window.textOrbitGroups[2].rotation.y += 0.0022;
+        
+        // Optional: Reset rotation to prevent overflow and maintain precision
+        window.textOrbitGroups.forEach(orbitGroup => {
           if (orbitGroup.rotation.y > Math.PI * 2) {
             orbitGroup.rotation.y -= Math.PI * 2;
           } else if (orbitGroup.rotation.y < -Math.PI * 2) {
