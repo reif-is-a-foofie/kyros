@@ -1353,23 +1353,23 @@
                  
                  // Apply realistic pizza colors based on mesh name
                  if (meshName.includes('CHEESE')) {
-                   material.color.set(0xffee44); // Bright yellow cheese
-                   material.emissive.set(0x443300);
+                   if (material.color) material.color.set(0xffee44); // Bright yellow cheese
+                   if (material.emissive) material.emissive.set(0x443300);
                    material.emissiveIntensity = 0.25;
                    console.log('🧀 Cheese layer - bright yellow');
                  } else if (meshName.includes('BREAD')) {
-                   material.color.set(0x995522); // Dark brown bread/crust
-                   material.emissive.set(0x331100);
+                   if (material.color) material.color.set(0x995522); // Dark brown bread/crust
+                   if (material.emissive) material.emissive.set(0x331100);
                    material.emissiveIntensity = 0.15;
                    console.log('🍞 Bread layer - dark brown');
                  } else if (meshName.includes('PEPPERONI')) {
-                   material.color.set(0xcc3333); // Red pepperoni
-                   material.emissive.set(0x220000);
+                   if (material.color) material.color.set(0xcc3333); // Red pepperoni
+                   if (material.emissive) material.emissive.set(0x220000);
                    material.emissiveIntensity = 0.15;
                    console.log('🌶️ Pepperoni layer - red');
                  } else {
                    // Default pizza color
-                   material.color.set(0xff9966);
+                   if (material.color) material.color.set(0xff9966);
                    console.log('🍕 Other pizza layer - orange');
                  }
                  
@@ -1383,26 +1383,30 @@
 
                // Special materials for specific objects
                if (index === 3) { // Gameboy Classic
-                 material.color.set(0x444444); // Dark gray for authentic Gameboy color
+                 if (material.color) material.color.set(0x444444); // Dark gray for authentic Gameboy color
                  material.metalness = 0.0; // Not metallic
                  material.roughness = 0.8; // Matte plastic surface
-                 material.emissive.set(0x111111); // Very subtle emissive
+                 if (material.emissive) material.emissive.set(0x111111); // Very subtle emissive
                  material.emissiveIntensity = 0.1;
                  console.log('🎮 Gameboy material - dark gray plastic');
                } else if (index === 4) { // K object
                  // Force complete material override for K object
-                 material.color.set(0x0066ff); // Bright royal blue base color
+                 if (material.color) material.color.set(0x0066ff); // Bright royal blue base color
                  material.metalness = 0.95; // 95% metalness - highly metallic
                  material.roughness = 0.05; // Ultra-smooth for maximum shine
                  material.clearcoat = 1.0; // Full clearcoat for extra shine
                  material.clearcoatRoughness = 0.0; // Perfect clearcoat smoothness
-                 material.emissive.set(0x0033cc); // Deep blue emissive glow
+                 if (material.emissive) {
+                   material.emissive.set(0x0033cc); // Deep blue emissive glow
+                 }
                  material.emissiveIntensity = 0.8; // Strong emissive for visibility
                  material.envMapIntensity = 4.0; // Maximum environment reflections
                  material.reflectivity = 1.0; // Maximum reflectivity
                  material.sheen = 0.8; // High sheen for dramatic luster
                  material.sheenRoughness = 0.1; // Ultra-smooth sheen
-                 material.sheenColor.set(0x0066ff); // Blue sheen color
+                 if (material.sheenColor) {
+                   material.sheenColor.set(0x0066ff); // Blue sheen color
+                 }
                  
                  // Override any textures that might be causing white appearance
                  material.map = null;
