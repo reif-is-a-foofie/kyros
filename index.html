@@ -770,12 +770,12 @@
       ];
       
       // Calculate Earth radius
-        let earthRadius = 2; // Default fallback
-        if (earthModel) {
-          earthModel.updateMatrixWorld();
-          const boundingBox = new THREE.Box3().setFromObject(earthModel);
-          const size = boundingBox.getSize(new THREE.Vector3());
-          earthRadius = Math.max(size.x, size.y, size.z) / 2;
+      let earthRadius = 2; // Default fallback
+      if (earthModel) {
+        earthModel.updateMatrixWorld();
+        const boundingBox = new THREE.Box3().setFromObject(earthModel);
+        const size = boundingBox.getSize(new THREE.Vector3());
+        earthRadius = Math.max(size.x, size.y, size.z) / 2;
         } else {
           earthRadius = 13.0; // Use known fallback
         }
@@ -945,11 +945,11 @@
       const flashLight = new THREE.PointLight(0xffffff, 15, 20, 2);
       flashLight.position.set(0, 0, 0); // Exactly at x=0, y=0, z=0
       scene.add(flashLight);
-      
-      // Enable shadows for Earth model
-      ensureEarthShadowSettings();
-      
-      repaintScene();
+        
+        // Enable shadows for Earth model
+        ensureEarthShadowSettings();
+        
+        repaintScene();
       console.log('✅ Clean 3-line text orbit system created');
       console.log('✅ Lines will counter-rotate with proper Earth-facing direction');
       
@@ -1938,8 +1938,16 @@
         animate.logged = true;
       }
       
+      // Debug: Log every 60 frames to confirm animation is running
+      if (!animate.frameCount) animate.frameCount = 0;
+      animate.frameCount++;
+      if (animate.frameCount % 60 === 0) {
+        console.log('🎬 Animation running, frame:', animate.frameCount);
+      }
+      
       // Clean 3-line text orbit animation with variable speeds for more overlap options
       if (window.textOrbitGroups && window.textOrbitGroups.length >= 3) {
+        console.log('🎬 Text orbit groups found:', window.textOrbitGroups.length);
         // Faster base speeds with dynamic variation based on visibility
         window.textOrbitGroups.forEach((orbitGroup, index) => {
           // Base speeds - much faster overall
@@ -1997,6 +2005,9 @@
       }
       
          // Animate elliptical orbits with individual speeds and tumbling
+         if (window.orbitalGroups && window.orbitalGroups.length > 0) {
+           console.log('🎬 Orbital groups found:', window.orbitalGroups.length);
+         }
          window.orbitalGroups.forEach((orbitalGroup, index) => {
            const model = orbitalGroup.children[0];
            if (!model || !model.userData.semiMajorAxis) return;
