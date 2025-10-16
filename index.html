@@ -2235,6 +2235,19 @@
       // Allow camera panning - only adjust Z position smoothly
       camera.position.z += (targetCameraZ - camera.position.z) * 0.12;
       
+      // Very slow, subtle automatic camera pan for depth (anti-motion sickness)
+      const panTime = (t || 0) * 0.0001; // Very slow time multiplier
+      const panRadius = 0.8; // Small pan radius
+      const panSpeed = 0.3; // Very slow pan speed
+      
+      // Gentle circular pan in X-Y plane
+      const panX = Math.sin(panTime * panSpeed) * panRadius;
+      const panY = Math.cos(panTime * panSpeed * 0.7) * panRadius * 0.6; // Slightly different Y rhythm
+      
+      // Apply very subtle pan offset
+      camera.position.x += (panX - camera.position.x) * 0.005; // Very gentle interpolation
+      camera.position.y += (panY - camera.position.y) * 0.005; // Very gentle interpolation
+      
       // Always look at the orbital center
       camera.lookAt(0, 0, 0);
       
