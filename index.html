@@ -108,9 +108,17 @@
     #military-banner.clickable {
       text-decoration: underline;
       text-decoration-color: #ffd700;
+      text-decoration-thickness: 2px;
       text-underline-offset: 4px;
       cursor: pointer;
       animation: pulse-glow 2s ease-in-out infinite alternate;
+      transition: all 0.3s ease;
+    }
+    
+    #military-banner.clickable:hover {
+      text-decoration-thickness: 3px;
+      text-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700;
+      transform: scale(1.02);
     }
     
     @keyframes pulse-glow {
@@ -2398,7 +2406,7 @@
         // Store clickable actions for contact-focused messages
         const clickableActions = [
           null, null, null, null, null, null,
-          () => window.open('mailto:hello@kyros.cc'),
+          () => window.open('mailto:hello@kyros.cc?subject=Partnership%20Inquiry'),
           () => window.open('https://calendly.com/reif-kyros/30min', '_blank'),
           () => showContactOverlay(),
           () => showContactOverlay(),
@@ -2570,26 +2578,52 @@
       
       if (!banner || !content) return;
       
-      // Quick contact messages that appear briefly
+      // Clear, action-oriented contact messages
       const contactMessages = [
-        'CONTACT: hello@kyros.cc',
-        'MEETING: calendly.com/reif-kyros/30min',
-        'CLICK TO PITCH YOUR IDEA',
-        'INVESTMENT OPPORTUNITIES AWAIT'
+        '📧 EMAIL: hello@kyros.cc',
+        '📅 BOOK A MEETING: calendly.com/reif-kyros/30min',
+        '💡 CLICK TO PITCH YOUR IDEA',
+        '💰 INVESTMENT OPPORTUNITIES AWAIT',
+        '🚀 READY TO BUILD SOMETHING AMAZING?',
+        '💬 LET\'S TALK ABOUT YOUR PROJECT',
+        '🎯 PARTNER WITH KYROS TODAY'
       ];
       
       const randomMessage = contactMessages[Math.floor(Math.random() * contactMessages.length)];
+      const messageIndex = contactMessages.indexOf(randomMessage);
       
       banner.classList.add('show');
       content.textContent = randomMessage;
       
-      // Show for 30 seconds then hide
+      // Add clickable styling and functionality
+      banner.classList.add('clickable');
+      banner.onclick = () => {
+        // Handle different contact actions based on message content
+        if (randomMessage.includes('EMAIL') || randomMessage.includes('hello@kyros.cc')) {
+          window.open('mailto:hello@kyros.cc?subject=Partnership%20Inquiry');
+        } else if (randomMessage.includes('MEETING') || randomMessage.includes('calendly.com')) {
+          window.open('https://calendly.com/reif-kyros/30min', '_blank');
+        } else {
+          showContactOverlay();
+        }
+        // Hide banner after click
+        banner.classList.remove('show');
+        setTimeout(() => {
+          content.textContent = '';
+          banner.classList.remove('clickable');
+          banner.onclick = null;
+        }, 500);
+      };
+      
+      // Show for 45 seconds then hide (ample time for interaction)
       setTimeout(() => {
         banner.classList.remove('show');
         setTimeout(() => {
           content.textContent = '';
+          banner.classList.remove('clickable');
+          banner.onclick = null;
         }, 500);
-      }, 30000);
+      }, 45000);
       
       console.log('📞 Showing contact message:', randomMessage);
     }
