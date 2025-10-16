@@ -29,7 +29,7 @@
 
         body::before {
             content: '';
-            position: fixed;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
@@ -37,12 +37,12 @@
             background: 
                 radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
-            pointer-events: none;
+      pointer-events: none;
       z-index: -1;
     }
-    
+
         .container {
-            text-align: center;
+      text-align: center;
             max-width: 1200px;
             padding: 2rem;
         }
@@ -71,24 +71,25 @@
             0%, 100% {
                 transform: translateY(0px);
                 box-shadow: 
-                    0 40px 80px rgba(0, 0, 0, 0.25),
-                    0 20px 40px rgba(0, 0, 0, 0.15),
+                    0 40px 80px rgba(0, 0, 0, 0.35),
+                    0 20px 40px rgba(0, 0, 0, 0.25),
                     0 0 0 1px rgba(255, 255, 255, 0.8),
                     inset 0 1px 0 rgba(255, 255, 255, 0.9);
             }
             50% {
-                transform: translateY(-8px);
+                transform: translateY(-4px);
                 box-shadow: 
-                    0 50px 100px rgba(0, 0, 0, 0.3),
-                    0 25px 50px rgba(0, 0, 0, 0.2),
+                    0 45px 90px rgba(0, 0, 0, 0.4),
+                    0 25px 50px rgba(0, 0, 0, 0.3),
                     0 0 0 1px rgba(255, 255, 255, 0.8),
                     inset 0 1px 0 rgba(255, 255, 255, 0.9);
             }
         }
 
         .terminal-header {
-            display: flex;
-            align-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
             padding: 18px 24px;
             background: rgba(240, 242, 245, 0.95);
             backdrop-filter: blur(10px);
@@ -97,13 +98,14 @@
             border-top-right-radius: 12px;
             border-bottom: 1px solid rgba(229, 231, 235, 0.8);
             min-height: 52px;
-            gap: 16px;
+      position: relative;
         }
 
         .terminal-buttons {
             display: flex;
             gap: 8px;
-            margin-right: 20px;
+      position: absolute;
+            left: 24px;
             align-items: center;
         }
 
@@ -424,15 +426,11 @@
                 <span class="button green"></span>
             </div>
             <div class="terminal-title">
-                Kyros Investment Studio | <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
+                Kyros: an investment studio | <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
             </div>
         </div>
         <div class="terminal-content">
-            <div class="terminal-line">
-                <span class="terminal-prompt">$</span>
-                <div id="magic-terminal-content"></div>
-            </div>
-            <div class="terminal-history" id="terminalHistory"></div>
+            <div id="magic-terminal-content"></div>
         </div>
     </div>
 
@@ -452,26 +450,85 @@
             'world': ['world', 'mundo', 'monde', 'Welt', 'мир', 'عالم', '世界', '🌍', '🌎', '🌏']
         };
 
-        function generateRandomPhrase() {
-            const words = basePhrase.split(' ');
-            return words.map(word => {
-                const variations = wordVariations[word] || [word];
-                return variations[Math.floor(Math.random() * variations.length)];
-            }).join(' ');
+        // Magic UI Terminal Component
+        function MagicTerminal() {
+            const [currentPhrase, setCurrentPhrase] = useState('');
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [history, setHistory] = useState([]);
+
+            const generateRandomPhrase = () => {
+                const words = basePhrase.split(' ');
+                return words.map(word => {
+                    const variations = wordVariations[word] || [word];
+                    return variations[Math.floor(Math.random() * variations.length)];
+                }).join(' ');
+            };
+
+            const phrases = [
+                'build',
+                'build the change',
+                'build the change you wish',
+                'build the change you wish to see',
+                'build the change you wish to see in the world',
+                generateRandomPhrase(),
+                generateRandomPhrase(),
+                generateRandomPhrase()
+            ];
+
+            useEffect(() => {
+                if (currentIndex < phrases.length) {
+                    const phrase = phrases[currentIndex];
+                    let charIndex = 0;
+                    
+                    const typeChar = () => {
+                        if (charIndex < phrase.length) {
+                            setCurrentPhrase(phrase.substring(0, charIndex + 1));
+                            charIndex++;
+                            setTimeout(typeChar, Math.random() * 100 + 100);
+        } else {
+                            setTimeout(() => {
+                                setHistory(prev => [...prev, phrase]);
+                                setCurrentIndex(prev => prev + 1);
+                                setCurrentPhrase('');
+                            }, 1000);
+                        }
+                    };
+                    
+                    typeChar();
+           } else {
+                    // Loop back to beginning
+                    setCurrentIndex(0);
+                    setCurrentPhrase('');
+                }
+            }, [currentIndex]);
+
+            return (
+                <div className="magic-terminal">
+                    <div className="terminal-line">
+                        <span className="terminal-prompt">$</span>
+                        <span className="animated-text">
+                            {currentPhrase}
+                            <span className="cursor">_</span>
+                        </span>
+                    </div>
+                    {history.map((phrase, index) => (
+                        <div key={index} className="terminal-history-line">
+                            <span className="terminal-prompt">$</span>
+                            <span className="terminal-output">
+                                <span className="checkmark">✓</span>
+                                <span className="output-text">{phrase}</span>
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            );
         }
 
-        // Systematic transformation sets
-        const transformSets = {
-            // Language variations
-            languages: {
-                'build': ['construir', 'bâtir', 'bauen', 'строить', 'بناء', '建てる', 'construire', 'errichten', 'edificare', 'construir', 'bygge', 'bygga'],
-                'the': ['el', 'le', 'der', 'тот', 'ال', 'その', 'il', 'das', 'il', 'o', 'den', 'det'],
-                'change': ['cambio', 'changement', 'Wandel', 'изменение', 'تغيير', '変化', 'cambiamento', 'verandering', 'förändring', 'mudança', 'zmiana'],
-                'you': ['tú', 'vous', 'du', 'ты', 'أنت', 'あなた', 'tu', 'Sie', 'tu', 'você', 'ty', 'du'],
-                'wish': ['deseo', 'souhait', 'Wunsch', 'желание', 'أمنية', '願い', 'desiderio', 'wens', 'önskan', 'desejo', 'życzenie', 'önskning'],
-                'see': ['ver', 'voir', 'sehen', 'видеть', 'رؤية', '見る', 'vedere', 'zien', 'se', 'ver', 'widzieć', 'se'],
-                'in': ['en', 'dans', 'in', 'в', 'في', 'で', 'in', 'in', 'i', 'em', 'w', 'i'],
-                'world': ['mundo', 'monde', 'Welt', 'мир', 'عالم', '世界', 'mondo', 'wereld', 'värld', 'mundo', 'świat', 'verden']
+        // Render the Magic Terminal
+        ReactDOM.render(<MagicTerminal />, document.getElementById('magic-terminal-content'));
+    </script>
+</body>
+</html>
             },
             
             // Number substitutions
@@ -539,7 +596,7 @@
                 // Variable typing speed for realism (100-200ms)
                 const delay = Math.random() * 100 + 100;
                 setTimeout(typeText, delay);
-               } else {
+        } else {
                 // Add completed phrase to history
                 addToHistory(phrase);
                 
