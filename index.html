@@ -1030,18 +1030,28 @@
           emissiveIntensity: 0.1
         });
         
-        // Create single text mesh - clean and simple
-        const textMesh = new THREE.Mesh(textGeometry, goldMaterial);
-        textMesh.castShadow = true;
-        textMesh.receiveShadow = true;
-        textMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
-        textMesh.userData.originalMaterial = goldMaterial.clone();
+        // Create front text mesh (normal orientation)
+        const frontTextMesh = new THREE.Mesh(textGeometry.clone(), goldMaterial);
+        frontTextMesh.castShadow = true;
+        frontTextMesh.receiveShadow = true;
+        frontTextMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
+        frontTextMesh.userData.originalMaterial = goldMaterial.clone();
         
-        // Add single mesh to orbit group
-        orbitGroup.add(textMesh);
-        textMeshes.push(textMesh);
+        // Create back text mesh (rotated 180° for left-to-right readability)
+        const backTextMesh = new THREE.Mesh(textGeometry.clone(), goldMaterial);
+        backTextMesh.castShadow = true;
+        backTextMesh.receiveShadow = true;
+        backTextMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
+        backTextMesh.rotation.y = Math.PI; // Rotate 180° to keep text readable left-to-right
+        backTextMesh.visible = false; // Start invisible
+        backTextMesh.userData.originalMaterial = goldMaterial.clone();
         
-        console.log(`✅ Line ${index + 1} created with front and back text ("${lineText}") - instant switching for readability`);
+        // Add both meshes to orbit group
+        orbitGroup.add(frontTextMesh);
+        orbitGroup.add(backTextMesh);
+        textMeshes.push(frontTextMesh, backTextMesh);
+        
+        console.log(`✅ Line ${index + 1} created with dual text meshes ("${lineText}") - back mesh starts invisible`);
       });
       
       // Store text meshes globally
@@ -2112,7 +2122,24 @@
           }
         });
         
-        // Text orbits without rotation - simple and clean
+        // Clean text switching - back mesh starts invisible, switches at x=0
+        window.textOrbitGroups.forEach((orbitGroup, index) => {
+          const children = orbitGroup.children;
+          if (children.length >= 2) {
+            const frontMesh = children[0]; // First child is front text
+            const backMesh = children[1];  // Second child is back text (starts invisible)
+            
+            // Calculate if text is on the front side (facing camera) or back side
+            // Add small offset to switch slightly before x=0 for smoother transition
+            const normalizedRotation = ((orbitGroup.rotation.y % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+            const switchOffset = Math.PI / 12; // 15 degrees offset for smoother switching
+            const isOnFrontSide = normalizedRotation < (Math.PI / 2 - switchOffset) || normalizedRotation > (3 * Math.PI / 2 + switchOffset);
+            
+            // Switch visibility with offset for smoother transition
+            frontMesh.visible = isOnFrontSide;
+            backMesh.visible = !isOnFrontSide;
+          }
+        });
       }
       
       // Legacy single text orbit (disabled for multi-line system)
@@ -2366,7 +2393,7 @@
         let isTyping = true;
         let showDuration = 4000; // Show message for 4 seconds (longer)
         let hideDuration = 1000; // Hide for 1 second (shorter)
-        let clickableShowDuration = 12000; // Show clickable messages for 12 seconds (much longer)
+        let clickableShowDuration = 30000; // Show clickable messages for 30 seconds (much longer)
         let isHovering = false;
         let hideTimeout = null;
         let showingTranslation = false;
@@ -2539,13 +2566,13 @@
       banner.classList.add('show');
       content.textContent = randomMessage;
       
-      // Show for 3 seconds then hide
+      // Show for 30 seconds then hide
       setTimeout(() => {
         banner.classList.remove('show');
         setTimeout(() => {
           content.textContent = '';
         }, 500);
-      }, 3000);
+      }, 30000);
       
       console.log('📞 Showing contact message:', randomMessage);
     }
