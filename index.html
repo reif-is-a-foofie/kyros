@@ -98,7 +98,7 @@
 
         .terminal-title {
             color: #374151;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 400;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             display: flex;
@@ -156,6 +156,24 @@
             color: #10b981;
             margin-right: 8px;
             font-weight: 500;
+        }
+
+        .terminal-output {
+            margin-left: 20px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .checkmark {
+            color: #10b981;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .output-text {
+            color: #6b7280;
+            font-style: italic;
         }
 
         .terminal-line {
@@ -224,7 +242,7 @@
         .terminal-line::before {
             content: '$';
             color: #10b981;
-            margin-right: 0.5rem;
+            margin-right: 8px;
             font-weight: 500;
         }
 
@@ -388,12 +406,26 @@
     </div>
 
     <script>
-        // Terminal typing animation - improved version
-        const phrases = [
-            'build',
-            'build the change',
-            'build the change you wish to see in the world'
-        ];
+        // Terminal typing animation with word permutations
+        const basePhrase = 'build the change you wish to see in the world';
+        const wordVariations = {
+            'build': ['build', 'construir', 'bâtir', 'bauen', 'строить', 'بناء', '建てる', '🔨', '🏗️', '⚒️'],
+            'the': ['the', 'el', 'le', 'der', 'тот', 'ال', 'その', 'il', 'das', 'o'],
+            'change': ['change', 'cambio', 'changement', 'Wandel', 'изменение', 'تغيير', '変化', '⚡', '🔄', '✨'],
+            'you': ['you', 'tú', 'vous', 'du', 'ты', 'أنت', 'あなた', '👤', '👥', '🧑'],
+            'wish': ['wish', 'deseo', 'souhait', 'Wunsch', 'желание', 'أمنية', '願い', '✨', '🌟', '💫'],
+            'see': ['see', 'ver', 'voir', 'sehen', 'видеть', 'رؤية', '見る', '👁️', '👀', '🔍'],
+            'in': ['in', 'en', 'dans', 'in', 'в', 'في', 'で', 'i', 'em', 'w'],
+            'world': ['world', 'mundo', 'monde', 'Welt', 'мир', 'عالم', '世界', '🌍', '🌎', '🌏']
+        };
+
+        function generateRandomPhrase() {
+            const words = basePhrase.split(' ');
+            return words.map(word => {
+                const variations = wordVariations[word] || [word];
+                return variations[Math.floor(Math.random() * variations.length)];
+            }).join(' ');
+        }
 
         // Systematic transformation sets
         const transformSets = {
@@ -455,7 +487,7 @@
             }
       
             const mainText = document.getElementById('mainText');
-            const phrase = phrases[currentPhrase];
+            const phrase = generateRandomPhrase();
             
             if (currentChar < phrase.length) {
                 // Type next character
@@ -495,7 +527,14 @@
             const historyContainer = document.getElementById('terminalHistory');
             const historyLine = document.createElement('div');
             historyLine.className = 'terminal-history-line';
-            historyLine.innerHTML = `<span class="terminal-prompt">$</span> ${text}`;
+            
+            // Add checkmark and indented output
+            historyLine.innerHTML = `
+                <span class="terminal-prompt">$</span> ${text}
+                <div class="terminal-output">
+                    <span class="checkmark">✓</span> <span class="output-text">Command executed successfully</span>
+                </div>
+            `;
             historyContainer.appendChild(historyLine);
             
             // Keep only last 5 lines in history
@@ -565,7 +604,7 @@
                     const translations = transformSets.languages[wordLower];
                     const randomTranslation = translations[Math.floor(Math.random() * translations.length)];
                     fullText += randomTranslation;
-                } else {
+        } else {
                     fullText += word;
                 }
                 if (index < words.length - 1) fullText += ' ';
@@ -650,7 +689,7 @@
         }
 
         // Start the typing animation
-        setTimeout(() => {
+          setTimeout(() => {
               typeText();
           }, 1000);
 
