@@ -1098,6 +1098,11 @@
         scene.add(frontLight);
         scene.add(frontLight.target);
         
+      // Add super bright flash light at x=0 for transition effect
+      const flashLight = new THREE.PointLight(0xffffff, 15, 20, 2);
+      flashLight.position.set(0, 0, 0); // Exactly at x=0, y=0, z=0
+      scene.add(flashLight);
+        
         // Enable shadows for Earth model
         ensureEarthShadowSettings();
         
@@ -2101,13 +2106,14 @@
           const baseSpeeds = [0.004, -0.0035, 0.003]; // Line 1, 2, 3
           let speed = baseSpeeds[index];
           
-          // Calculate if text is behind Earth (not readable)
+          // Fix 90-degree orientation offset - adjust angles by Math.PI/2
           const normalizedRotation = ((orbitGroup.rotation.y % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
-          const isBehindEarth = normalizedRotation > Math.PI / 2 && normalizedRotation < (3 * Math.PI / 2);
+          const adjustedRotation = (normalizedRotation + Math.PI / 2) % (Math.PI * 2); // Rotate 90 degrees
+          const isInFront = adjustedRotation < Math.PI / 2 || adjustedRotation > (3 * Math.PI / 2);
           
-          // Speed up when behind Earth, normal speed when in front
-          if (isBehindEarth) {
-            speed *= 1.8; // 80% faster when behind Earth
+          // Speed up when behind Earth (not readable), normal speed when in front (readable)
+          if (!isInFront) {
+            speed *= 2.5; // 150% faster when behind Earth (not readable)
           }
           
           orbitGroup.rotation.y += speed;
@@ -2130,10 +2136,9 @@
             const backMesh = children[1];  // Second child is back text (starts invisible)
             
             // Calculate if text is on the front side (facing camera) or back side
-            // Add small offset to switch slightly before x=0 for smoother transition
+            // Switch exactly at x=0 for cleanest transition
             const normalizedRotation = ((orbitGroup.rotation.y % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
-            const switchOffset = Math.PI / 12; // 15 degrees offset for smoother switching
-            const isOnFrontSide = normalizedRotation < (Math.PI / 2 - switchOffset) || normalizedRotation > (3 * Math.PI / 2 + switchOffset);
+            const isOnFrontSide = normalizedRotation < Math.PI / 2 || normalizedRotation > (3 * Math.PI / 2);
             
             // Switch visibility with offset for smoother transition
             frontMesh.visible = isOnFrontSide;

@@ -1,0 +1,11 @@
+Model Information:
+* title:	PIZZA
+* source:	https://sketchfab.com/3d-models/pizza-5b19b3bb03ed4a0c846f208b708bf24c
+* author:	Leo Isidro (https://sketchfab.com/leo.isidro3)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "PIZZA" (https://sketchfab.com/3d-models/pizza-5b19b3bb03ed4a0c846f208b708bf24c) by Leo Isidro (https://sketchfab.com/leo.isidro3) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
