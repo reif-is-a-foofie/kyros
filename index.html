@@ -50,6 +50,11 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+            font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
         }
 
         .terminal-line {
@@ -58,7 +63,16 @@
             line-height: 1.4;
             text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
             white-space: nowrap;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-line::before {
+            content: '>';
+            color: #00ff41;
+            margin-right: 0.5rem;
+            font-weight: bold;
         }
 
         .main-text {
@@ -152,10 +166,6 @@
             51%, 100% { opacity: 0; }
         }
 
-        .terminal-prompt {
-            color: #00ff41;
-            margin-right: 0.5rem;
-        }
 
         @keyframes fadeIn {
             to { opacity: 1; }
@@ -188,12 +198,11 @@
 <body>
     <div class="terminal-container">
         <div class="terminal-line">
-            <span class="terminal-prompt">$ kyros --build</span>
             <span class="main-text" id="mainText"></span><span class="cursor"></span>
         </div>
         
         <div class="terminal-line contact-info" id="contactInfo">
-            <span class="terminal-prompt">$ contact</span> Kyros Investment Studio | <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
+            Kyros Investment Studio | <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
         </div>
     </div>
 
@@ -250,7 +259,7 @@
                 setTimeout(transformChars, 2000);
         return;
       }
-
+      
             const mainText = document.getElementById('mainText');
             const phrase = phrases[currentPhrase];
             
@@ -392,7 +401,7 @@
                 const char = text[i].toLowerCase();
                 if (transformSets.symbols[char]) {
                     transformedText += transformSets.symbols[char];
-        } else {
+                 } else {
                     transformedText += text[i];
                 }
             }
@@ -408,7 +417,7 @@
                 const wordLower = word.toLowerCase();
                 if (transformSets.emojis[wordLower]) {
                     fullText += transformSets.emojis[wordLower];
-                } else {
+        } else {
                     fullText += word;
                 }
                 if (index < words.length - 1) fullText += ' ';
