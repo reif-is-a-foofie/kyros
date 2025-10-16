@@ -951,8 +951,8 @@
           earthRadius = 13.0; // Use known fallback
         }
         
-      // Set same orbit radius for all lines so they can align properly
-      const orbitRadius = earthRadius * 1.15; // Safe distance from Earth surface
+      // Set uniform tight orbit radius for all lines - hugging Earth's surface
+      const orbitRadius = earthRadius * 1.05; // Tight to Earth surface
       const orbitRadii = [orbitRadius, orbitRadius, orbitRadius]; // All same radius
       
       // Create orbit groups for each line
@@ -1020,29 +1020,19 @@
           emissiveIntensity: 0.1
         });
         
-        // Create front text mesh (normal orientation)
-        const frontTextMesh = new THREE.Mesh(textGeometry.clone(), goldMaterial);
-        frontTextMesh.castShadow = true;
-        frontTextMesh.receiveShadow = true;
-        frontTextMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
-        frontTextMesh.userData.isFront = true;
-        frontTextMesh.userData.originalMaterial = goldMaterial.clone();
+        // Create single text mesh that will rotate dynamically
+        const textMesh = new THREE.Mesh(textGeometry, goldMaterial);
+        textMesh.castShadow = true;
+        textMesh.receiveShadow = true;
+        textMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
+        textMesh.userData.originalMaterial = goldMaterial.clone();
+        textMesh.userData.lineIndex = index;
         
-        // Create back text mesh (rotated 180° for left-to-right readability)
-        const backTextMesh = new THREE.Mesh(textGeometry.clone(), goldMaterial);
-        backTextMesh.castShadow = true;
-        backTextMesh.receiveShadow = true;
-        backTextMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
-        backTextMesh.rotation.y = Math.PI; // Rotate 180° to keep text readable left-to-right
-        backTextMesh.userData.isFront = false;
-        backTextMesh.userData.originalMaterial = goldMaterial.clone();
+        // Add single mesh to orbit group
+        orbitGroup.add(textMesh);
+        textMeshes.push(textMesh);
         
-        // Add both meshes to orbit group
-        orbitGroup.add(frontTextMesh);
-        orbitGroup.add(backTextMesh);
-        textMeshes.push(frontTextMesh, backTextMesh);
-        
-        console.log(`✅ Line ${index + 1} created with front and back text ("${lineText}") - back rotated for readability`);
+        console.log(`✅ Line ${index + 1} created with single text mesh ("${lineText}") - will rotate dynamically for readability`);
       });
       
       // Store text meshes globally
@@ -1054,10 +1044,10 @@
       orbitGroup3.position.set(0, 0, 0);
       
       // Use existing orbit method - just split into 3 groups
-      // Each group will use the same orbit system we already have working
-      orbitGroup1.rotation.y = 0;     // Start at front
-      orbitGroup2.rotation.y = Math.PI * 0.33;  // Start 1/3 around
-      orbitGroup3.rotation.y = Math.PI * 0.66;  // Start 2/3 around
+      // Position all lines to start visible in an engaging formation
+      orbitGroup1.rotation.y = Math.PI * 0.1;   // Start slightly off front (top line)
+      orbitGroup2.rotation.y = Math.PI * 0.05;  // Start very close to front (middle line)
+      orbitGroup3.rotation.y = Math.PI * 0.15;  // Start slightly off front (bottom line)
       
       // Store Earth radius globally
       window.earthRadius = earthRadius;
@@ -2063,13 +2053,23 @@
       
       // Clean 3-line text orbit animation with variable speeds for more overlap options
       if (window.textOrbitGroups && window.textOrbitGroups.length >= 3) {
-        // Variable speeds create more interesting convergence patterns
-        // Line 1: Clockwise - faster
-        window.textOrbitGroups[0].rotation.y += 0.0025;
-        // Line 2: Counter-clockwise - medium speed
-        window.textOrbitGroups[1].rotation.y -= 0.0018;
-        // Line 3: Clockwise - slower
-        window.textOrbitGroups[2].rotation.y += 0.0015;
+        // Faster base speeds with dynamic variation based on visibility
+        window.textOrbitGroups.forEach((orbitGroup, index) => {
+          // Base speeds - much faster overall
+          const baseSpeeds = [0.004, -0.0035, 0.003]; // Line 1, 2, 3
+          let speed = baseSpeeds[index];
+          
+          // Calculate if text is behind Earth (not readable)
+          const normalizedRotation = ((orbitGroup.rotation.y % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+          const isBehindEarth = normalizedRotation > Math.PI / 2 && normalizedRotation < (3 * Math.PI / 2);
+          
+          // Speed up when behind Earth, normal speed when in front
+          if (isBehindEarth) {
+            speed *= 1.8; // 80% faster when behind Earth
+          }
+          
+          orbitGroup.rotation.y += speed;
+        });
           
           // Optional: Reset rotation to prevent overflow and maintain precision
         window.textOrbitGroups.forEach(orbitGroup => {
@@ -2080,22 +2080,28 @@
           }
         });
         
-        // Dynamic text switching based on orbit position
-        // When text crosses x=0 (front-center), switch between front and back text
+        // Dynamic text rotation for smooth readability
+        // Rotate text 180° when it's on the back side to keep it readable left-to-right
         window.textOrbitGroups.forEach((orbitGroup, index) => {
           const children = orbitGroup.children;
-          if (children.length >= 2) {
-            const frontMesh = children[0]; // First child is front text
-            const backMesh = children[1];  // Second child is back text
+          if (children.length >= 1) {
+            const textMesh = children[0]; // Single text mesh
             
             // Calculate if text is on the front side (facing camera) or back side
-            // When rotation.y is near 0 or Math.PI, text is at front-center
             const normalizedRotation = ((orbitGroup.rotation.y % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
             const isOnFrontSide = normalizedRotation < Math.PI / 2 || normalizedRotation > (3 * Math.PI / 2);
             
-            // Show/hide meshes based on which side is facing the camera
-            frontMesh.visible = isOnFrontSide;
-            backMesh.visible = !isOnFrontSide;
+            // Smoothly rotate text to keep it readable with gentle easing
+            const targetRotation = isOnFrontSide ? 0 : Math.PI;
+            const rotationDiff = targetRotation - textMesh.rotation.y;
+            
+            // Normalize rotation difference to shortest path
+            let normalizedDiff = rotationDiff;
+            if (normalizedDiff > Math.PI) normalizedDiff -= Math.PI * 2;
+            if (normalizedDiff < -Math.PI) normalizedDiff += Math.PI * 2;
+            
+            // Very gentle interpolation to avoid violent switching
+            textMesh.rotation.y += normalizedDiff * 0.03;
           }
         });
       }
@@ -2265,6 +2271,26 @@
       }
     }
 
+    // Smart contact system - tracks user engagement
+    let userEngagementScore = 0;
+    let lastContactShown = 0;
+    let contactFrequency = 30000; // Start with 30 second intervals
+    
+    function updateContactFrequency() {
+      // Increase contact frequency based on user engagement
+      if (userEngagementScore > 5) {
+        contactFrequency = 15000; // Show contact every 15 seconds for engaged users
+      } else if (userEngagementScore > 2) {
+        contactFrequency = 20000; // Show contact every 20 seconds
+      }
+    }
+    
+    function trackUserEngagement() {
+      userEngagementScore++;
+      updateContactFrequency();
+      console.log('📊 User engagement score:', userEngagementScore, 'Contact frequency:', contactFrequency);
+    }
+
     function startMilitaryBanner() {
       const banner = document.getElementById('military-banner');
       const content = document.getElementById('banner-content');
@@ -2284,8 +2310,11 @@
         startMessageSequence();
       }, 10000);
       
+      // Start smart contact system
+      startSmartContactSystem();
+      
       function startMessageSequence() {
-        // Military messages - encrypted looking with translations
+        // Enhanced contact-focused messages with frequent contact prompts
         const encryptedPhrases = [
           '01001000 01100101 01101100 01101100 01101111',
           '4B 79 72 6F 73',
@@ -2293,6 +2322,10 @@
           'ACCESS_GRANTED',
           'WELCOME TO THE FUTURE',
           'BUILD THE CHANGE YOU WISH TO SEE IN THE WORLD',
+          'CONTACT KYROS: hello@kyros.cc',
+          'SCHEDULE MEETING: calendly.com/reif-kyros/30min',
+          'PITCH YOUR IDEA TO KYROS',
+          'INVESTMENT OPPORTUNITIES AWAIT',
           'CLICK TO CONNECT WITH KYROS'
         ];
         
@@ -2300,22 +2333,31 @@
         const translationPhrases = [
           'BINARY>HELLO',
           'HEX>KYROS',
-          null, null, null, null,
-          'CLICK TO BUILD THE FUTURE'
+          null, null, null,
+          'CLICK TO BUILD',
+          'EMAIL: hello@kyros.cc',
+          'MEETING: calendly.com/reif-kyros/30min',
+          'CLICK TO PITCH',
+          'CLICK TO INVEST',
+          'CLICK TO CONNECT'
         ];
         
-        // Store clickable actions
+        // Store clickable actions for contact-focused messages
         const clickableActions = [
           null, null, null, null, null, null,
+          () => window.open('mailto:hello@kyros.cc'),
+          () => window.open('https://calendly.com/reif-kyros/30min', '_blank'),
+          () => showContactOverlay(),
+          () => showContactOverlay(),
           () => showContactOverlay()
         ];
         
         let currentMessage = 0;
         let currentChar = 0;
         let isTyping = true;
-        let showDuration = 3000; // Show message for 3 seconds
-        let hideDuration = 2000; // Hide for 2 seconds
-        let clickableShowDuration = 8000; // Show clickable messages for 8 seconds
+        let showDuration = 4000; // Show message for 4 seconds (longer)
+        let hideDuration = 1000; // Hide for 1 second (shorter)
+        let clickableShowDuration = 12000; // Show clickable messages for 12 seconds (much longer)
         let isHovering = false;
         let hideTimeout = null;
         let showingTranslation = false;
@@ -2448,6 +2490,55 @@
       }
       
       console.log('🎖️ Military banner sequence started with 10-second cursor delay');
+    }
+    
+    function startSmartContactSystem() {
+      // Track user interactions to increase contact frequency
+      document.addEventListener('click', trackUserEngagement);
+      document.addEventListener('mousemove', trackUserEngagement);
+      document.addEventListener('keydown', trackUserEngagement);
+      
+      // Show contact info more frequently
+      setInterval(() => {
+        const now = Date.now();
+        if (now - lastContactShown > contactFrequency) {
+          // Show contact message in banner
+          showContactMessage();
+          lastContactShown = now;
+        }
+      }, 5000); // Check every 5 seconds
+      
+      console.log('📞 Smart contact system started - will show contact info every', contactFrequency / 1000, 'seconds');
+    }
+    
+    function showContactMessage() {
+      const banner = document.getElementById('military-banner');
+      const content = document.getElementById('banner-content');
+      
+      if (!banner || !content) return;
+      
+      // Quick contact messages that appear briefly
+      const contactMessages = [
+        'CONTACT: hello@kyros.cc',
+        'MEETING: calendly.com/reif-kyros/30min',
+        'CLICK TO PITCH YOUR IDEA',
+        'INVESTMENT OPPORTUNITIES AWAIT'
+      ];
+      
+      const randomMessage = contactMessages[Math.floor(Math.random() * contactMessages.length)];
+      
+      banner.classList.add('show');
+      content.textContent = randomMessage;
+      
+      // Show for 3 seconds then hide
+      setTimeout(() => {
+        banner.classList.remove('show');
+        setTimeout(() => {
+          content.textContent = '';
+        }, 500);
+      }, 3000);
+      
+      console.log('📞 Showing contact message:', randomMessage);
     }
   </script>
 </body>
