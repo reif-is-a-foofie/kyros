@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kyros Investment Studio</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/terminal.css@0.7.2/dist/terminal.min.css" />
   <style>
         * {
       margin: 0;
@@ -12,7 +13,6 @@
         }
 
         body {
-            font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
             background: #000;
             color: #00ff00;
             min-height: 100vh;
@@ -50,7 +50,6 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-            font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
         }
 
         .terminal-line {
@@ -65,8 +64,8 @@
         }
 
         .terminal-line::before {
-            content: '>';
-            color: #00ff41;
+            content: '$';
+            color: var(--accent);
             margin-right: 0.5rem;
             font-weight: bold;
         }
@@ -112,22 +111,22 @@
 
         .contact-info {
             font-size: clamp(1.2rem, 5vw, 3rem);
-            color: #00ff00;
+            color: var(--foreground);
             opacity: 1;
             text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
         }
 
         .contact-info a {
-            color: #00ff41;
+            color: var(--accent);
             text-decoration: none;
             transition: all 0.3s ease;
             border-bottom: 1px solid transparent;
         }
 
         .contact-info a:hover {
-            color: #00ff00;
+            color: var(--foreground);
             text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
-            border-bottom: 1px solid #00ff00;
+            border-bottom: 1px solid var(--accent);
         }
 
         @keyframes transformChar {
