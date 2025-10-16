@@ -671,7 +671,7 @@
         cameraZ = baseCameraZ * 1.2; // Further camera
       }
       
-      camera.position.set(0, 0, cameraZ);
+      camera.position.set(0, 5, cameraZ); // Align slightly off equatorial plane for natural tilt
       console.log('📱 Dynamic camera position set to z:', cameraZ, 'based on screen area:', screenArea);
       console.log('✅ Camera created');
 
@@ -941,18 +941,18 @@
       ];
       
       // Calculate Earth radius
-      let earthRadius = 2; // Default fallback
-      if (earthModel) {
-        earthModel.updateMatrixWorld();
-        const boundingBox = new THREE.Box3().setFromObject(earthModel);
-        const size = boundingBox.getSize(new THREE.Vector3());
-        earthRadius = Math.max(size.x, size.y, size.z) / 2;
-      } else {
-        earthRadius = 13.0; // Use known fallback
-      }
-      
+        let earthRadius = 2; // Default fallback
+        if (earthModel) {
+          earthModel.updateMatrixWorld();
+          const boundingBox = new THREE.Box3().setFromObject(earthModel);
+          const size = boundingBox.getSize(new THREE.Vector3());
+          earthRadius = Math.max(size.x, size.y, size.z) / 2;
+        } else {
+          earthRadius = 13.0; // Use known fallback
+        }
+        
       // Set same orbit radius for all lines so they can align properly
-      const orbitRadius = earthRadius * 1.05; // Single radius for all lines
+      const orbitRadius = earthRadius * 1.15; // Safe distance from Earth surface
       const orbitRadii = [orbitRadius, orbitRadius, orbitRadius]; // All same radius
       
       // Create orbit groups for each line
@@ -972,91 +972,77 @@
       textLines.forEach((lineText, index) => {
         const orbitGroup = window.textOrbitGroups[index];
         
-        // Create dramatic volumetric 3D text geometry
-        console.log(`🎯 Creating dramatic volumetric 3D text geometry for: "${lineText}"`);
+        // Calculate vertical offset for line separation (correct order) - more overlap
+        const yOffset = index === 0 ? 1.2 : index === 1 ? 0 : -1.2;
+        const lineOrbitRadius = orbitRadii[index];
+        const textOffset = 2.0 - Math.abs(yOffset) * 0.2; // Less offset for lines further from equator
+        
+        // Create text geometry (same for both front and back)
         const textGeometry = new TextGeometry(lineText, {
           font: font,
-          size: isMobile ? 0.6 : 0.8, // Larger for cinematic impact
-          height: 0.6, // Much thicker for substantial 3D presence
-          curveSegments: 24, // High quality curves
-          letterSpacing: -0.1, // Tighter spacing for cinematic look
+          size: isMobile ? 0.4 : 0.5, // Smaller text
+          height: 0.3, // Less thick
+          curveSegments: 24,
+          letterSpacing: -0.1,
           bevelEnabled: true,
-          bevelThickness: 0.15, // Thick bevels for dramatic depth
-          bevelSize: 0.08, // Larger bevels for edge definition
-          bevelSegments: 8, // Smooth bevels
-          bevelOffset: 0.05 // More offset for depth perception
+          bevelThickness: 0.08, // Thinner bevel
+          bevelSize: 0.04, // Smaller bevel
+          bevelSegments: 6, // Fewer segments for cleaner look
+          bevelOffset: 0.02
         });
-        console.log(`✅ Text geometry created with depth: ${textGeometry.parameters.depth}`);
         
         textGeometry.computeBoundingBox();
         const bbox = textGeometry.boundingBox;
         const textWidth = bbox.max.x - bbox.min.x;
-        textGeometry.translate(-textWidth / 2, 0, 0); // true horizontal centering before bending
+        textGeometry.translate(-textWidth / 2, 0, 0);
         
-        // Calculate vertical offset for line separation (correct order)
-        // Index 0 = "build the change" = TOP (positive Y)
-        // Index 1 = "you wish to see" = MIDDLE (zero Y) 
-        // Index 2 = "in the world" = BOTTOM (negative Y)
-        const yOffset = index === 0 ? 2.5 : index === 1 ? 0 : -2.5;
-        
-        // Store original flat positions for rebending
-        const pos = textGeometry.attributes.position;
-        const originalPositions = new Float32Array(pos.array.length);
-        originalPositions.set(pos.array, 0);
-        
-        // Bend text geometry to curve around Earth (facing outward)
-        const lineOrbitRadius = orbitRadii[index];
-        bendTextGeometry(textGeometry, lineOrbitRadius, yOffset);
-        
-        // Create readable gold material with balanced lighting
-        console.log(`🎨 Creating readable gold material for: "${lineText}"`);
-        const textMaterial = new THREE.MeshPhysicalMaterial({
-          color: 0xd4af37,        // Rich, less yellow gold (classic gold)
-          metalness: 0.6,         // Reduced from 0.8 for softer highlights
-          roughness: 0.35,        // Increased for softer highlights
-          clearcoat: 0.5,         // Reduced to avoid harsh glare
-          clearcoatRoughness: 0.2, // Slightly rougher clearcoat
-          envMapIntensity: 0.8,   // Reduced from 2.0 for less saturation
-          reflectivity: 0.6,      // Reduced reflectivity
-          sheen: 0.4,             // Reduced sheen for readability
-          sheenRoughness: 0.3,    // Slightly rougher sheen
-          sheenColor: 0xd4af37,   // Rich gold sheen color
-          side: THREE.DoubleSide, // Render both sides
-          transparent: false,     // Fully opaque
-          opacity: 1.0,           // No transparency
-          thickness: 0.6,         // Match geometry height
-          transmission: 0.0,      // No transmission
-          ior: 1.5,               // Gold's index of refraction
-          specularIntensity: 0.6, // Reduced specular intensity
-          specularColor: 0xd4af37, // Rich gold specular color
-          emissive: 0x221100,     // Subtle warm interior glow
-          emissiveIntensity: 0.1  // Reduced from 0.3 for less saturation
+        // Gold material for both front and back
+        const goldMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0xd4af37,
+          metalness: 0.6,
+          roughness: 0.35,
+          clearcoat: 0.5,
+          clearcoatRoughness: 0.2,
+          envMapIntensity: 0.8,
+          reflectivity: 0.6,
+          sheen: 0.4,
+          sheenRoughness: 0.3,
+          sheenColor: 0xd4af37,
+          side: THREE.DoubleSide,
+          transparent: false,
+          opacity: 1.0,
+          thickness: 0.6,
+          transmission: 0.0,
+          ior: 1.5,
+          specularIntensity: 0.6,
+          specularColor: 0xd4af37,
+          emissive: 0x221100,
+          emissiveIntensity: 0.1
         });
-        console.log(`✨ Enhanced 3D material created with depth: ${textMaterial.thickness}`);
         
-        // Create text mesh
-        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        console.log(`🎯 3D text mesh created for: "${lineText}"`);
+        // Create front text mesh (normal orientation)
+        const frontTextMesh = new THREE.Mesh(textGeometry.clone(), goldMaterial);
+        frontTextMesh.castShadow = true;
+        frontTextMesh.receiveShadow = true;
+        frontTextMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
+        frontTextMesh.userData.isFront = true;
+        frontTextMesh.userData.originalMaterial = goldMaterial.clone();
         
-        // Enable shadows for cinematic effect
-        textMesh.castShadow = true;
-        textMesh.receiveShadow = true;
+        // Create back text mesh (rotated 180° for left-to-right readability)
+        const backTextMesh = new THREE.Mesh(textGeometry.clone(), goldMaterial);
+        backTextMesh.castShadow = true;
+        backTextMesh.receiveShadow = true;
+        backTextMesh.position.set(lineOrbitRadius + textOffset, yOffset, 0);
+        backTextMesh.rotation.y = Math.PI; // Rotate 180° to keep text readable left-to-right
+        backTextMesh.userData.isFront = false;
+        backTextMesh.userData.originalMaterial = goldMaterial.clone();
         
-        // Position text at orbit radius (bending handles the curve)
-        textMesh.position.set(0, 0, 0); // Centered, bending handles positioning
+        // Add both meshes to orbit group
+        orbitGroup.add(frontTextMesh);
+        orbitGroup.add(backTextMesh);
+        textMeshes.push(frontTextMesh, backTextMesh);
         
-        // Make text face outward from Earth (fixes direction issue)
-        // Remove the lookAt and rotateY - they're causing the text to be reversed
-        // The bendTextGeometry already positions text correctly
-        
-        // Add text mesh to orbit group
-        orbitGroup.add(textMesh);
-        textMeshes.push(textMesh);
-        
-        // Store material for protection
-        textMesh.userData.originalMaterial = textMaterial.clone();
-        
-        console.log(`✅ Line ${index + 1} ("${lineText}") positioned at radius ${lineOrbitRadius.toFixed(2)}, Y offset ${yOffset}`);
+        console.log(`✅ Line ${index + 1} created with front and back text ("${lineText}") - back rotated for readability`);
       });
       
       // Store text meshes globally
@@ -1067,15 +1053,11 @@
       orbitGroup2.position.set(0, 0, 0);
       orbitGroup3.position.set(0, 0, 0);
       
-      // Apply X-axis tilts (latitude) for Universal Studios feel with better symmetry
-      orbitGroup1.rotation.x = 0.25;  // Top line tilts north (above equator)
-      orbitGroup2.rotation.x = 0;     // Middle line at equator
-      orbitGroup3.rotation.x = -0.25; // Bottom line tilts south (below equator)
-      
-      // Start near-converged (text already facing camera) - no 30-second wait
-      orbitGroup1.rotation.y = Math.PI * 1.25; // Pre-aligns orbits so text starts in front
-      orbitGroup2.rotation.y = Math.PI * 1.25; // Pre-aligns orbits so text starts in front
-      orbitGroup3.rotation.y = Math.PI * 1.25; // Pre-aligns orbits so text starts in front
+      // Use existing orbit method - just split into 3 groups
+      // Each group will use the same orbit system we already have working
+      orbitGroup1.rotation.y = 0;     // Start at front
+      orbitGroup2.rotation.y = Math.PI * 0.33;  // Start 1/3 around
+      orbitGroup3.rotation.y = Math.PI * 0.66;  // Start 2/3 around
       
       // Store Earth radius globally
       window.earthRadius = earthRadius;
@@ -1300,14 +1282,24 @@
         if (window.textMeshes && window.textMeshes.length > 0) {
           window.textMeshes.forEach((mesh, index) => {
             if (mesh && mesh.userData.originalMaterial) {
-              const currentMaterial = mesh.material;
-              const originalMaterial = mesh.userData.originalMaterial;
+              const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+              const originalMaterials = mesh.userData.originalMaterial;
               
-              // If material color has changed from gold, restore it (silent fix)
-              if (currentMaterial.color.getHex() !== 0xffd700 || 
-                  currentMaterial.emissive.getHex() !== 0xffd700) {
-                mesh.material = originalMaterial.clone();
-                mesh.material.needsUpdate = true;
+              // Check if materials need restoration
+              let needsUpdate = false;
+              currentMaterials.forEach((currentMaterial, matIndex) => {
+                const originalMaterial = originalMaterials[matIndex];
+                if (originalMaterial) {
+                  // Check gold material for both front and back
+                  if (currentMaterial.color.getHex() !== 0xd4af37) {
+                    needsUpdate = true;
+                  }
+                }
+              });
+              
+              if (needsUpdate) {
+                mesh.material = [originalMaterials[0].clone(), originalMaterials[1].clone()];
+                mesh.material.forEach(mat => mat.needsUpdate = true);
               }
             }
           });
@@ -1871,41 +1863,41 @@
         starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
         starPositions[i3 + 2] = radius * Math.cos(phi);
         
-        // Realistic stellar color temperatures with varying brightness
+        // Enhanced stellar colors with more yellow emphasis and dramatic brightness
         const paletteRoll = Math.random();
-        const brightnessVariation = 0.3 + Math.random() * 0.7; // 30-100% brightness
+        const brightnessVariation = 0.2 + Math.random() * 0.8; // 20-100% brightness for more contrast
         
-        if (paletteRoll < 0.15) {            // Hot blue-white stars (O/B type)
-          starColors[i3] = 0.8 + Math.random() * 0.2;
+        if (paletteRoll < 0.1) {             // Hot blue-white stars (O/B type) - rare
+          starColors[i3] = 0.7 + Math.random() * 0.3;
+          starColors[i3 + 1] = 0.8 + Math.random() * 0.2;
+          starColors[i3 + 2] = 1.0;
+        } else if (paletteRoll < 0.25) {     // White stars (A type) - less common
+          starColors[i3] = 0.9 + Math.random() * 0.1;
           starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
           starColors[i3 + 2] = 1.0;
-        } else if (paletteRoll < 0.35) {     // White stars (A type)
-          starColors[i3] = 0.95 + Math.random() * 0.05;
-          starColors[i3 + 1] = 0.95 + Math.random() * 0.05;
-          starColors[i3 + 2] = 1.0;
-        } else if (paletteRoll < 0.65) {     // Yellow-white stars (F/G type like our Sun)
+        } else if (paletteRoll < 0.7) {      // Yellow-white stars (F/G type) - more common, brighter
           starColors[i3] = 1.0;
-          starColors[i3 + 1] = 0.95 + Math.random() * 0.05;
-          starColors[i3 + 2] = 0.8 + Math.random() * 0.2;
-        } else if (paletteRoll < 0.85) {     // Orange stars (K type)
+          starColors[i3 + 1] = 1.0;
+          starColors[i3 + 2] = 0.7 + Math.random() * 0.3;
+        } else if (paletteRoll < 0.9) {      // Golden-yellow stars (G/K type) - warm and bright
+          starColors[i3] = 1.0;
+          starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
+          starColors[i3 + 2] = 0.5 + Math.random() * 0.3;
+        } else {                            // Deep golden stars (K type) - warmest
           starColors[i3] = 1.0;
           starColors[i3 + 1] = 0.8 + Math.random() * 0.2;
-          starColors[i3 + 2] = 0.6 + Math.random() * 0.2;
-        } else {                            // Red stars (M type)
-          starColors[i3] = 1.0;
-          starColors[i3 + 1] = 0.6 + Math.random() * 0.2;
-          starColors[i3 + 2] = 0.4 + Math.random() * 0.2;
+          starColors[i3 + 2] = 0.3 + Math.random() * 0.3;
         }
         
-        // Apply brightness variation to all stars
+        // Apply dramatic brightness variation for scintillation effect
         starColors[i3] *= brightnessVariation;
         starColors[i3 + 1] *= brightnessVariation;
         starColors[i3 + 2] *= brightnessVariation;
         
-        // Unique twinkle signature per star with enhanced variation
-        twinkleSpeed[i] = 0.2 + Math.random() * 2.0; // Wider speed range
+        // Enhanced scintillation signature per star with intense variation
+        twinkleSpeed[i] = 0.1 + Math.random() * 3.0; // Much wider speed range for intense scintillation
         twinklePhase[i] = Math.random() * Math.PI * 2;
-        twinkleAmplitude[i] = 0.4 + Math.random() * 0.6; // More dramatic twinkling
+        twinkleAmplitude[i] = 0.6 + Math.random() * 0.4; // More intense twinkling (60-100% amplitude)
         
         // Subtle size variation
         // Size stars based on distance for realistic depth perception
@@ -2069,15 +2061,15 @@
         animate.logged = true;
       }
       
-      // Clean 3-line text orbit animation with synchronized convergence
+      // Clean 3-line text orbit animation with variable speeds for more overlap options
       if (window.textOrbitGroups && window.textOrbitGroups.length >= 3) {
-        // Same speeds since all lines are on same radius
-        // Line 1: Clockwise
-        window.textOrbitGroups[0].rotation.y += 0.002;
-        // Line 2: Counter-clockwise  
-        window.textOrbitGroups[1].rotation.y -= 0.002;
-        // Line 3: Clockwise
-        window.textOrbitGroups[2].rotation.y += 0.002;
+        // Variable speeds create more interesting convergence patterns
+        // Line 1: Clockwise - faster
+        window.textOrbitGroups[0].rotation.y += 0.0025;
+        // Line 2: Counter-clockwise - medium speed
+        window.textOrbitGroups[1].rotation.y -= 0.0018;
+        // Line 3: Clockwise - slower
+        window.textOrbitGroups[2].rotation.y += 0.0015;
           
           // Optional: Reset rotation to prevent overflow and maintain precision
         window.textOrbitGroups.forEach(orbitGroup => {
@@ -2085,6 +2077,25 @@
             orbitGroup.rotation.y -= Math.PI * 2;
           } else if (orbitGroup.rotation.y < -Math.PI * 2) {
             orbitGroup.rotation.y += Math.PI * 2;
+          }
+        });
+        
+        // Dynamic text switching based on orbit position
+        // When text crosses x=0 (front-center), switch between front and back text
+        window.textOrbitGroups.forEach((orbitGroup, index) => {
+          const children = orbitGroup.children;
+          if (children.length >= 2) {
+            const frontMesh = children[0]; // First child is front text
+            const backMesh = children[1];  // Second child is back text
+            
+            // Calculate if text is on the front side (facing camera) or back side
+            // When rotation.y is near 0 or Math.PI, text is at front-center
+            const normalizedRotation = ((orbitGroup.rotation.y % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+            const isOnFrontSide = normalizedRotation < Math.PI / 2 || normalizedRotation > (3 * Math.PI / 2);
+            
+            // Show/hide meshes based on which side is facing the camera
+            frontMesh.visible = isOnFrontSide;
+            backMesh.visible = !isOnFrontSide;
           }
         });
       }
@@ -2182,22 +2193,32 @@
           const twinkleTime = (t || 0) * 0.0015;
           
           for (let i = 0, starIndex = 0; i < colors.length; i += 3, starIndex++) {
-            // Multiple harmonic frequencies for realistic twinkling
+            // Intense scintillation with multiple harmonic frequencies
             const basePulse = Math.sin(twinkleTime * speeds[starIndex] + phases[starIndex]);
             const harmonics1 = Math.sin(twinkleTime * (speeds[starIndex] * 1.7) + phases[starIndex] * 1.3);
             const harmonics2 = Math.sin(twinkleTime * (speeds[starIndex] * 2.3) + phases[starIndex] * 0.7);
             const harmonics3 = Math.sin(twinkleTime * (speeds[starIndex] * 3.1) + phases[starIndex] * 1.9);
+            const harmonics4 = Math.sin(twinkleTime * (speeds[starIndex] * 4.7) + phases[starIndex] * 2.1);
+            const harmonics5 = Math.sin(twinkleTime * (speeds[starIndex] * 5.3) + phases[starIndex] * 0.9);
             
-            // Combine harmonics for complex twinkling pattern
-            const pulse = 0.4 + amplitudes[starIndex] * (
-              0.3 * (basePulse + 1) + 
-              0.25 * (harmonics1 + 1) + 
-              0.2 * (harmonics2 + 1) + 
-              0.15 * (harmonics3 + 1)
+            // Complex scintillation pattern with atmospheric turbulence simulation
+            const turbulence = Math.sin(twinkleTime * (speeds[starIndex] * 0.3) + phases[starIndex] * 3.7);
+            const rapidFlicker = Math.sin(twinkleTime * (speeds[starIndex] * 8.1) + phases[starIndex] * 1.5);
+            
+            // Combine all effects for intense scintillation
+            const pulse = 0.2 + amplitudes[starIndex] * (
+              0.25 * (basePulse + 1) + 
+              0.2 * (harmonics1 + 1) + 
+              0.15 * (harmonics2 + 1) + 
+              0.12 * (harmonics3 + 1) +
+              0.1 * (harmonics4 + 1) +
+              0.08 * (harmonics5 + 1) +
+              0.05 * (turbulence + 1) +
+              0.05 * (rapidFlicker + 1)
             );
             
-            // More dramatic brightness range for enhanced twinkling
-            const brightness = THREE.MathUtils.clamp(pulse, 0.2, 2.0);
+            // Extreme brightness range for dramatic scintillation effect
+            const brightness = THREE.MathUtils.clamp(pulse, 0.1, 3.0);
             
             colors[i] = baseColors[i] * brightness;
             colors[i + 1] = baseColors[i + 1] * brightness;
