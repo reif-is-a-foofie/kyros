@@ -917,10 +917,9 @@
                const month = now.getMonth() + 1;
                const day = now.getDate();
                
-               // For October 17, 2025 - Waning Crescent (14% illumination)
-               if (year === 2025 && month === 10 && day === 17) {
-                   return '🌘 Waning Crescent';
-               }
+               // Use a more recent known new moon for better accuracy
+               // Known new moon: September 22, 2025 (Julian Day 2460625.5)
+               const recentNewMoon = 2460625.5;
                
                // Julian Day calculation
                const a = Math.floor((14 - month) / 12);
@@ -928,12 +927,10 @@
                const m = month + 12 * a - 3;
                const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
                
-               // Known new moon: January 11, 2024 (Julian Day 2460326.5)
-               const knownNewMoon = 2460326.5;
                const lunarCycle = 29.53059; // Average lunar cycle in days
                
-               // Calculate days since known new moon
-               const daysSinceNewMoon = (jd - knownNewMoon) % lunarCycle;
+               // Calculate days since recent new moon
+               const daysSinceNewMoon = (jd - recentNewMoon) % lunarCycle;
                
                // Handle negative values
                const adjustedDays = daysSinceNewMoon < 0 ? daysSinceNewMoon + lunarCycle : daysSinceNewMoon;
