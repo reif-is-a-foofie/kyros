@@ -840,20 +840,45 @@
             ];
             const randomComputer = computerNames[Math.floor(Math.random() * computerNames.length)];
 
-            // Moon phase calculation
-            const getMoonPhase = () => {
-                const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
-                               '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-                const day = now.getDate();
-                
-                // Simple moon phase calculation (approximate)
-                const daysSinceNewMoon = (year * 365.25 + month * 30.44 + day) % 29.53;
-                const phaseIndex = Math.floor((daysSinceNewMoon / 29.53) * 8);
-                return phases[phaseIndex % 8];
-            };
+           // Accurate moon phase calculation
+           const getMoonPhase = () => {
+               const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
+                              '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
+               
+               const now = new Date();
+               const year = now.getFullYear();
+               const month = now.getMonth() + 1;
+               const day = now.getDate();
+               
+               // Julian Day calculation
+               const a = Math.floor((14 - month) / 12);
+               const y = year + 4800 - a;
+               const m = month + 12 * a - 3;
+               const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+               
+               // Known new moon: January 11, 2024 (Julian Day 2460326.5)
+               const knownNewMoon = 2460326.5;
+               const lunarCycle = 29.53059; // Average lunar cycle in days
+               
+               // Calculate days since known new moon
+               const daysSinceNewMoon = (jd - knownNewMoon) % lunarCycle;
+               
+               // Handle negative values
+               const adjustedDays = daysSinceNewMoon < 0 ? daysSinceNewMoon + lunarCycle : daysSinceNewMoon;
+               
+               // Determine phase based on days
+               let phaseIndex;
+               if (adjustedDays < 1.84566) phaseIndex = 0; // New Moon
+               else if (adjustedDays < 5.53699) phaseIndex = 1; // Waxing Crescent
+               else if (adjustedDays < 9.22831) phaseIndex = 2; // First Quarter
+               else if (adjustedDays < 12.91963) phaseIndex = 3; // Waxing Gibbous
+               else if (adjustedDays < 16.61096) phaseIndex = 4; // Full Moon
+               else if (adjustedDays < 20.30228) phaseIndex = 5; // Waning Gibbous
+               else if (adjustedDays < 23.99361) phaseIndex = 6; // Last Quarter
+               else phaseIndex = 7; // Waning Crescent
+               
+               return phases[phaseIndex];
+           };
 
             const [currentCommand, setCurrentCommand] = useState('');
             const [history, setHistory] = useState([
