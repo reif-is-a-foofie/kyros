@@ -680,7 +680,29 @@
             const MAX_LINES = 8; // Terminal height limit
             const MAX_ITERATIONS = 100; // Reset after 100 iterations
 
+            // Generate realistic last login timestamp
+            const lastLoginDate = new Date();
+            const lastLoginTime = lastLoginDate.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            // Random computer names for authenticity
+            const computerNames = [
+                'MacBook-Pro', 'MacBook-Air', 'iMac-Pro', 'Mac-Studio', 
+                'Mac-Mini', 'MacBook-Pro-M2', 'iMac-Retina', 'Mac-Pro'
+            ];
+            const randomComputer = computerNames[Math.floor(Math.random() * computerNames.length)];
+            const randomUser = ['alex', 'sam', 'jordan', 'casey', 'riley', 'taylor'][Math.floor(Math.random() * 6)];
+
             const welcomeCommands = [
+                `echo "Last login: ${lastLoginTime} on ttys${Math.floor(Math.random() * 10) + 1}"`,
+                `echo "${randomUser}@${randomComputer} ~ %"`,
                 'echo "Welcome to Kyros: an investment studio"',
                 'define investment_studio',
                 'print motto',
