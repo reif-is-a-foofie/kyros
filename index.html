@@ -79,7 +79,7 @@
       pointer-events: none;
       z-index: -1;
     }
-
+    
         .container {
       text-align: center;
             max-width: 1200px;
@@ -92,9 +92,9 @@
                 padding: 0.5rem;
                 align-items: flex-start;
                 padding-top: 1rem;
-            }
+        }
 
-            .terminal {
+        .terminal {
                 width: 95%;
                 height: min(90vh, 700px);
                 min-height: 500px;
@@ -145,11 +145,22 @@
             }
             
             .terminal-command, .terminal-output {
-                font-size: 11px;
+                font-size: 12px;
+            }
+            
+            .terminal-command {
+                white-space: nowrap;
+                overflow: visible;
+                flex-shrink: 0;
             }
             
             .system-info, .moon-phase {
                 font-size: 10px;
+            }
+            
+            .terminal-history-line {
+                flex-wrap: nowrap;
+                overflow-x: auto;
             }
         }
 
@@ -209,11 +220,22 @@
             }
             
             .terminal-command, .terminal-output {
-                font-size: 9px;
+                font-size: 10px;
+            }
+            
+            .terminal-command {
+                white-space: nowrap;
+                overflow: visible;
+                flex-shrink: 0;
             }
             
             .system-info, .moon-phase {
                 font-size: 8px;
+            }
+            
+            .terminal-history-line {
+                flex-wrap: nowrap;
+                overflow-x: auto;
             }
         }
 
@@ -511,8 +533,12 @@
 
         .system-message {
             margin-bottom: 8px;
-            padding-left: 0;
+            padding: 0;
             margin-left: 0;
+            text-indent: 0;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .system-info {
@@ -1372,7 +1398,7 @@
             useEffect(() => {
                 // Check if we need to reset after 100 iterations
                 if (iterationCount >= MAX_ITERATIONS) {
-        setTimeout(() => {
+                    setTimeout(() => {
                         setCurrentCommand('');
                         setHistory([]);
                         setCurrentCommandIndex(0);
@@ -1428,7 +1454,7 @@
                             return (
                                 <div key={index} className="system-message">
                                     <span dangerouslySetInnerHTML={{__html: item.output}}></span>
-                                </div>
+                    </div>
                             );
                         }
                         
