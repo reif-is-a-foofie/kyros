@@ -109,14 +109,22 @@
             }
             
             .terminal-title {
-                font-size: 14px;
-                flex-wrap: wrap;
-                gap: 0.5rem;
+                font-size: 12px;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            .terminal-session-info {
+                font-size: 12px;
+            }
+            
+            .terminal-contact-info {
+                font-size: 12px;
             }
             
             .terminal-title a {
-                padding: 4px 8px;
-                font-size: 12px;
+                padding: 2px 6px;
+                font-size: 11px;
             }
             
             .terminal-content {
@@ -154,15 +162,23 @@
             }
             
             .terminal-title {
-                font-size: 12px;
+                font-size: 10px;
                 flex-direction: column;
-                gap: 0.25rem;
+                gap: 0.2rem;
                 text-align: center;
             }
             
+            .terminal-session-info {
+                font-size: 10px;
+            }
+            
+            .terminal-contact-info {
+                font-size: 10px;
+            }
+            
             .terminal-title a {
-                padding: 3px 6px;
-                font-size: 11px;
+                padding: 2px 4px;
+                font-size: 10px;
             }
             
             .terminal-content {
@@ -353,21 +369,75 @@
 
         .terminal-title {
             color: #374151;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 400;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
         }
 
-        .folder-icon {
-            font-size: 16px;
-            opacity: 0.8;
+        .terminal-session-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 14px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
+
+        .terminal-contact-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #374151;
+            font-size: 14px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-weight: 500;
+        }
+
+        .folder-icon {
+            width: 16px;
+            height: 16px;
+            background: #10b981;
+            border-radius: 2px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .folder-icon::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            width: 8px;
+            height: 4px;
+            background: #10b981;
+            border-radius: 1px 1px 0 0;
+        }
+
+        .terminal-title a {
+            color: #10b981;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-weight: 600;
+        }
+
+        .terminal-title a:hover {
+            color: #ffffff;
+            background: #10b981;
+            border-color: #10b981;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
 
         .title-text {
             color: #374151;
@@ -741,8 +811,22 @@
                 <div class="button green"></div>
             </div>
             <div class="terminal-title">
-                <span class="folder-icon">📁</span>
-                <span class="title-text">Kyros</span>
+                <div class="terminal-session-info">
+                    <span class="folder-icon"></span>
+                    <span>kyros@terminal</span>
+                    <span>—</span>
+                    <span>zsh</span>
+                    <span>—</span>
+                    <span>80x24</span>
+                </div>
+                <div class="terminal-contact-info">
+                    <span>|</span>
+                    <a href="mailto:hello@kyros.cc">📧 hello@kyros.cc</a>
+                    <span>|</span>
+                    <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">💼 pitch us</a>
+                    <span>|</span>
+                    <span>🚀 Kyros Investment Studio</span>
+                </div>
             </div>
         </div>
         <div class="terminal-content">
@@ -769,7 +853,6 @@
 
         // Magic UI Terminal Component
         function MagicTerminal() {
-            const [currentCommand, setCurrentCommand] = useState('');
             // Moon phase calculation
             const getMoonPhase = () => {
                 const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
@@ -785,6 +868,7 @@
                 return phases[phaseIndex % 8];
             };
 
+            const [currentCommand, setCurrentCommand] = useState('');
             const [history, setHistory] = useState([
                 { command: '', output: `<span class="system-info">Last login: ${lastLoginTime} on ${randomComputer}</span>` },
                 { command: '', output: `<span class="moon-phase">🌙 Current moon phase: ${getMoonPhase()}</span>` }
@@ -885,6 +969,16 @@
                 'translate(wizard)', 'translate(ninja)', 'translate(pirate)', 'translate(cowboy)', 'translate(surfer)',
                 'translate(hipster)', 'translate(nerd)', 'translate(geek)', 'translate(hacker)', 'translate(artist)',
 
+                // Contact and Info Commands
+                'contact',
+                'email',
+                'pitch',
+                'about',
+                'help',
+                'whoami',
+                'ls -la',
+                'cat README.md',
+                
                 // Call to Action Commands
                 'echo "💼 Ready to pitch your idea? Contact us at hello@kyros.cc"',
                 'echo "🚀 Have a startup? Let\'s talk: hello@kyros.cc"',
@@ -903,10 +997,12 @@
             const executeCommand = (command) => {
                 // Handle welcome commands
                 if (command.includes('Last login:')) {
-                    return `<span class="system-info">${command.replace('echo "', '').replace('"', '')}</span>`;
+                    const cleanCommand = command.replace('echo "', '').replace('"', '');
+                    return `<span class="system-info">${cleanCommand}</span>`;
                 }
                 if (command.includes('Current moon phase:')) {
-                    return `<span class="moon-phase">${command.replace('echo "', '').replace('"', '')}</span>`;
+                    const cleanCommand = command.replace('echo "', '').replace('"', '');
+                    return `<span class="moon-phase">${cleanCommand}</span>`;
                 }
                 if (command === 'echo "Welcome to Kyros: an investment studio"') {
                     return 'Welcome to Kyros: an investment studio';
@@ -1247,21 +1343,36 @@
 
             return (
                 <div className="magic-terminal">
-                    {history.map((item, index) => (
-                        <div key={index}>
-                            <div className="terminal-history-line">
-                                <span className="terminal-prompt">▶</span>
-                                <span className="terminal-command">{item.command}</span>
-                    </div>
-                            <div className="terminal-history-line">
-                                <span className="terminal-prompt"></span>
-                            <span className="terminal-output">
-                                <span className="checkmark">✓</span>
-                                    <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
-                            </span>
+                    {history.map((item, index) => {
+                        // Check if this is a system message (no command needed)
+                        const isSystemMessage = item.command.includes('Last login:') || item.command.includes('Current moon phase:');
+                        
+                        if (isSystemMessage) {
+                            return (
+                                <div key={index} className="terminal-history-line">
+                                    <span className="terminal-output">
+                                        <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
+                                    </span>
+                                </div>
+                            );
+                        }
+                        
+                        return (
+                            <div key={index}>
+                                <div className="terminal-history-line">
+                                    <span className="terminal-prompt">▶</span>
+                                    <span className="terminal-command">{item.command}</span>
+                                </div>
+                                <div className="terminal-history-line">
+                                    <span className="terminal-prompt"></span>
+                                    <span className="terminal-output">
+                                        <span className="checkmark">✓</span>
+                                        <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                     <div className="terminal-line">
                         <span className="terminal-prompt">▶</span>
                         <span className="animated-text">
