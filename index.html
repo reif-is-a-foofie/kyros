@@ -478,7 +478,9 @@
         .terminal-history-line {
             margin-bottom: 8px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .terminal-history-line .terminal-prompt {
@@ -546,6 +548,8 @@
             color: #1a1a1a;
             font-style: normal;
             font-weight: 400;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .animated-text {
@@ -562,13 +566,13 @@
             margin-bottom: 0;
             padding: 20px 0 20px 0;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             width: 100%;
             justify-content: flex-start;
-            overflow: hidden;
-            white-space: nowrap;
+            overflow: visible;
+            white-space: pre-wrap;
             max-width: 100%;
-            word-break: break-all;
+            word-wrap: break-word;
             flex-shrink: 0;
         }
 
