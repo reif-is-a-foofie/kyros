@@ -198,7 +198,7 @@
             align-items: center;
             justify-content: center;
             padding: 18px 24px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border-top-left-radius: 12px;
@@ -287,7 +287,7 @@
         }
 
         .terminal-title {
-            color: #1a1a1a;
+            color: #ffffff;
             font-size: 18px;
             font-weight: 300;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -301,22 +301,23 @@
         }
 
         .terminal-title a {
-            color: #1a1a1a;
+            color: #ffffff;
             text-decoration: none;
             transition: all 0.3s ease;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: rgba(255, 215, 0, 0.2);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            font-weight: 300;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
         }
 
         .terminal-title a:hover {
-            color: #1a1a1a;
-            background: rgba(255, 215, 0, 0.3);
-            border-color: rgba(255, 215, 0, 0.5);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+            color: #ffffff;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
 
         /* Magic UI Text Effects */
@@ -326,7 +327,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: gradientShift 3s ease infinite;
+            animation: gradientShift 6s ease infinite;
         }
 
         @keyframes gradientShift {
@@ -342,7 +343,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: shinyMove 4s ease-in-out infinite;
+            animation: shinyMove 8s ease-in-out infinite;
         }
 
         @keyframes shinyMove {
@@ -354,7 +355,7 @@
             padding: 20px 40px 40px 40px;
             flex: 1;
             min-height: 0;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             display: flex;
