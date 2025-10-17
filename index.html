@@ -624,9 +624,38 @@
             font-weight: 400;
             word-wrap: break-word;
             word-break: break-word;
+            overflow-wrap: anywhere;
             white-space: pre-wrap;
-            overflow: hidden;
+            overflow: visible;
             max-width: 100%;
+        }
+
+        .output-text pre {
+            margin-top: 6px;
+            margin-bottom: 0;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .output-text pre.ascii-art {
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: clamp(0.45rem, 0.9vw, 0.7rem);
+            line-height: 1.1;
+            white-space: pre;
+        }
+
+        .email-link {
+            color: #1f2937;
+            text-decoration: underline;
+            text-decoration-color: rgba(55, 65, 81, 0.35);
+            text-decoration-thickness: 1px;
+            transition: color 0.2s ease, text-decoration-color 0.2s ease;
+        }
+
+        .email-link:hover,
+        .email-link:focus-visible {
+            color: #0f172a;
+            text-decoration-color: #0ea5e9;
         }
 
         .animated-text {
@@ -636,18 +665,16 @@
 
         .cursor {
             display: inline-block;
-            width: 1em;
-            height: 2px;
-            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+            width: 2px;
+            height: 1.1em;
+            background: linear-gradient(180deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
             background-size: 400% 400%;
-            animation: cursorShiny 3s ease-in-out infinite, blink 1s infinite;
-            margin-left: 2px;
+            animation: cursorShiny 3s ease-in-out infinite, blink 1.1s steps(2) infinite;
+            margin-left: 4px;
             vertical-align: text-bottom;
-            margin-bottom: 0;
             border-radius: 1px;
             will-change: background-position, opacity;
             position: relative;
-            z-index: 1;
         }
 
         @keyframes cursorShiny {
@@ -658,9 +685,9 @@
 
         .terminal-line {
             margin-bottom: 0;
-            padding: 20px 0 0 0;
+            padding: 8px 0 0;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             width: 100%;
             justify-content: flex-start;
             overflow: hidden;
@@ -669,10 +696,6 @@
             word-wrap: break-word;
             word-break: break-word;
             flex-shrink: 0;
-        }
-
-        .terminal-line:not(.contact-info) {
-            white-space: nowrap;
         }
 
         .terminal-line.contact-info {
@@ -1229,7 +1252,7 @@
                     case 'polish':
                         return `Polish: Buduj zmianę, którą chcesz widzieć na świecie — z sercem i determinacją.`;
                     case 'dutch':
-                        return `Dutch: Bouw de verandering die je in de wereld wilt zien — direct, men met zorg.`;
+                        return `Dutch: Bouw de verandering die je in de wereld wilt zien — direct, maar met zorg.`;
                     case 'swedish':
                         return `Swedish: Bygg förändringen du vill se i världen — lagom, förstås.`;
                     case 'norwegian':
@@ -1316,7 +1339,7 @@
                     case 'starwars':
                         return `Star Wars: "Do or do not. There is no try." — Yoda, Series A investor.`;
                     case 'startrek':
-                        return `Star Trek: Build long and prosper.`;
+                        return `Star Trek: Live long and prosper.`;
                     case 'cyberpunk':
                         return `Cyberpunk: The future is already deployed — check your firmware.`;
                     case 'steampunk':
@@ -1338,17 +1361,17 @@
                     case 'harrypotter':
                         return `Harry Potter: Wingardium Buildiosa.`;
                     case 'lotr':
-                        return `LOTR: One vision to guide them all.`;
+                        return `LOTR: One ring to rule them all.`;
                     case 'gameofthrones':
                         return `Game of Thrones: Change is coming.`;
                     case 'marvel':
-                        return `Marvel: With great capital comes great responsibility.`;
+                        return `Marvel: With great power comes great responsibility.`;
                     case 'dc':
                         return `DC: Build faster than a bullet.`;
                     case 'disney':
                         return `Disney: If you can dream it, you can build it.`;
                     case 'pixar':
-                        return `Pixar: To vision and beyond.`;
+                        return `Pixar: To infinity and beyond.`;
                     case 'anime':
                         return `Anime: 静かに立ち上がれ — rise beautifully.`;
                     case 'manga':
