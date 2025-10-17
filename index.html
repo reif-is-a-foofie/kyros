@@ -89,100 +89,45 @@
         /* Mobile responsive design */
         @media (max-width: 768px) {
             body {
-                padding: 1rem;
+                padding: 0.5rem;
                 align-items: flex-start;
-                padding-top: 2rem;
-        }
+                padding-top: 1rem;
+            }
 
-        .terminal {
-                width: 90%;
-                height: min(85vh, 650px);
+            .terminal {
+                width: 95%;
+                height: min(90vh, 700px);
                 min-height: 500px;
                 border-radius: 8px;
                 margin: 0;
-                max-width: calc(100vw - 2rem);
-            }
-            
-            .terminal-header {
-                padding: 0.75rem 1rem;
-                min-height: 48px;
-            }
-            
-            .terminal-title {
-                font-size: 12px;
-                flex-direction: column;
-                gap: 0.25rem;
-            }
-            
-            .terminal-session-info {
-                font-size: 12px;
-            }
-            
-            .terminal-contact-info {
-                font-size: 12px;
-            }
-            
-            .terminal-title a {
-                padding: 2px 6px;
-                font-size: 11px;
-            }
-            
-            .terminal-content {
-                padding: 0.75rem 1rem 1rem 1rem;
-            }
-            
-            .terminal-buttons {
-                gap: 6px;
-                left: 16px;
-            }
-            
-            .button {
-                width: 8px;
-                height: 8px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 0.75rem;
-                padding-top: 1.5rem;
-            }
-            
-            .terminal {
-                width: 92%;
-                height: min(90vh, 600px);
-                min-height: 450px;
-                border-radius: 6px;
-                max-width: calc(100vw - 1.5rem);
+                max-width: calc(100vw - 1rem);
             }
             
             .terminal-header {
                 padding: 0.5rem 0.75rem;
-                min-height: 44px;
+                min-height: 40px;
             }
             
             .terminal-title {
-                font-size: 10px;
-                flex-direction: column;
-                gap: 0.2rem;
-                text-align: center;
+                font-size: 11px;
+                gap: 4px;
+                flex-wrap: wrap;
+                justify-content: center;
             }
             
-            .terminal-session-info {
+            .brand-icon {
                 font-size: 10px;
-            }
-            
-            .terminal-contact-info {
-                font-size: 10px;
+                margin-right: 2px;
             }
             
             .terminal-title a {
-                padding: 2px 4px;
                 font-size: 10px;
+                padding: 1px 3px;
             }
             
             .terminal-content {
-                padding: 0.5rem 0.75rem 0.75rem 0.75rem;
+                padding: 0.5rem 0.75rem;
+                font-size: 12px;
             }
             
             .terminal-buttons {
@@ -191,16 +136,84 @@
             }
             
             .button {
+                width: 8px;
+                height: 8px;
+            }
+            
+            .terminal-prompt {
+                font-size: 10px;
+            }
+            
+            .terminal-command, .terminal-output {
+                font-size: 11px;
+            }
+            
+            .system-info, .moon-phase {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.25rem;
+                padding-top: 0.5rem;
+            }
+            
+            .terminal {
+                width: 98%;
+                height: min(95vh, 600px);
+                min-height: 400px;
+                border-radius: 6px;
+                max-width: calc(100vw - 0.5rem);
+            }
+            
+            .terminal-header {
+                padding: 0.4rem 0.5rem;
+                min-height: 36px;
+            }
+            
+            .terminal-title {
+                font-size: 9px;
+                gap: 2px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .brand-icon {
+                font-size: 8px;
+                margin-right: 1px;
+            }
+            
+            .terminal-title a {
+                font-size: 8px;
+                padding: 1px 2px;
+            }
+            
+            .terminal-content {
+                padding: 0.4rem 0.5rem;
+                font-size: 10px;
+            }
+            
+            .terminal-buttons {
+                gap: 3px;
+                left: 8px;
+            }
+            
+            .button {
                 width: 6px;
                 height: 6px;
             }
             
             .terminal-prompt {
-                font-size: 14px;
+                font-size: 8px;
             }
             
-            .output-text {
-                font-size: 14px;
+            .terminal-command, .terminal-output {
+                font-size: 9px;
+            }
+            
+            .system-info, .moon-phase {
+                font-size: 8px;
             }
         }
 
@@ -547,7 +560,7 @@
 
         .terminal-line {
             margin-bottom: 0;
-            padding: 20px 0;
+            padding: 20px 0 0 0;
             display: flex;
             align-items: center;
             width: 100%;
@@ -747,15 +760,6 @@
         }
 
         /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .main-text {
-                min-height: 150px;
-            }
-            
-            .word {
-                margin: 0 0.2rem;
-            }
-        }
     </style>
 </head>
 <body>
