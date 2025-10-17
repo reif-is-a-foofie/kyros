@@ -109,7 +109,7 @@
             }
             
             .terminal-title {
-                font-size: 11px;
+                font-size: 14px;
                 gap: 4px;
                 flex-wrap: wrap;
                 justify-content: center;
@@ -121,7 +121,7 @@
             }
             
             .terminal-title a {
-                font-size: 10px;
+                font-size: 14px;
                 padding: 1px 3px;
             }
             
@@ -185,7 +185,7 @@
             }
             
             .terminal-title {
-                font-size: 9px;
+                font-size: 12px;
                 gap: 2px;
                 flex-wrap: wrap;
                 justify-content: center;
@@ -197,7 +197,7 @@
             }
             
             .terminal-title a {
-                font-size: 8px;
+                font-size: 12px;
                 padding: 1px 2px;
             }
             
@@ -418,6 +418,8 @@
         .terminal-title a {
             color: #374151;
             text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
         }
 
         .terminal-title a strong {
@@ -1496,9 +1498,9 @@
                         
                         if (isSystemMessage) {
                             return (
-                                <div key={index} style={{marginLeft: '-40px', marginRight: '-40px', paddingLeft: '40px', paddingRight: '40px', marginBottom: '2px'}}>
+                                <div key={index} style={{position: 'absolute', left: '0', right: '0', marginBottom: '2px', paddingLeft: '40px', paddingRight: '40px'}}>
                                     <span dangerouslySetInnerHTML={{__html: item.output}}></span>
-                                </div>
+                    </div>
                             );
                         }
                         
