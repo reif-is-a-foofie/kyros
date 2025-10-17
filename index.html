@@ -79,7 +79,7 @@
       pointer-events: none;
       z-index: -1;
     }
-
+    
         .container {
       text-align: center;
             max-width: 1200px;
@@ -487,6 +487,7 @@
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
             scroll-behavior: smooth;
+            height: 100%;
         }
 
         .terminal-history {
@@ -504,7 +505,10 @@
             display: flex;
             align-items: flex-start;
             word-wrap: break-word;
+            word-break: break-word;
             white-space: pre-wrap;
+            overflow: hidden;
+            max-width: 100%;
         }
 
         .terminal-history-line .terminal-prompt {
@@ -578,7 +582,10 @@
             font-style: normal;
             font-weight: 400;
             word-wrap: break-word;
+            word-break: break-word;
             white-space: pre-wrap;
+            overflow: hidden;
+            max-width: 100%;
         }
 
         .animated-text {
@@ -610,15 +617,16 @@
 
         .terminal-line {
             margin-bottom: 0;
-            padding: 20px 0 20px 0;
+            padding: 20px 0 0 0;
             display: flex;
             align-items: flex-start;
             width: 100%;
             justify-content: flex-start;
-            overflow: visible;
+            overflow: hidden;
             white-space: pre-wrap;
             max-width: 100%;
             word-wrap: break-word;
+            word-break: break-word;
             flex-shrink: 0;
         }
 
@@ -811,7 +819,7 @@
                 <div class="button green" onclick="showEasterEgg('green')" title="Green Screen - YouTube Short"></div>
             </div>
             <div class="terminal-title">
-                <a href="mailto:hello@kyros.cc">hello@kyros.cc</a>
+                <a href="mailto:hello@kyros.cc">hello@<strong>kyros</strong>.cc</a>
             </div>
         </div>
         <div class="terminal-content">
@@ -1433,7 +1441,7 @@
             useEffect(() => {
                 // Check if we need to reset after 100 iterations
                 if (iterationCount >= MAX_ITERATIONS) {
-        setTimeout(() => {
+                    setTimeout(() => {
                         setCurrentCommand('');
                         setHistory([]);
                         setCurrentCommandIndex(0);
@@ -1487,9 +1495,9 @@
                         
                         if (isSystemMessage) {
                             return (
-                                <div key={index} className="system-message" style={{marginLeft: '-40px', marginRight: '-40px', paddingLeft: '40px', paddingRight: '40px'}}>
+                                <div key={index} className="system-message" style={{marginLeft: '-40px', marginRight: '-40px', paddingLeft: '40px', paddingRight: '40px', position: 'relative', left: '0', transform: 'none'}}>
                                     <span dangerouslySetInnerHTML={{__html: item.output}}></span>
-                                </div>
+                    </div>
                             );
                         }
                         
