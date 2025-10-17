@@ -156,7 +156,7 @@
             }
             
             .system-info, .moon-phase {
-                font-size: 10px;
+                font-size: clamp(0.75rem, 2.4vw, 0.9rem);
             }
             
             .terminal-history-line {
@@ -232,7 +232,7 @@
             }
             
             .system-info, .moon-phase {
-                font-size: 8px;
+                font-size: clamp(0.7rem, 2.8vw, 0.85rem);
             }
             
             .terminal-history-line {
@@ -478,7 +478,7 @@
             width: 100%;
             min-height: 0;
             flex: 1;
-            padding: 16px var(--terminal-padding) 10px;
+            padding: 16px var(--terminal-padding) 16px;
             gap: 10px;
             overflow: hidden;
         }
@@ -515,6 +515,10 @@
             padding: 0;
             text-align: left;
             display: block;
+            font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+            line-height: 1.35;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-weight: 400;
         }
 
         .history-scroll {
@@ -531,7 +535,7 @@
         .terminal-footer {
             margin-top: auto;
             padding-top: 4px;
-            padding-bottom: 2px;
+            padding-bottom: 8px;
         }
 
         .terminal-history {
@@ -589,20 +593,14 @@
 
 
         .system-info {
-            color: #374151;
+            color: #10b981;
             font-style: normal;
             font-weight: 400;
-            font-size: clamp(0.8rem, 1.6vw, 0.95rem);
-            line-height: 1.35;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
 
         .moon-phase {
             color: #8b5cf6;
             font-weight: 500;
-            font-size: clamp(0.8rem, 1.6vw, 0.95rem);
-            line-height: 1.35;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
 
         .terminal-output {
@@ -698,7 +696,7 @@
 
         .terminal-line {
             margin-bottom: 0;
-            padding: 2px 0 0;
+            padding: 2px 0 2px;
             display: flex;
             align-items: center;
             width: 100%;
