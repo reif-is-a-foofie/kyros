@@ -79,7 +79,7 @@
       pointer-events: none;
       z-index: -1;
     }
-
+    
         .container {
       text-align: center;
             max-width: 1200px;
@@ -94,7 +94,7 @@
                 padding-top: 2rem;
         }
 
-            .terminal {
+        .terminal {
                 width: 90%;
                 height: min(80vh, 550px);
                 min-height: 400px;
@@ -350,17 +350,7 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            transition: all 0.2s ease;
             cursor: pointer;
-            position: relative;
-        }
-
-        .button:hover {
-            transform: scale(1.1);
-        }
-
-        .button:active {
-            transform: scale(0.95);
         }
 
         .red { background-color: #ff5f56; }
@@ -396,7 +386,6 @@
             color: #374151;
             font-size: 14px;
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-            font-weight: 500;
         }
 
         .folder-icon {
@@ -420,22 +409,12 @@
         }
 
         .terminal-title a {
-            color: #10b981;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            padding: 4px 8px;
-            border-radius: 6px;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            font-weight: 600;
+            color: #374151;
+            text-decoration: underline;
         }
 
         .terminal-title a:hover {
-            color: #ffffff;
-            background: #10b981;
-            border-color: #10b981;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            color: #374151;
         }
 
 
@@ -507,7 +486,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-start;
             margin-bottom: 0;
             min-height: 0;
             width: 100%;
@@ -821,11 +800,11 @@
                 </div>
                 <div class="terminal-contact-info">
                     <span>|</span>
-                    <a href="mailto:hello@kyros.cc">📧 hello@kyros.cc</a>
+                    <a href="mailto:hello@kyros.cc">hello@kyros.cc</a>
                     <span>|</span>
-                    <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">💼 pitch us</a>
+                    <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">pitch us</a>
                     <span>|</span>
-                    <span>🚀 Kyros Investment Studio</span>
+                    <span>Kyros Investment Studio</span>
                 </div>
             </div>
         </div>
@@ -853,33 +832,6 @@
 
         // Magic UI Terminal Component
         function MagicTerminal() {
-            // Moon phase calculation
-            const getMoonPhase = () => {
-                const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
-                               '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-                const day = now.getDate();
-                
-                // Simple moon phase calculation (approximate)
-                const daysSinceNewMoon = (year * 365.25 + month * 30.44 + day) % 29.53;
-                const phaseIndex = Math.floor((daysSinceNewMoon / 29.53) * 8);
-                return phases[phaseIndex % 8];
-            };
-
-            const [currentCommand, setCurrentCommand] = useState('');
-            const [history, setHistory] = useState([
-                { command: '', output: `<span class="system-info">Last login: ${lastLoginTime} on ${randomComputer}</span>` },
-                { command: '', output: `<span class="moon-phase">🌙 Current moon phase: ${getMoonPhase()}</span>` }
-            ]);
-            const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
-            const [isTyping, setIsTyping] = useState(true);
-            const [iterationCount, setIterationCount] = useState(0);
-
-            const MAX_LINES = 8; // Terminal height limit
-            const MAX_ITERATIONS = 100; // Reset after 100 iterations
-
             // Generate realistic last login timestamp
             const lastLoginDate = new Date();
             const lastLoginTime = lastLoginDate.toLocaleString('en-US', {
@@ -891,7 +843,6 @@
                 second: '2-digit',
                 hour12: false
             });
-            
             
             // Shy animal computer hostnames (alliterative)
             const computerNames = [
@@ -921,6 +872,34 @@
                 'Zoned-Out-Zebra', 'Zen-Zebra'
             ];
             const randomComputer = computerNames[Math.floor(Math.random() * computerNames.length)];
+
+            // Moon phase calculation
+            const getMoonPhase = () => {
+                const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
+                               '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
+                const day = now.getDate();
+                
+                // Simple moon phase calculation (approximate)
+                const daysSinceNewMoon = (year * 365.25 + month * 30.44 + day) % 29.53;
+                const phaseIndex = Math.floor((daysSinceNewMoon / 29.53) * 8);
+                return phases[phaseIndex % 8];
+            };
+
+            const [currentCommand, setCurrentCommand] = useState('');
+            const [history, setHistory] = useState([
+                { command: '', output: `<span class="system-info">Last login: ${lastLoginTime} on ${randomComputer}</span>` },
+                { command: '', output: `<span class="moon-phase">🌙 Current moon phase: ${getMoonPhase()}</span>` }
+            ]);
+            const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
+            const [isTyping, setIsTyping] = useState(true);
+            const [iterationCount, setIterationCount] = useState(0);
+
+            const MAX_LINES = 8; // Terminal height limit
+            const MAX_ITERATIONS = 100; // Reset after 100 iterations
+
 
             const welcomeCommands = [
                 'echo "Welcome to Kyros: an investment studio"',
@@ -990,9 +969,55 @@
                 'echo "💎 Have a diamond in the rough? Let\'s talk: hello@kyros.cc"'
             ];
 
-            // Randomize the translation commands
-            const shuffledCommands = [...commands].sort(() => Math.random() - 0.5);
+            // Smart randomization to prevent consecutive repeats
+            const shuffleWithNoConsecutiveRepeats = (commands) => {
+                const shuffled = [];
+                const used = new Set();
+                let lastCommand = '';
+                
+                // Create a copy to work with
+                let remaining = [...commands];
+                
+                while (remaining.length > 0) {
+                    // Filter out commands that would create consecutive repeats
+                    const available = remaining.filter(cmd => {
+                        // Extract the language from translate commands
+                        const match = cmd.match(/translate\((\w+)\)/);
+                        if (match) {
+                            const currentLang = match[1];
+                            const lastMatch = lastCommand.match(/translate\((\w+)\)/);
+                            if (lastMatch) {
+                                const lastLang = lastMatch[1];
+                                return currentLang !== lastLang;
+                            }
+                        }
+                        return true; // Non-translate commands are always available
+                    });
+                    
+                    // If no available commands (shouldn't happen), fall back to all remaining
+                    const candidates = available.length > 0 ? available : remaining;
+                    
+                    // Pick a random command from available candidates
+                    const randomIndex = Math.floor(Math.random() * candidates.length);
+                    const selectedCommand = candidates[randomIndex];
+                    
+                    shuffled.push(selectedCommand);
+                    lastCommand = selectedCommand;
+                    
+                    // Remove the selected command from remaining
+                    remaining = remaining.filter(cmd => cmd !== selectedCommand);
+                }
+                
+                return shuffled;
+            };
+            
+            const shuffledCommands = shuffleWithNoConsecutiveRepeats(commands);
             const allCommands = [...welcomeCommands, ...shuffledCommands];
+
+            // Function to make email addresses clickable
+            const makeEmailsClickable = (text) => {
+                return text.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1" style="color: #374151; text-decoration: underline;">$1</a>');
+            };
 
             const executeCommand = (command) => {
                 // Handle welcome commands
@@ -1021,6 +1046,12 @@
                 }
                 if (command === 'echo ""') {
                     return '';
+                }
+                
+                // Handle echo commands with email addresses
+                if (command.startsWith('echo "') && command.includes('@kyros.cc')) {
+                    const cleanCommand = command.replace('echo "', '').replace('"', '');
+                    return makeEmailsClickable(cleanCommand);
                 }
                 
                 // Handle translate commands
@@ -1295,7 +1326,7 @@
             useEffect(() => {
                 // Check if we need to reset after 100 iterations
                 if (iterationCount >= MAX_ITERATIONS) {
-        setTimeout(() => {
+                    setTimeout(() => {
                         setCurrentCommand('');
                         setHistory([]);
                         setCurrentCommandIndex(0);
@@ -1352,8 +1383,8 @@
                                 <div key={index} className="terminal-history-line">
                                     <span className="terminal-output">
                                         <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
-                                    </span>
-                                </div>
+                        </span>
+                    </div>
                             );
                         }
                         
@@ -1365,11 +1396,11 @@
                                 </div>
                                 <div className="terminal-history-line">
                                     <span className="terminal-prompt"></span>
-                                    <span className="terminal-output">
-                                        <span className="checkmark">✓</span>
+                            <span className="terminal-output">
+                                <span className="checkmark">✓</span>
                                         <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
-                                    </span>
-                                </div>
+                            </span>
+                        </div>
                             </div>
                         );
                     })}
