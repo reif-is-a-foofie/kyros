@@ -27,9 +27,44 @@
             display: flex;
             justify-content: center;
             align-items: center;
-      overflow: hidden;
+            overflow: hidden;
             position: relative;
             font-family: 'Inter', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+        }
+
+        body::before {
+            content: '';
+      position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 150, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 200, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(100, 200, 255, 0.06) 0%, transparent 50%);
+            animation: oceanWaves 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes oceanWaves {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.8;
+            }
+            25% {
+                transform: translateY(-10px) rotate(1deg);
+      opacity: 1;
+    }
+            50% {
+                transform: translateY(-5px) rotate(-0.5deg);
+                opacity: 0.9;
+            }
+            75% {
+                transform: translateY(-15px) rotate(0.5deg);
+                opacity: 1;
+            }
         }
 
         /* Typography Hierarchy */
@@ -63,7 +98,7 @@
       pointer-events: none;
       z-index: -1;
     }
-
+    
         .container {
       text-align: center;
             max-width: 1200px;
@@ -151,7 +186,7 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.9);
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
             color: #1a1a1a;
-            margin: 10vh auto 0;
+            margin: 5vh auto;
             border: 1px solid rgba(255, 255, 255, 0.6);
             display: flex;
             flex-direction: column;
@@ -182,7 +217,7 @@
             align-items: center;
             justify-content: center;
             padding: 18px 24px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.25);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             border-top-left-radius: 12px;
