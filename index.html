@@ -21,17 +21,15 @@
         }
 
         body {
-            margin: 0;
-            padding: 0;
-      height: 100vh;
-            width: 100vw;
-            background: radial-gradient(circle at center, #001100 0%, #000 80%);
-            color: #00ff66;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
-      position: fixed;
-            top: 0;
-            left: 0;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            position: relative;
+            font-family: 'Inter', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
 
         /* Typography Hierarchy */
@@ -138,24 +136,23 @@
         }
 
         .terminal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            border: none;
-            box-shadow: none;
-            border-radius: 0;
-            background: rgba(0, 0, 0, 0.95);
-            margin: 0;
-            padding: 2rem 3rem;
-            box-sizing: border-box;
-            font-family: 'SF Mono', 'Menlo', monospace;
-            font-size: 1rem;
-            color: #00ff66;
-            text-shadow: 0 0 10px #00ff66;
-            transform: perspective(800px) rotateX(3deg);
-            transform: translateY(0);
+            width: 100%;
+            max-width: 1600px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 
+                0 4px 12px rgba(0,0,0,0.06),
+                0 40px 80px rgba(0, 0, 0, 0.25),
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            color: #1a1a1a;
+            margin: 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            animation: float 6s ease-in-out infinite;
         }
 
         @keyframes float {
@@ -182,8 +179,12 @@
             align-items: center;
             justify-content: center;
             padding: 18px 24px;
-            background: rgba(0, 0, 0, 0.8);
-            border-bottom: 1px solid rgba(0, 255, 102, 0.3);
+            background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(250,250,250,0.9));
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             min-height: 52px;
             position: relative;
         }
@@ -249,10 +250,10 @@
         .green { background-color: #27c93f; }
 
         .terminal-title {
-            color: #00ff66;
+            color: #2c2c2e;
             font-size: 20px;
             font-weight: 500;
-            font-family: 'SF Mono', 'Menlo', monospace;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex;
             align-items: center;
             gap: 16px;
@@ -260,41 +261,40 @@
             left: 50%;
             transform: translateX(-50%);
             letter-spacing: -0.01em;
-            text-shadow: 0 0 10px #00ff66;
         }
 
         .terminal-title a {
-            color: #00ff66;
+            color: #1d1d1f;
             text-decoration: none;
             transition: all 0.3s ease;
             padding: 4px 10px;
             border-radius: 6px;
-            background: rgba(0, 255, 102, 0.15);
-            border: 1px solid rgba(0, 255, 102, 0.3);
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.3);
             font-weight: 500;
-            text-shadow: 0 0 10px #00ff66;
         }
 
         .terminal-title a:hover {
-            color: #ffffff;
-            background: rgba(0, 255, 102, 0.3);
-            border-color: rgba(0, 255, 102, 0.5);
+            color: #1d1d1f;
+            background: rgba(255, 215, 0, 0.25);
+            border-color: rgba(255, 215, 0, 0.4);
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 255, 102, 0.4);
-            text-shadow: 0 0 15px #00ff66;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
         }
 
         .terminal-content {
             padding: 20px 40px 40px 40px;
-            height: calc(100vh - 100px);
-            background: transparent;
+            height: 600px;
+            background: #FFFFFF;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             overflow: hidden;
             word-wrap: break-word;
-            color: #00ff66;
-            text-shadow: 0 0 10px #00ff66;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
         }
 
         .terminal-history {
@@ -702,10 +702,10 @@
                     return 'Investment Studio: a company that builds, buys and brokers companies, deals, etc.';
                 }
                 if (command === 'print motto') {
-                    return 'Motto: build the change you wish to see in the world...';
+                    return 'Motto: Build the change you wish to see in the world...';
                 }
-                if (command.includes('echo "The most important thing in business are extraordinary people"')) {
-                    return 'The most important thing in business are extraordinary people';
+                if (command.includes('echo "The most important thing in business is extraordinary people"')) {
+                    return 'The most important thing in business is extraordinary people';
                 }
                 if (command.includes('echo "Let\'s explore our motto in different languages..."')) {
                     return 'Let\'s explore our motto in different languages...';
@@ -722,57 +722,57 @@
                 const words = basePhrase.split(' ');
                 
                 switch(language) {
-                    // Real Languages - Pure translations
+                    // Real Languages - Witty, culturally-aware translations
                     case 'spanish':
-                        return `Spanish: construir el cambio que deseas ver en el mundo`;
+                        return `Spanish: Construye el cambio que deseas ver en el mundo — pero con propósito.`;
                     case 'french':
-                        return `French: construire le changement que vous souhaitez voir dans le monde`;
+                        return `French: Construis le changement que tu veux voir dans le monde — avec élégance, bien sûr.`;
                     case 'german':
-                        return `German: baue den Wandel, den du in der Welt sehen möchtest`;
+                        return `German: Baue den Wandel, den du in der Welt sehen möchtest — gründlich und ohne Kompromisse.`;
                     case 'japanese':
-                        return `Japanese: 世界で見たい変化を築く`;
+                        return `Japanese: 世界で見たい変化を築く — 静かに、しかし確かに。`;
                     case 'arabic':
-                        return `Arabic: بناء التغيير الذي تريد رؤيته في العالم`;
+                        return `Arabic: ابنِ التغيير الذي تريد أن تراه في العالم — بالنية الصافية والإتقان.`;
                     case 'russian':
-                        return `Russian: стройте изменения, которые вы хотите видеть в мире`;
+                        return `Russian: Строй перемены, которые хочешь видеть в мире — терпеливо, как вечность.`;
                     case 'chinese':
-                        return `Chinese: 建设你希望在世界上看到的改变`;
+                        return `Chinese: 建设你希望在世界上看到的改变 — 不急不躁，深思熟虑。`;
                     case 'swahili':
-                        return `Swahili: jenga mabadiliko unayotaka kuona ulimwenguni`;
+                        return `Swahili: Jenga mabadiliko unayotaka kuona ulimwenguni — kwa utulivu na hekima.`;
                     case 'italian':
-                        return `Italian: costruisci il cambiamento che vuoi vedere nel mondo`;
+                        return `Italian: Costruisci il cambiamento che vuoi vedere nel mondo — con passione e un buon espresso.`;
                     case 'portuguese':
-                        return `Portuguese: construa a mudança que você quer ver no mundo`;
+                        return `Portuguese: Construa a mudança que você quer ver no mundo — com alma e coragem.`;
                     case 'korean':
-                        return `Korean: 세상에서 보고 싶은 변화를 만들어라`;
+                        return `Korean: 세상에서 보고 싶은 변화를 만들어라 — 조용히, 그러나 확실히.`;
                     case 'hindi':
-                        return `Hindi: दुनिया में जो बदलाव आप देखना चाहते हैं उसे बनाएं`;
+                        return `Hindi: वह बदलाव बनाओ जो तुम दुनिया में देखना चाहते हो — शांत मन से।`;
                     case 'polish':
-                        return `Polish: buduj zmianę, którą chcesz widzieć na świecie`;
+                        return `Polish: Buduj zmianę, którą chcesz widzieć na świecie — z sercem i determinacją.`;
                     case 'dutch':
-                        return `Dutch: bouw de verandering die je in de wereld wilt zien`;
+                        return `Dutch: Bouw de verandering die je in de wereld wilt zien — direct, men met zorg.`;
                     case 'swedish':
-                        return `Swedish: bygg förändringen du vill se i världen`;
+                        return `Swedish: Bygg förändringen du vill se i världen — lagom, förstås.`;
                     case 'norwegian':
-                        return `Norwegian: bygg endringen du vil se i verden`;
+                        return `Norwegian: Bygg endringen du vil se i verden — stille, men sterkt.`;
                     case 'finnish':
-                        return `Finnish: rakentaa muutoksen, jonka haluat nähdä maailmassa`;
+                        return `Finnish: Rakenna muutos, jonka haluat nähdä maailmassa — hiljaa, mutta pysyvästi.`;
                     case 'turkish':
-                        return `Turkish: dünyada görmek istediğin değişimi inşa et`;
+                        return `Turkish: Dünyada görmek istediğin değişimi inşa et — sabırla ve zarafetle.`;
                     case 'greek':
-                        return `Greek: χτίσε την αλλαγή που θέλεις να δεις στον κόσμο`;
+                        return `Greek: Χτίσε την αλλαγή που θέλεις να δεις στον κόσμο — όπως θα το έκανε ο Αριστοτέλης.`;
                     case 'hebrew':
-                        return `Hebrew: בנה את השינוי שאתה רוצה לראות בעולם`;
+                        return `Hebrew: בנה את השינוי שאתה רוצה לראות בעולם — כי העולם נברא לבנות.`;
                     case 'thai':
-                        return `Thai: สร้างการเปลี่ยนแปลงที่คุณต้องการเห็นในโลก`;
+                        return `Thai: สร้างการเปลี่ยนแปลงที่คุณต้องการเห็นในโลก — ด้วยใจสงบและรอยยิ้ม.`;
                     case 'vietnamese':
-                        return `Vietnamese: xây dựng sự thay đổi bạn muốn thấy trên thế giới`;
+                        return `Vietnamese: Xây dựng sự thay đổi bạn muốn thấy trên thế giới — với lòng kiên nhẫn và tình yêu.`;
                     case 'indonesian':
-                        return `Indonesian: bangun perubahan yang ingin Anda lihat di dunia`;
+                        return `Indonesian: Bangun perubahan yang ingin Anda lihat di dunia — dengan tenang dan keyakinan.`;
                     case 'malay':
-                        return `Malay: bina perubahan yang anda mahu lihat di dunia`;
+                        return `Malay: Bina perubahan yang anda mahu lihat di dunia — perlahan-lahan, dengan niat yang baik.`;
                     case 'tagalog':
-                        return `Tagalog: itayo ang pagbabago na nais mong makita sa mundo`;
+                        return `Tagalog: Itayo ang pagbabago na nais mong makita sa mundo — nang may puso at dangal.`;
                     
                     // Fun Transformations
                     case 'emoji':
@@ -797,77 +797,85 @@
                         return `Binary: ${basePhrase.split('').map(char => char.charCodeAt(0).toString(2)).join(' ')}`;
                     case 'hex':
                         return `Hex: ${basePhrase.split('').map(char => char.charCodeAt(0).toString(16)).join(' ')}`;
+                    case 'morse':
+                        const morseCode = {
+                            'a': '.-', 'b': '-...', 'c': '-.-.', 'd': '-..', 'e': '.', 'f': '..-.', 'g': '--.',
+                            'h': '....', 'i': '..', 'j': '.---', 'k': '-.-', 'l': '.-..', 'm': '--', 'n': '-.',
+                            'o': '---', 'p': '.--.', 'q': '--.-', 'r': '.-.', 's': '...', 't': '-', 'u': '..-',
+                            'v': '...-', 'w': '.--', 'x': '-..-', 'y': '-.--', 'z': '--..', ' ': '/'
+                        };
+                        return `Morse: ${basePhrase.toLowerCase().split('').map(char => morseCode[char] || char).join(' ')}`;
                     case 'leetspeak':
                         return `Leetspeak: ${basePhrase.replace(/[aeiost]/gi, char => {
                             const leetMap = {'a': '4', 'e': '3', 'i': '1', 'o': '0', 's': '5', 't': '7'};
                             return leetMap[char.toLowerCase()] || char;
                         })}`;
                     
-                    // Fictional Languages - Authentic translations
+                    // Fictional Languages - Witty, character-aware translations
                     case 'klingon':
-                        return 'Klingon: qoHpu\'wI\' ghaHbe\' \'e\' vIneH';
+                        return `Klingon: Qapla' — build with honor, or not at all.`;
                     case 'elvish':
-                        return 'Elvish: car- i \'alda- i mer- i cen- i \'or- i \'ambar';
+                        return `Elvish: Caro i venna i meril — beauty is the truest structure.`;
                     case 'dothraki':
-                        return 'Dothraki: khalakka dothrae anha dothrak';
+                        return `Dothraki: Anha vazhak maan — strength is built, not inherited.`;
                     case 'valyrian':
-                        return 'Valyrian: valar morghulis valar dohaeris';
+                        return `Valyrian: Valar buildaris — all men must create.`;
                     case 'na\'vi':
-                        return 'Na\'vi: tìkangkem si fìtsengit a nga new fìtsengit tsive\'a';
+                        return `Na'vi: Oel ngati kameie — I see the maker in you.`;
                     case 'quenya':
-                        return 'Quenya: car- i \'alda- i mer- i cen- i \'or- i \'ambar';
+                        return `Quenya: Caro i venna i meril — beauty is the truest structure.`;
                     case 'sindarin':
-                        return 'Sindarin: car- i \'alda- i mer- i cen- i \'or- i \'ambar';
+                        return `Sindarin: Caro i venna i meril — beauty is the truest structure.`;
                     case 'orcish':
-                        return 'Orcish: waaagh! me smash! build change!';
+                        return `Orcish: WAAAGH! Build strong, smash weak.`;
                     case 'dwarvish':
-                        return 'Dwarvish: khazad-dûm! baruk khazâd! build change!';
+                        return `Dwarvish: Baruk Khazâd — what's forged endures.`;
                     case 'draconic':
-                        return 'Draconic: draconic ancient tongue! build change!';
+                        return `Draconic: Ixen varghul — creation is fire made visible.`;
                     
-                    // Sci-Fi & Fantasy - Authentic quotes
+                    // Sci-Fi & Fantasy - Witty, reference-aware translations
                     case 'starwars':
-                        return 'Star Wars: "May the Force be with you" - Obi-Wan Kenobi';
+                        return `Star Wars: "Do or do not. There is no try." — Yoda, Series A investor.`;
                     case 'startrek':
-                        return 'Star Trek: "Live long and prosper" - Spock';
+                        return `Star Trek: Build long and prosper.`;
                     case 'cyberpunk':
-                        return 'Cyberpunk: "Wake up, samurai. We have a city to burn" - Johnny Silverhand';
+                        return `Cyberpunk: The future is already deployed — check your firmware.`;
                     case 'steampunk':
-                        return 'Steampunk: "The future is steam-powered and brass-cogged"';
+                        return `Steampunk: Steam, brass, and bold ideas. That's progress.`;
                     case 'medieval':
-                        return 'Medieval: "Hark! Forsooth! Build the change thou wishest to see in the realm!"';
+                        return `Medieval: "Hark! Forge thy destiny with thine own hand."`;
                     case 'pirate':
-                        return 'Pirate: "Ahoy matey! Build the change ye wish to see on the seven seas!"';
+                        return `Pirate: "Raise the world ye wish to sail."`;
                     case 'robot':
-                        return 'Robot: "BEEP BOOP. BUILD. CHANGE. WORLD. ERROR 404 NOT FOUND."';
+                        return `Robot: BEEP. BUILD. BEAUTIFY.`;
                     case 'alien':
-                        return 'Alien: "We come in peace. Build the change you wish to see in the galaxy."';
+                        return `Alien: "We come in prototype form."`;
                     case 'ghost':
-                        return 'Ghost: "Boo! Build the change you wish to see in the afterlife!"';
+                        return `Ghost: "Good ideas never die."`;
                     case 'vampire':
-                        return 'Vampire: "I vant to build the change you vish to see in the vorld!"';
+                        return `Vampire: "Some creations outlive their makers."`;
                     
-                    // Pop Culture
+                    // Pop Culture - Witty, reference-aware translations
                     case 'harrypotter':
-                        return 'Wingardium Leviosa! Expelliarmus!';
+                        return `Harry Potter: Wingardium Buildiosa.`;
                     case 'lotr':
-                        return 'One ring to rule them all!';
+                        return `LOTR: One vision to guide them all.`;
                     case 'gameofthrones':
-                        return 'Winter is coming!';
+                        return `Game of Thrones: Change is coming.`;
                     case 'marvel':
-                        return 'Avengers assemble!';
+                        return `Marvel: With great capital comes great responsibility.`;
                     case 'dc':
-                        return 'Up, up and away!';
+                        return `DC: Build faster than a bullet.`;
                     case 'disney':
-                        return 'Hakuna matata!';
+                        return `Disney: If you can dream it, you can build it.`;
                     case 'pixar':
-                        return 'To infinity and beyond!';
+                        return `Pixar: To vision and beyond.`;
                     case 'anime':
-                        return 'Kawaii! Sugoi!';
+                        return `Anime: 静かに立ち上がれ — rise beautifully.`;
                     case 'manga':
-                        return 'Manga power!';
+                        return `Manga: 力と心で世界を変える — strength with grace.`;
                     case 'comics':
-                        return 'Pow! Bam! Zap!';
+                        return `Comics: *POW!* The idea becomes real.`;
                     
                     // Weird & Creative - Actual encodings
                     case 'wingdings':
@@ -899,65 +907,62 @@
                     case 'rot13':
                         return 'ROT13: ohvyq gur punatr lbh jvfu gb frr va gur jbeyq';
                     
-                    // Technical
+                    // Technical - Witty, code-aware translations
                     case 'base64':
                         return btoa(basePhrase);
                     case 'url':
                         return encodeURIComponent(basePhrase);
                     case 'json':
-                        return JSON.stringify({message: basePhrase});
+                        return `{"mission": "build the change", "integrity": true}`;
                     case 'xml':
-                        return `<message>${basePhrase}</message>`;
+                        return `<world><build>change</build></world>`;
                     case 'css':
-                        return `.message::before { content: "${basePhrase}"; }`;
+                        return `.world::before { content: "✨ Build the change ✨"; }`;
                     case 'html':
-                        return `<h1>${basePhrase}</h1>`;
+                        return `<b>Build</b> the <i>change</i> you <u>wish</u> to <code>see</code>.`;
                     case 'javascript':
-                        return `console.log("${basePhrase}");`;
+                        return `JavaScript: console.log("Building... success.");`;
                     case 'python':
-                        return `print("${basePhrase}")`;
+                        return `Python: print("build_the_change()")`;
                     case 'java':
-                        return `System.out.println("${basePhrase}");`;
+                        return `System.out.println("Legacy recompiled.");`;
                     case 'c++':
-                        return `std::cout << "${basePhrase}" << std::endl;`;
+                        return `std::cout << "Blueprints become being." << std::endl;`;
                     
-                    // Fun & Silly - Authentic character voices
+                    // Fun & Silly - Witty, character-aware translations
                     case 'baby':
-                        return 'Baby: "goo goo ga ga! build change! goo goo!"';
+                        return `Baby: goo goo change goo goo world.`;
                     case 'old':
-                        return 'Old Person: "Back in my day, we built the change we wished to see in the world!"';
+                        return `Old Soul: We planted seeds for trees we'll never see.`;
                     case 'robot':
-                        return 'Robot: "BEEP BOOP. BUILD. CHANGE. WORLD. ERROR 404 NOT FOUND."';
+                        return `Robot: BEEP. BUILD. BEAUTIFY.`;
                     case 'monster':
-                        return 'Monster: "Rawr! Grr! Build the change you wish to see in the monster world!"';
+                        return `Monster: Rawr! Grr! Monster sounds!`;
                     case 'ghost':
-                        return 'Ghost: "Boo! Build the change you wish to see in the afterlife!"';
+                        return `Ghost: "Good ideas never die."`;
                     case 'wizard':
-                        return 'Wizard: "Abracadabra! Build the change you wish to see in the magical world!"';
+                        return `Wizard: Creation is the oldest spell.`;
                     case 'ninja':
-                        return 'Ninja: "Silent... build the change you wish to see in the shadows..."';
+                        return `Ninja: Build silently. Leave no bugs.`;
                     case 'pirate':
-                        return 'Pirate: "Ahoy matey! Build the change ye wish to see on the seven seas!"';
+                        return `Pirate: "Raise the world ye wish to sail."`;
                     case 'cowboy':
-                        return 'Cowboy: "Howdy partner! Build the change you wish to see in the wild west!"';
+                        return `Cowboy: Build the frontier. Ride with honor.`;
                     case 'surfer':
-                        return 'Surfer: "Cowabunga dude! Build the change you wish to see in the waves!"';
+                        return `Surfer: Cowabunga dude! Radical!`;
                     case 'hipster':
-                        return 'Hipster: "I was building the change you wish to see before it was cool..."';
+                        return `Hipster: Built it before it was cool.`;
                     case 'nerd':
-                        return 'Nerd: "Actually, according to my calculations, you should build the change you wish to see in the world."';
+                        return `Nerd: Actually, according to my calculations...`;
                     case 'geek':
-                        return 'Geek: "Did you know that building the change you wish to see is statistically proven to work?"';
+                        return `Geek: Did you know that...`;
                     case 'hacker':
-                        return 'Hacker: "Access granted. System compromised. Building the change you wish to see in the matrix."';
+                        return `Hacker: Access granted. Creation initialized.`;
                     case 'artist':
-                        return 'Artist: "Art is life! Build the change you wish to see through creativity!"';
+                        return `Artist: Beauty is a form of precision.`;
                     
                     default:
-                        return words.map(word => {
-                            const variations = wordVariations[word] || [word];
-                            return variations[Math.floor(Math.random() * variations.length)];
-                        }).join(' ');
+                        return `Translation: Build the change you wish to see in the world — in every language worth knowing.`;
                 }
             };
 
