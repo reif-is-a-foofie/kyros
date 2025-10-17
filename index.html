@@ -641,7 +641,7 @@
             white-space: pre;
         }
 
-        .email-link {
+        .terminal-link {
             color: #1f2937;
             text-decoration: underline;
             text-decoration-color: rgba(55, 65, 81, 0.35);
@@ -649,8 +649,8 @@
             transition: color 0.2s ease, text-decoration-color 0.2s ease;
         }
 
-        .email-link:hover,
-        .email-link:focus-visible {
+        .terminal-link:hover,
+        .terminal-link:focus-visible {
             color: #0f172a;
             text-decoration-color: #0ea5e9;
         }
@@ -875,8 +875,8 @@
     <div class="terminal">
         <div class="terminal-header">
             <div class="terminal-buttons">
-                <div class="button red" onclick="showEasterEgg('red')" title="Red Red Wine - UB40"></div>
-                <div class="button yellow" onclick="showEasterEgg('yellow')" title="Yellow - Coldplay"></div>
+                <div class="button red" onclick="showEasterEgg('red')" title="Red button surprise mix"></div>
+                <div class="button yellow" onclick="showEasterEgg('yellow')" title="Sunbeam Coldplay loop — proceed with vibes"></div>
                 <div class="button green" onclick="showEasterEgg('green')" title="Green Screen - YouTube Short"></div>
             </div>
             <div class="terminal-title">
@@ -895,10 +895,10 @@
             let url;
             switch(color) {
                 case 'red':
-                    url = 'https://www.youtube.com/watch?v=zA52uNzx7Y4'; // Red Red Wine - UB40
+                    url = 'https://www.youtube.com/watch?v=fiDLTHkqQa4&list=RDfiDLTHkqQa4&start_radio=1'; // Red button easter egg
                     break;
                 case 'yellow':
-                    url = 'https://www.youtube.com/watch?v=yKNxeF4KMsY'; // Yellow - Coldplay
+                    url = 'https://www.youtube.com/watch?v=yKNxeF4KMsY'; // Coldplay - Yellow
                     break;
                 case 'green':
                     url = 'https://www.youtube.com/shorts/SnUjPX_LrZE'; // Green Screen - YouTube Short
@@ -915,6 +915,8 @@
         const { useState, useEffect } = React;
         
         const basePhrase = 'build the change you wish to see in the world';
+        const CONTACT_EMAIL = 'hello@kyros.cc';
+        const CALENDLY_URL = 'https://calendly.com/reif-kyros/30min';
         const wordVariations = {
             'build': ['build', 'construir', 'bâtir', 'bauen', 'строить', 'بناء', '建てる', '🔨', '🏗️', '⚒️'],
             'the': ['the', 'el', 'le', 'der', 'тот', 'ال', 'その', 'il', 'das', 'o'],
@@ -967,7 +969,21 @@
                 'Withdrawn-Wolf', 'Wary-Wombat', 'Watchful-Weasel',
                 'Zoned-Out-Zebra', 'Zen-Zebra'
             ];
-            const randomComputer = computerNames[Math.floor(Math.random() * computerNames.length)];
+            const [computerName] = useState(() => {
+                const fallback = computerNames[Math.floor(Math.random() * computerNames.length)];
+                
+                if (typeof window === 'undefined' || !window.sessionStorage) {
+                    return fallback;
+                }
+                
+                const stored = window.sessionStorage.getItem('kyros-computer-name');
+                if (stored) {
+                    return stored;
+                }
+                
+                window.sessionStorage.setItem('kyros-computer-name', fallback);
+                return fallback;
+            });
 
            // Accurate moon phase calculation
            const calculateMoonPhase = () => {
@@ -1003,7 +1019,7 @@
                return `${symbol} ${label} · ${illumination}% illumination`;
            };
 
-           const lastLoginMessage = `Last login: ${lastLoginTime} on ${randomComputer}`;
+           const lastLoginMessage = `Last login: ${lastLoginTime} on ${computerName}`;
 
             const [currentCommand, setCurrentCommand] = useState('');
             const [history, setHistory] = useState([]);
@@ -1073,44 +1089,44 @@
                 'warn()',
                 
                 // Call to Action Commands - More frequent and varied
-                'echo "💼 Ready to pitch your idea? Contact us at hello@kyros.cc"',
-                'echo "🚀 Have a startup? Let\'s talk: hello@kyros.cc"',
-                'echo "💡 Building something amazing? Pitch us at hello@kyros.cc"',
-                'echo "🎯 Looking for investment? We want to hear from you: hello@kyros.cc"',
-                'echo "⚡ Got a game-changing idea? Let\'s discuss: hello@kyros.cc"',
-                'echo "🌟 Ready to scale? Contact Kyros at hello@kyros.cc"',
-                'echo "🔥 Building the future? Pitch us: hello@kyros.cc"',
-                'echo "💎 Have a diamond in the rough? Let\'s talk: hello@kyros.cc"',
-                'echo "🤝 Ready to meet? Let\'s connect: hello@kyros.cc"',
-                'echo "☕ Coffee chat? Meet us: hello@kyros.cc"',
-                'echo "📅 Schedule a meeting: hello@kyros.cc"',
-                'echo "💬 Let\'s meet and discuss: hello@kyros.cc"',
-                'echo "🎪 Come meet the team: hello@kyros.cc"',
-                'echo "🏢 Office visit? Meet us: hello@kyros.cc"',
-                'echo "🤝 Partnership meeting: hello@kyros.cc"',
-                'echo "💼 Business meeting: hello@kyros.cc"',
+                'echo "💼 Ready to pitch your idea? Contact us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🚀 Have a startup? Let\'s talk: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "💡 Building something amazing? Pitch us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🎯 Looking for investment? We want to hear from you: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "⚡ Got a game-changing idea? Let\'s discuss: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🌟 Ready to scale? Contact Kyros: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🔥 Building the future? Pitch us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "💎 Have a diamond in the rough? Let\'s talk: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🤝 Ready to meet? Let\'s connect: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "☕ Coffee chat? Meet us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "📅 Schedule a meeting: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "💬 Let\'s meet and discuss: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🎪 Come meet the team: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🏢 Office visit? Meet us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🤝 Partnership meeting: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "💼 Business meeting: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 
                 // Additional creative call-to-actions
-                'echo "🎨 Creative entrepreneur? Let\'s collaborate: hello@kyros.cc"',
-                'echo "🔬 Innovation lab? Meet the team: hello@kyros.cc"',
-                'echo "🌱 Early stage startup? We\'re here: hello@kyros.cc"',
-                'echo "🚀 Rocket ship ready to launch? Contact us: hello@kyros.cc"',
-                'echo "💡 Lightbulb moment? Share it with us: hello@kyros.cc"',
-                'echo "🎯 Bullseye idea? Let\'s aim higher: hello@kyros.cc"',
-                'echo "⚡ Lightning in a bottle? Capture it: hello@kyros.cc"',
-                'echo "🌟 Shooting star? We\'ll help you shine: hello@kyros.cc"',
-                'echo "🔥 Fire in your belly? Let\'s fuel it: hello@kyros.cc"',
-                'echo "💎 Rough diamond? Let\'s polish it: hello@kyros.cc"',
-                'echo "🤝 Handshake ready? Let\'s shake on it: hello@kyros.cc"',
-                'echo "☕ Coffee brewing? Let\'s meet: hello@kyros.cc"',
-                'echo "📅 Calendar open? Book us: hello@kyros.cc"',
-                'echo "💬 Conversation starter? Let\'s talk: hello@kyros.cc"',
-                'echo "🎪 Circus act? We love the show: hello@kyros.cc"',
-                'echo "🏢 Building something? We build too: hello@kyros.cc"',
-                'echo "🤝 Partnership potential? Let\'s explore: hello@kyros.cc"',
-                'echo "💼 Business opportunity? We\'re listening: hello@kyros.cc"',
-                'echo "🎯 Target market? We\'re your audience: hello@kyros.cc"',
-                'echo "🚀 Launch pad ready? We\'re the rocket: hello@kyros.cc"'
+                'echo "🎨 Creative entrepreneur? Let\'s collaborate: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🔬 Innovation lab? Meet the team: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🌱 Early stage startup? We\'re here: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🚀 Rocket ship ready to launch? Contact us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "💡 Lightbulb moment? Share it with us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🎯 Bullseye idea? Let\'s aim higher: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "⚡ Lightning in a bottle? Capture it: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🌟 Shooting star? We\'ll help you shine: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🔥 Fire in your belly? Let\'s fuel it: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "💎 Rough diamond? Let\'s polish it: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🤝 Handshake ready? Let\'s shake on it: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "☕ Coffee brewing? Let\'s meet: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "📅 Calendar open? Book us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "💬 Conversation starter? Let\'s talk: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🎪 Circus act? We love the show: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🏢 Building something? We build too: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🤝 Partnership potential? Let\'s explore: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "💼 Business opportunity? We\'re listening: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🎯 Target market? We\'re your audience: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🚀 Launch pad ready? We\'re the rocket: hello@kyros.cc · https://calendly.com/reif-kyros/30min"'
             ];
 
             // Smart randomization to prevent consecutive repeats
@@ -1166,9 +1182,16 @@
                 return () => clearInterval(interval);
             }, []);
 
-            // Function to make email addresses clickable
-            const makeEmailsClickable = (text) => {
-                return text.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1" class="email-link">$1</a>');
+            // Function to make emails and URLs clickable
+            const formatInteractiveText = (text) => {
+                const withEmails = text.replace(
+                    /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+                    '<a href="mailto:$1" class="terminal-link">$1</a>'
+                );
+                return withEmails.replace(
+                    /(https?:\/\/[^\s"<]+)/g,
+                    '<a href="$1" class="terminal-link" target="_blank" rel="noopener noreferrer">$1</a>'
+                );
             };
 
             const executeCommand = (command) => {
@@ -1190,11 +1213,43 @@
                 if (command === 'echo ""') {
                     return '';
                 }
+
+                if (command === 'contact') {
+                    return formatInteractiveText(`📬 Drop us a line at ${CONTACT_EMAIL} or grab time at ${CALENDLY_URL}`);
+                }
+
+                if (command === 'email') {
+                    return formatInteractiveText(`✉️ Preferred inbox: ${CONTACT_EMAIL} · Calendar: ${CALENDLY_URL}`);
+                }
+
+                if (command === 'pitch') {
+                    return formatInteractiveText(`🚀 Ready to pitch? Send materials to ${CONTACT_EMAIL} and book a 30-minute deep dive at ${CALENDLY_URL}`);
+                }
+
+                if (command === 'help') {
+                    return formatInteractiveText(`🆘 Try commands like translate(spanish), contact, warn(), or book time via ${CALENDLY_URL}`);
+                }
+
+                if (command === 'whoami') {
+                    return '🤖 You are chatting with Kyros — an investment studio that builds the change it wishes to see.';
+                }
+
+                if (command === 'about') {
+                    return 'ℹ️ Kyros backs extraordinary people building market-shifting companies.';
+                }
+
+                if (command === 'ls -la') {
+                    return formatInteractiveText(`. .. deals/ talent/ partners/ pipeline.md → start at ${CALENDLY_URL}`);
+                }
+
+                if (command === 'cat README.md') {
+                    return formatInteractiveText(`Kyros: Build, buy, broker. Reach us at ${CONTACT_EMAIL} or schedule at ${CALENDLY_URL}.`);
+                }
                 
-                // Handle echo commands with email addresses
-                if (command.startsWith('echo "') && command.includes('@kyros.cc')) {
-                    const cleanCommand = command.replace('echo "', '').replace('"', '');
-                    return makeEmailsClickable(cleanCommand);
+                // Handle echo commands with interactive links
+                if (command.startsWith('echo "')) {
+                    const cleanCommand = command.replace(/^echo\s+"/, '').replace(/"$/, '');
+                    return formatInteractiveText(cleanCommand);
                 }
                 
                 // Handle warn() command
