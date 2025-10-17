@@ -478,7 +478,7 @@
             width: 100%;
             min-height: 0;
             flex: 1;
-            padding: 16px var(--terminal-padding) 12px;
+            padding: 16px var(--terminal-padding) 10px;
             gap: 10px;
             overflow: hidden;
         }
@@ -530,7 +530,8 @@
 
         .terminal-footer {
             margin-top: auto;
-            padding-top: 6px;
+            padding-top: 4px;
+            padding-bottom: 2px;
         }
 
         .terminal-history {
@@ -588,14 +589,20 @@
 
 
         .system-info {
-            color: #6b7280;
-            font-style: italic;
-            font-weight: 300;
+            color: #374151;
+            font-style: normal;
+            font-weight: 400;
+            font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+            line-height: 1.35;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
 
         .moon-phase {
             color: #8b5cf6;
             font-weight: 500;
+            font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+            line-height: 1.35;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
 
         .terminal-output {
@@ -691,7 +698,7 @@
 
         .terminal-line {
             margin-bottom: 0;
-            padding: 4px 0 0;
+            padding: 2px 0 0;
             display: flex;
             align-items: center;
             width: 100%;
