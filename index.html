@@ -721,9 +721,9 @@
                 <div class="button green"></div>
             </div>
             <div class="terminal-title">
-                <span class="magic-text">Kyros</span> | 
-                <a href="mailto:hello@kyros.cc" class="magic-text">hello@kyros.cc</a> | 
-                <a href="mailto:hello@kyros.cc?subject=Pitch%20Us" class="magic-text">pitch us</a>
+                <span>Kyros</span> | 
+                <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | 
+                <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">pitch us</a>
             </div>
         </div>
         <div class="terminal-content">
@@ -808,7 +808,7 @@
                     phaseIndex = 5; // Waning Gibbous
                 } else if (phaseInCycle < 23.99361) {
                     phaseIndex = 6; // Last Quarter
-                } else {
+        } else {
                     phaseIndex = 7; // Waning Crescent
                 }
                 
@@ -1246,18 +1246,12 @@
             return (
                 <div className="magic-terminal">
                     {history.map((item, index) => (
-                        <div key={index}>
-                            <div className="terminal-history-line">
-                                <span className="terminal-prompt">$</span>
-                                <span className="terminal-command">{item.command}</span>
-                            </div>
-                            <div className="terminal-history-line">
-                                <span className="terminal-prompt"></span>
-                                <span className="terminal-output">
-                                    <span className="checkmark shiny-text">✓</span>
-                                    <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
-                                </span>
-                            </div>
+                        <div key={index} className="terminal-history-line">
+                            <span className="terminal-prompt">$</span>
+                            <span className="terminal-output">
+                                <span className="checkmark">✓</span>
+                                <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
+                            </span>
                         </div>
                     ))}
                     <div className="terminal-line">
