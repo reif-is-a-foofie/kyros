@@ -421,6 +421,17 @@
             text-decoration: none;
             font-size: inherit;
             font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .terminal-folder-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            object-fit: cover;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
         }
 
         .terminal-title a strong {
@@ -494,7 +505,7 @@
             width: 100%;
             min-height: 0;
             flex: 1;
-            padding: 16px var(--terminal-padding) 24px;
+            padding: 16px var(--terminal-padding) 18px;
             gap: 10px;
             overflow: hidden;
             box-sizing: border-box;
@@ -551,8 +562,7 @@
 
         .terminal-footer {
             margin-top: auto;
-            padding-top: 4px;
-            padding-bottom: 12px;
+            padding: 2px 0 6px;
         }
 
         .terminal-history {
@@ -704,7 +714,7 @@
 
         .terminal-line {
             margin-bottom: 0;
-            padding: 2px 0 2px;
+            padding: 2px 0 0;
             display: flex;
             align-items: center;
             width: 100%;
@@ -904,7 +914,10 @@
                     <div class="button green" onclick="showEasterEgg('green')" title="Green Screen - YouTube Short"></div>
                 </div>
             <div class="terminal-title" id="terminal-title">
-                <a href="mailto:hello@kyros.cc">hello@<strong>kyros</strong>.cc — <span class="header-callout">email us!</span></a>
+                <a href="mailto:hello@kyros.cc">
+                    <img src="folder%20icon.jpg" alt="Folder" class="terminal-folder-icon" />
+                    hello@<strong>kyros</strong>.cc — <span class="header-callout">email us!</span>
+                </a>
             </div>
         </div>
         <div class="terminal-content">
