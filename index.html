@@ -79,7 +79,7 @@
       pointer-events: none;
       z-index: -1;
     }
-    
+
         .container {
       text-align: center;
             max-width: 1200px;
@@ -149,9 +149,10 @@
             }
             
             .terminal-command {
-                white-space: nowrap;
+                white-space: pre-wrap;
                 overflow: visible;
                 flex-shrink: 0;
+                word-wrap: break-word;
             }
             
             .system-info, .moon-phase {
@@ -224,9 +225,10 @@
             }
             
             .terminal-command {
-                white-space: nowrap;
+                white-space: pre-wrap;
                 overflow: visible;
                 flex-shrink: 0;
+                word-wrap: break-word;
             }
             
             .system-info, .moon-phase {
@@ -529,6 +531,8 @@
             color: #1a1a1a;
             font-weight: 400;
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .system-message {
@@ -760,11 +764,13 @@
             display: inline-block;
             width: 1em;
             height: 2px;
-            background: #10b981;
-            animation: blink 1s infinite;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+            background-size: 400% 400%;
+            animation: shinyMove 2s ease-in-out infinite, blink 1s infinite;
             margin-left: 2px;
             vertical-align: text-bottom;
             margin-bottom: 0;
+            border-radius: 1px;
         }
 
         @keyframes blink {
@@ -801,12 +807,7 @@
                 <div class="button green" onclick="showEasterEgg('green')" title="Green Screen - YouTube Short"></div>
             </div>
             <div class="terminal-title">
-                <span class="brand-icon">◆</span>
-                <span>kyros</span>
-                <span>—</span>
                 <a href="mailto:hello@kyros.cc">hello@kyros.cc</a>
-                <span>—</span>
-                <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">meet us</a>
             </div>
         </div>
         <div class="terminal-content">
@@ -1014,7 +1015,15 @@
                 'echo "⚡ Got a game-changing idea? Let\'s discuss: hello@kyros.cc"',
                 'echo "🌟 Ready to scale? Contact Kyros at hello@kyros.cc"',
                 'echo "🔥 Building the future? Pitch us: hello@kyros.cc"',
-                'echo "💎 Have a diamond in the rough? Let\'s talk: hello@kyros.cc"'
+                'echo "💎 Have a diamond in the rough? Let\'s talk: hello@kyros.cc"',
+                'echo "🤝 Ready to meet? Let\'s connect: hello@kyros.cc"',
+                'echo "☕ Coffee chat? Meet us: hello@kyros.cc"',
+                'echo "📅 Schedule a meeting: hello@kyros.cc"',
+                'echo "💬 Let\'s meet and discuss: hello@kyros.cc"',
+                'echo "🎪 Come meet the team: hello@kyros.cc"',
+                'echo "🏢 Office visit? Meet us: hello@kyros.cc"',
+                'echo "🤝 Partnership meeting: hello@kyros.cc"',
+                'echo "💼 Business meeting: hello@kyros.cc"'
             ];
 
             // Smart randomization to prevent consecutive repeats
@@ -1398,7 +1407,7 @@
             useEffect(() => {
                 // Check if we need to reset after 100 iterations
                 if (iterationCount >= MAX_ITERATIONS) {
-                    setTimeout(() => {
+        setTimeout(() => {
                         setCurrentCommand('');
                         setHistory([]);
                         setCurrentCommandIndex(0);
