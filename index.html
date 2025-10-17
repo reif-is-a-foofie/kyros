@@ -79,7 +79,7 @@
       pointer-events: none;
       z-index: -1;
     }
-
+    
         .container {
       text-align: center;
             max-width: 1200px;
@@ -536,7 +536,7 @@
         }
 
         .system-message {
-            margin-bottom: 8px;
+            margin-bottom: 2px;
             padding: 0;
             margin-left: -40px;
             margin-right: -40px;
@@ -591,9 +591,18 @@
         }
 
         .cursor {
-            color: #FFD700;
-            font-weight: 600;
+            display: inline-block;
+            width: 1em;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+            background-size: 400% 400%;
+            animation: shinyMove 2s ease-in-out infinite, blink 1s infinite;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            margin-bottom: 0;
+            border-radius: 1px;
         }
+
 
         .terminal-line {
             margin-bottom: 0;
@@ -763,18 +772,6 @@
             animation: bounce 2s infinite;
         }
 
-        .cursor {
-            display: inline-block;
-            width: 1em;
-            height: 2px;
-            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
-            background-size: 400% 400%;
-            animation: shinyMove 2s ease-in-out infinite, blink 1s infinite;
-            margin-left: 2px;
-            vertical-align: text-bottom;
-            margin-bottom: 0;
-            border-radius: 1px;
-        }
 
         @keyframes blink {
             0%, 50% { opacity: 1; }
@@ -1010,7 +1007,7 @@
                 'cat README.md',
                 'warn()',
                 
-                // Call to Action Commands
+                // Call to Action Commands - More frequent and varied
                 'echo "💼 Ready to pitch your idea? Contact us at hello@kyros.cc"',
                 'echo "🚀 Have a startup? Let\'s talk: hello@kyros.cc"',
                 'echo "💡 Building something amazing? Pitch us at hello@kyros.cc"',
@@ -1026,7 +1023,29 @@
                 'echo "🎪 Come meet the team: hello@kyros.cc"',
                 'echo "🏢 Office visit? Meet us: hello@kyros.cc"',
                 'echo "🤝 Partnership meeting: hello@kyros.cc"',
-                'echo "💼 Business meeting: hello@kyros.cc"'
+                'echo "💼 Business meeting: hello@kyros.cc"',
+                
+                // Additional creative call-to-actions
+                'echo "🎨 Creative entrepreneur? Let\'s collaborate: hello@kyros.cc"',
+                'echo "🔬 Innovation lab? Meet the team: hello@kyros.cc"',
+                'echo "🌱 Early stage startup? We\'re here: hello@kyros.cc"',
+                'echo "🚀 Rocket ship ready to launch? Contact us: hello@kyros.cc"',
+                'echo "💡 Lightbulb moment? Share it with us: hello@kyros.cc"',
+                'echo "🎯 Bullseye idea? Let\'s aim higher: hello@kyros.cc"',
+                'echo "⚡ Lightning in a bottle? Capture it: hello@kyros.cc"',
+                'echo "🌟 Shooting star? We\'ll help you shine: hello@kyros.cc"',
+                'echo "🔥 Fire in your belly? Let\'s fuel it: hello@kyros.cc"',
+                'echo "💎 Rough diamond? Let\'s polish it: hello@kyros.cc"',
+                'echo "🤝 Handshake ready? Let\'s shake on it: hello@kyros.cc"',
+                'echo "☕ Coffee brewing? Let\'s meet: hello@kyros.cc"',
+                'echo "📅 Calendar open? Book us: hello@kyros.cc"',
+                'echo "💬 Conversation starter? Let\'s talk: hello@kyros.cc"',
+                'echo "🎪 Circus act? We love the show: hello@kyros.cc"',
+                'echo "🏢 Building something? We build too: hello@kyros.cc"',
+                'echo "🤝 Partnership potential? Let\'s explore: hello@kyros.cc"',
+                'echo "💼 Business opportunity? We\'re listening: hello@kyros.cc"',
+                'echo "🎯 Target market? We\'re your audience: hello@kyros.cc"',
+                'echo "🚀 Launch pad ready? We\'re the rocket: hello@kyros.cc"'
             ];
 
             // Smart randomization to prevent consecutive repeats
@@ -1410,7 +1429,7 @@
             useEffect(() => {
                 // Check if we need to reset after 100 iterations
                 if (iterationCount >= MAX_ITERATIONS) {
-        setTimeout(() => {
+                    setTimeout(() => {
                         setCurrentCommand('');
                         setHistory([]);
                         setCurrentCommandIndex(0);
