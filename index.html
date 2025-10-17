@@ -79,7 +79,7 @@
       pointer-events: none;
       z-index: -1;
     }
-    
+
         .container {
       text-align: center;
             max-width: 1200px;
@@ -417,7 +417,7 @@
 
         .terminal-title a {
             color: #374151;
-            text-decoration: underline;
+            text-decoration: none;
         }
 
         .terminal-title a:hover {
@@ -538,12 +538,8 @@
         .system-message {
             margin-bottom: 2px;
             padding: 0;
-            margin-left: -40px;
-            margin-right: -40px;
             text-indent: 0;
             display: block;
-            width: calc(100% + 80px);
-            box-sizing: border-box;
         }
 
         .system-info {
@@ -596,11 +592,19 @@
             height: 2px;
             background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
             background-size: 400% 400%;
-            animation: shinyMove 2s ease-in-out infinite, blink 1s infinite;
+            animation: cursorShiny 3s ease-in-out infinite, blink 1s infinite;
             margin-left: 2px;
             vertical-align: text-bottom;
             margin-bottom: 0;
             border-radius: 1px;
+            will-change: background-position, opacity;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes cursorShiny {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
 
 
@@ -1429,7 +1433,7 @@
             useEffect(() => {
                 // Check if we need to reset after 100 iterations
                 if (iterationCount >= MAX_ITERATIONS) {
-                    setTimeout(() => {
+        setTimeout(() => {
                         setCurrentCommand('');
                         setHistory([]);
                         setCurrentCommandIndex(0);
@@ -1483,9 +1487,9 @@
                         
                         if (isSystemMessage) {
                             return (
-                                <div key={index} className="system-message">
+                                <div key={index} className="system-message" style={{marginLeft: '-40px', marginRight: '-40px', paddingLeft: '40px', paddingRight: '40px'}}>
                                     <span dangerouslySetInnerHTML={{__html: item.output}}></span>
-                    </div>
+                                </div>
                             );
                         }
                         
