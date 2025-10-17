@@ -224,8 +224,8 @@
         }
 
         .button {
-            width: 12px;
-            height: 12px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             transition: all 0.2s ease;
             cursor: pointer;
@@ -401,6 +401,13 @@
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
 
+        .terminal-prompt {
+            color: #FFD700;
+            margin-right: 8px;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+        }
+
         .terminal-output {
             margin-left: 20px;
             margin-top: 4px;
@@ -415,8 +422,19 @@
         }
 
         .output-text {
-            color: #6b7280;
-            font-style: italic;
+            color: #1a1a1a;
+            font-style: normal;
+            font-weight: 400;
+        }
+
+        .animated-text {
+            color: #1a1a1a;
+            font-weight: 400;
+        }
+
+        .cursor {
+            color: #FFD700;
+            font-weight: 600;
         }
 
         .terminal-line {
@@ -634,17 +652,6 @@
 <body>
     <div class="terminal">
         <div class="terminal-header">
-            <div class="terminal-buttons">
-                <span class="button red" onclick="showEasterEgg('red')" title="Click for a musical surprise!">
-                    <div class="easter-egg-tooltip" id="red-tooltip">🎵 Red Red Wine - UB40</div>
-                </span>
-                <span class="button yellow" onclick="showEasterEgg('yellow')" title="Click for a musical surprise!">
-                    <div class="easter-egg-tooltip" id="yellow-tooltip">🎵 Yellow - Coldplay</div>
-                </span>
-                <span class="button green" onclick="showEasterEgg('green')" title="Click for a musical surprise!">
-                    <div class="easter-egg-tooltip" id="green-tooltip">🎬 YouTube Shorts</div>
-                </span>
-            </div>
             <div class="terminal-title">
                 <span class="magic-text">Kyros: an investment studio</span> | 
                 <span class="magic-text">We want to work with you:</span> 
@@ -657,49 +664,6 @@
         </div>
     </div>
 
-    <script>
-        // Easter Egg System
-        function showEasterEgg(color) {
-            const tooltip = document.getElementById(`${color}-tooltip`);
-            const button = tooltip.parentElement;
-            
-            // Add click animation
-            button.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                button.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    button.style.transform = 'scale(1)';
-                }, 150);
-            }, 100);
-            
-            // Show tooltip
-            tooltip.classList.add('show');
-            
-            // Handle different easter eggs
-            switch(color) {
-                case 'red':
-                    setTimeout(() => {
-                        window.open('https://www.youtube.com/watch?v=zXt56MB-3vc', '_blank');
-                    }, 500);
-                    break;
-                case 'yellow':
-                    setTimeout(() => {
-                        window.open('https://www.youtube.com/watch?v=yKNxeF4KMsY', '_blank');
-                    }, 500);
-                    break;
-                case 'green':
-                    setTimeout(() => {
-                        window.open('https://www.youtube.com/shorts/SnUjPX_LrZE', '_blank');
-                    }, 500);
-                    break;
-            }
-            
-            // Hide tooltip after 3 seconds
-            setTimeout(() => {
-                tooltip.classList.remove('show');
-            }, 3000);
-        }
-    </script>
 
     <script type="text/babel">
         // Magic UI Terminal with React components
@@ -1183,18 +1147,18 @@
                 <div className="magic-terminal">
                     {history.map((item, index) => (
                         <div key={index} className="terminal-history-line">
-                            <span className="terminal-prompt magic-text">$</span>
+                            <span className="terminal-prompt">$</span>
                             <span className="terminal-output">
                                 <span className="checkmark shiny-text">✓</span>
-                                <span className="output-text magic-text">{item.output}</span>
+                                <span className="output-text">{item.output}</span>
                             </span>
                         </div>
                     ))}
                     <div className="terminal-line">
-                        <span className="terminal-prompt magic-text">$</span>
-                        <span className="animated-text magic-text">
+                        <span className="terminal-prompt">$</span>
+                        <span className="animated-text">
                             {currentCommand}
-                            <span className="cursor shiny-text">_</span>
+                            <span className="cursor">_</span>
                         </span>
                     </div>
                 </div>
