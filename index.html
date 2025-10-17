@@ -471,15 +471,15 @@
         }
 
         .magic-terminal {
-            --terminal-padding: clamp(20px, 5vw, 40px);
+            --terminal-padding: clamp(18px, 4.5vw, 36px);
             display: flex;
             flex-direction: column;
             height: 100%;
             width: 100%;
             min-height: 0;
             flex: 1;
-            padding: 20px var(--terminal-padding) 0;
-            gap: 12px;
+            padding: 16px var(--terminal-padding) 12px;
+            gap: 10px;
             overflow: hidden;
         }
 
@@ -522,15 +522,15 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            gap: 12px;
+            gap: 6px;
             overflow-y: auto;
             min-height: 0;
-            padding-right: calc(var(--terminal-padding) - 12px);
+            padding-right: calc(var(--terminal-padding) - 16px);
         }
 
         .terminal-footer {
             margin-top: auto;
-            padding-bottom: 0;
+            padding-top: 6px;
         }
 
         .terminal-history {
@@ -544,7 +544,7 @@
         }
 
         .terminal-history-line {
-            margin-bottom: 8px;
+            margin-bottom: 2px;
             display: flex;
             align-items: flex-start;
             word-wrap: break-word;
@@ -552,6 +552,8 @@
             white-space: pre-wrap;
             overflow: hidden;
             max-width: 100%;
+            font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+            line-height: 1.35;
         }
 
         .terminal-history-line .terminal-prompt {
@@ -581,6 +583,7 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: anywhere;
+            line-height: 1.35;
         }
 
 
@@ -596,12 +599,13 @@
         }
 
         .terminal-output {
-            margin-left: 20px;
-            margin-top: 4px;
+            margin-left: 14px;
+            margin-top: 0;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             white-space: pre-wrap;
             word-wrap: break-word;
+            line-height: 1.35;
         }
 
         .checkmark {
@@ -611,7 +615,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             animation: shinyMove 8s ease-in-out infinite;
-            margin-right: 8px;
+            margin-right: 6px;
             font-weight: bold;
         }
 
@@ -625,6 +629,7 @@
             white-space: pre-wrap;
             overflow: visible;
             max-width: 100%;
+            line-height: 1.35;
         }
 
         .output-text pre {
@@ -658,6 +663,10 @@
         .animated-text {
             color: #1a1a1a;
             font-weight: 400;
+            font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+            display: flex;
+            align-items: center;
+            line-height: 1.35;
         }
 
         .cursor {
@@ -682,7 +691,7 @@
 
         .terminal-line {
             margin-bottom: 0;
-            padding: 8px 0 0;
+            padding: 4px 0 0;
             display: flex;
             align-items: center;
             width: 100%;
@@ -693,6 +702,8 @@
             word-wrap: break-word;
             word-break: break-word;
             flex-shrink: 0;
+            font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+            line-height: 1.35;
         }
 
         .terminal-line.contact-info {
