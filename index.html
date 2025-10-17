@@ -79,7 +79,7 @@
       pointer-events: none;
       z-index: -1;
     }
-
+    
         .container {
       text-align: center;
             max-width: 1200px;
@@ -96,8 +96,8 @@
 
         .terminal {
                 width: 90%;
-                height: min(80vh, 550px);
-                min-height: 400px;
+                height: min(85vh, 650px);
+                min-height: 500px;
                 border-radius: 8px;
                 margin: 0;
                 max-width: calc(100vw - 2rem);
@@ -150,8 +150,8 @@
             
             .terminal {
                 width: 92%;
-                height: min(85vh, 500px);
-                min-height: 350px;
+                height: min(90vh, 600px);
+                min-height: 450px;
                 border-radius: 6px;
                 max-width: calc(100vw - 1.5rem);
             }
@@ -207,8 +207,8 @@
         .terminal {
             width: 85%;
             max-width: 1200px;
-            height: min(90vh, 700px);
-            min-height: 500px;
+            height: min(95vh, 800px);
+            min-height: 600px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
@@ -370,24 +370,12 @@
             transform: translateX(-50%);
         }
 
-        .folder-icon {
-            width: 16px;
-            height: 16px;
-            background: #10b981;
-            border-radius: 2px;
-            position: relative;
+        .brand-icon {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: bold;
             display: inline-block;
-        }
-
-        .folder-icon::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 2px;
-            width: 8px;
-            height: 4px;
-            background: #10b981;
-            border-radius: 1px 1px 0 0;
+            margin-right: 4px;
         }
 
         .terminal-title a {
@@ -447,7 +435,7 @@
         }
 
         .terminal-content {
-            padding: 20px 40px 40px 40px;
+            padding: 20px 40px 0px 40px;
             flex: 1;
             min-height: 0;
             background: rgba(255, 255, 255, 0.6);
@@ -552,7 +540,8 @@
         }
 
         .terminal-line {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0;
+            padding: 20px 0;
             display: flex;
             align-items: center;
             width: 100%;
@@ -772,7 +761,7 @@
                 <div class="button green"></div>
             </div>
             <div class="terminal-title">
-                <span class="folder-icon"></span>
+                <span class="brand-icon">◆</span>
                 <span>kyros</span>
                 <span>—</span>
                 <a href="mailto:hello@kyros.cc">hello@kyros.cc</a>
@@ -929,6 +918,7 @@
                 'whoami',
                 'ls -la',
                 'cat README.md',
+                'warn()',
                 
                 // Call to Action Commands
                 'echo "💼 Ready to pitch your idea? Contact us at hello@kyros.cc"',
@@ -1024,6 +1014,11 @@
                 if (command.startsWith('echo "') && command.includes('@kyros.cc')) {
                     const cleanCommand = command.replace('echo "', '').replace('"', '');
                     return makeEmailsClickable(cleanCommand);
+                }
+                
+                // Handle warn() command
+                if (command === 'warn()') {
+                    return '🔴 whatever you do do not hit this button unless you want to turn forty immediately';
                 }
                 
                 // Handle translate commands
@@ -1298,7 +1293,7 @@
             useEffect(() => {
                 // Check if we need to reset after 100 iterations
                 if (iterationCount >= MAX_ITERATIONS) {
-        setTimeout(() => {
+                    setTimeout(() => {
                         setCurrentCommand('');
                         setHistory([]);
                         setCurrentCommandIndex(0);
