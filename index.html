@@ -92,11 +92,12 @@
                 padding: 1rem;
                 align-items: flex-start;
                 padding-top: 2rem;
-            }
-            
+        }
+
             .terminal {
-                height: min(75vh, 500px);
-                min-height: 350px;
+                width: 90%;
+                height: min(80vh, 550px);
+                min-height: 400px;
                 border-radius: 8px;
                 margin: 0;
                 max-width: calc(100vw - 2rem);
@@ -140,8 +141,9 @@
             }
             
             .terminal {
-                height: min(80vh, 450px);
-                min-height: 300px;
+                width: 92%;
+                height: min(85vh, 500px);
+                min-height: 350px;
                 border-radius: 6px;
                 max-width: calc(100vw - 1.5rem);
             }
@@ -187,10 +189,10 @@
         }
 
         .terminal {
-            width: 100%;
-            max-width: 1600px;
-            height: min(80vh, 600px);
-            min-height: 400px;
+            width: 85%;
+            max-width: 1200px;
+            height: min(90vh, 700px);
+            min-height: 500px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
@@ -232,9 +234,9 @@
         }
 
         .terminal-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
             padding: 18px 24px;
             background: rgba(240, 242, 245, 0.95);
             backdrop-filter: blur(10px);
@@ -243,7 +245,7 @@
             border-top-right-radius: 12px;
             border-bottom: 1px solid rgba(229, 231, 235, 0.8);
             min-height: 52px;
-            position: relative;
+      position: relative;
         }
 
         .terminal-buttons {
@@ -768,6 +770,21 @@
         // Magic UI Terminal Component
         function MagicTerminal() {
             const [currentCommand, setCurrentCommand] = useState('');
+            // Moon phase calculation
+            const getMoonPhase = () => {
+                const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
+                               '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
+                const day = now.getDate();
+                
+                // Simple moon phase calculation (approximate)
+                const daysSinceNewMoon = (year * 365.25 + month * 30.44 + day) % 29.53;
+                const phaseIndex = Math.floor((daysSinceNewMoon / 29.53) * 8);
+                return phases[phaseIndex % 8];
+            };
+
             const [history, setHistory] = useState([
                 { command: '', output: `<span class="system-info">Last login: ${lastLoginTime} on ${randomComputer}</span>` },
                 { command: '', output: `<span class="moon-phase">🌙 Current moon phase: ${getMoonPhase()}</span>` }
@@ -791,49 +808,6 @@
                 hour12: false
             });
             
-            // Accurate moon phase calculation
-            const getMoonPhase = () => {
-                const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
-                               '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
-                
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-                const day = now.getDate();
-                
-                // Known new moon date (January 11, 2024)
-                const knownNewMoon = new Date(2024, 0, 11);
-                const currentDate = new Date(year, month - 1, day);
-                
-                // Calculate days since known new moon
-                const daysSinceNewMoon = Math.floor((currentDate - knownNewMoon) / (1000 * 60 * 60 * 24));
-                
-                // Moon cycle is approximately 29.53 days
-                const moonCycle = 29.53059;
-                const phaseInCycle = (daysSinceNewMoon % moonCycle + moonCycle) % moonCycle;
-                
-                // Determine phase based on cycle position
-                let phaseIndex;
-                if (phaseInCycle < 1.84566) {
-                    phaseIndex = 0; // New Moon
-                } else if (phaseInCycle < 5.53699) {
-                    phaseIndex = 1; // Waxing Crescent
-                } else if (phaseInCycle < 9.22831) {
-                    phaseIndex = 2; // First Quarter
-                } else if (phaseInCycle < 12.91963) {
-                    phaseIndex = 3; // Waxing Gibbous
-                } else if (phaseInCycle < 16.61096) {
-                    phaseIndex = 4; // Full Moon
-                } else if (phaseInCycle < 20.30228) {
-                    phaseIndex = 5; // Waning Gibbous
-                } else if (phaseInCycle < 23.99361) {
-                    phaseIndex = 6; // Last Quarter
-        } else {
-                    phaseIndex = 7; // Waning Crescent
-                }
-                
-                return phases[phaseIndex];
-            };
             
             // Shy animal computer hostnames (alliterative)
             const computerNames = [
@@ -1278,13 +1252,13 @@
                             <div className="terminal-history-line">
                                 <span className="terminal-prompt">▶</span>
                                 <span className="terminal-command">{item.command}</span>
-                            </div>
+                    </div>
                             <div className="terminal-history-line">
                                 <span className="terminal-prompt"></span>
-                                <span className="terminal-output">
-                                    <span className="checkmark">✓</span>
+                            <span className="terminal-output">
+                                <span className="checkmark">✓</span>
                                     <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
-                                </span>
+                            </span>
                             </div>
                         </div>
                     ))}
