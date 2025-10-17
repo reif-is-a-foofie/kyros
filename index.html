@@ -27,7 +27,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+      overflow: hidden;
             position: relative;
             font-family: 'Inter', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
@@ -138,7 +138,7 @@
         .terminal {
             width: 100%;
             max-width: 1600px;
-            height: 100vh;
+            height: 80vh;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
@@ -151,7 +151,7 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.9);
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
             color: #1a1a1a;
-            margin: 0 auto;
+            margin: 10vh auto 0;
             border: 1px solid rgba(255, 255, 255, 0.6);
             display: flex;
             flex-direction: column;
@@ -182,15 +182,15 @@
             align-items: center;
             justify-content: center;
             padding: 18px 24px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(20,20,20,0.9));
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             min-height: 52px;
             position: relative;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
             flex-shrink: 0;
         }
 
@@ -255,7 +255,7 @@
         .green { background-color: #27c93f; }
 
         .terminal-title {
-            color: #2c2c2e;
+            color: #ffffff;
             font-size: 20px;
             font-weight: 500;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -266,25 +266,28 @@
             left: 50%;
             transform: translateX(-50%);
             letter-spacing: -0.01em;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .terminal-title a {
-            color: #1d1d1f;
+            color: #ffffff;
             text-decoration: none;
             transition: all 0.3s ease;
             padding: 4px 10px;
             border-radius: 6px;
-            background: rgba(255, 215, 0, 0.15);
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.4);
             font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .terminal-title a:hover {
-            color: #1d1d1f;
-            background: rgba(255, 215, 0, 0.25);
-            border-color: rgba(255, 215, 0, 0.4);
+            color: #ffffff;
+            background: rgba(255, 215, 0, 0.4);
+            border-color: rgba(255, 215, 0, 0.6);
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .terminal-content {
