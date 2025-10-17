@@ -503,7 +503,7 @@
         }
 
         .system-messages {
-            margin: 0 calc(-1 * var(--terminal-padding));
+            margin: 0 0 4px calc(-1 * var(--terminal-padding));
             display: flex;
             flex-direction: column;
             gap: 4px;
@@ -515,10 +515,6 @@
             padding: 0;
             text-align: left;
             display: block;
-        }
-
-        .system-message:first-child {
-            margin-top: 4px;
         }
 
         .history-scroll {
@@ -584,6 +580,7 @@
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
             white-space: pre-wrap;
             word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
 
 
@@ -973,57 +970,47 @@
             const randomComputer = computerNames[Math.floor(Math.random() * computerNames.length)];
 
            // Accurate moon phase calculation
-           const getMoonPhase = () => {
-               const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
-                              '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
+           const calculateMoonPhase = () => {
+               const phases = [
+                   { symbol: '🌑', label: 'New Moon' },
+                   { symbol: '🌒', label: 'Waxing Crescent' },
+                   { symbol: '🌓', label: 'First Quarter' },
+                   { symbol: '🌔', label: 'Waxing Gibbous' },
+                   { symbol: '🌕', label: 'Full Moon' },
+                   { symbol: '🌖', label: 'Waning Gibbous' },
+                   { symbol: '🌗', label: 'Last Quarter' },
+                   { symbol: '🌘', label: 'Waning Crescent' }
+               ];
                
                const now = new Date();
-               const year = now.getFullYear();
-               const month = now.getMonth() + 1;
-               const day = now.getDate();
+               const knownNewMoon = new Date(Date.UTC(2000, 0, 6, 18, 14));
+               const synodicMonth = 29.530588853; // Mean length of a synodic month in days
                
-               // Use a more recent known new moon for better accuracy
-               // Known new moon: September 22, 2025 (Julian Day 2460625.5)
-               const recentNewMoon = 2460625.5;
+               const daysSinceReference = (now.getTime() - knownNewMoon.getTime()) / 86400000;
+               const normalized = ((daysSinceReference % synodicMonth) + synodicMonth) % synodicMonth;
+               const phaseFraction = normalized / synodicMonth;
+               const phaseIndex = Math.floor(phaseFraction * phases.length + 0.5) % phases.length;
+               const illumination = Math.round((1 - Math.cos(phaseFraction * 2 * Math.PI)) / 2 * 100);
                
-               // Julian Day calculation
-               const a = Math.floor((14 - month) / 12);
-               const y = year + 4800 - a;
-               const m = month + 12 * a - 3;
-               const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
-               
-               const lunarCycle = 29.53059; // Average lunar cycle in days
-               
-               // Calculate days since recent new moon
-               const daysSinceNewMoon = (jd - recentNewMoon) % lunarCycle;
-               
-               // Handle negative values
-               const adjustedDays = daysSinceNewMoon < 0 ? daysSinceNewMoon + lunarCycle : daysSinceNewMoon;
-               
-               // Determine phase based on days
-               let phaseIndex;
-               if (adjustedDays < 1.84566) phaseIndex = 0; // New Moon
-               else if (adjustedDays < 5.53699) phaseIndex = 1; // Waxing Crescent
-               else if (adjustedDays < 9.22831) phaseIndex = 2; // First Quarter
-               else if (adjustedDays < 12.91963) phaseIndex = 3; // Waxing Gibbous
-               else if (adjustedDays < 16.61096) phaseIndex = 4; // Full Moon
-               else if (adjustedDays < 20.30228) phaseIndex = 5; // Waning Gibbous
-               else if (adjustedDays < 23.99361) phaseIndex = 6; // Last Quarter
-               else phaseIndex = 7; // Waning Crescent
-               
-               return phases[phaseIndex];
+               return {
+                   ...phases[phaseIndex],
+                   illumination
+               };
            };
 
+           const formatMoonPhase = () => {
+               const { symbol, label, illumination } = calculateMoonPhase();
+               return `${symbol} ${label} · ${illumination}% illumination`;
+           };
+
+           const lastLoginMessage = `Last login: ${lastLoginTime} on ${randomComputer}`;
+
             const [currentCommand, setCurrentCommand] = useState('');
-            const [history, setHistory] = useState([
-                { command: '', output: `<span class="system-info">Last login: ${lastLoginTime} on ${randomComputer}</span>` },
-                { command: '', output: `<span class="moon-phase">🌙 Current moon phase: ${getMoonPhase()}</span>` }
-            ]);
+            const [history, setHistory] = useState([]);
             const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
             const [isTyping, setIsTyping] = useState(true);
             const [iterationCount, setIterationCount] = useState(0);
-
-            const MAX_LINES = 8; // Terminal height limit
+            const [moonPhaseText, setMoonPhaseText] = useState(() => formatMoonPhase());
             const MAX_ITERATIONS = 100; // Reset after 100 iterations
 
 
@@ -1171,21 +1158,20 @@
             const shuffledCommands = shuffleWithNoConsecutiveRepeats(commands);
             const allCommands = [...welcomeCommands, ...shuffledCommands];
 
+            useEffect(() => {
+                const updateMoonPhase = () => setMoonPhaseText(formatMoonPhase());
+                updateMoonPhase();
+                
+                const interval = setInterval(updateMoonPhase, 1000 * 60 * 60); // refresh hourly
+                return () => clearInterval(interval);
+            }, []);
+
             // Function to make email addresses clickable
             const makeEmailsClickable = (text) => {
-                return text.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1" style="color: #374151; text-decoration: underline;">$1</a>');
+                return text.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1" class="email-link">$1</a>');
             };
 
             const executeCommand = (command) => {
-                // Handle welcome commands
-                if (command.includes('Last login:')) {
-                    const cleanCommand = command.replace('echo "', '').replace('"', '');
-                    return `<span class="system-info">${cleanCommand}</span>`;
-                }
-                if (command.includes('Current moon phase:')) {
-                    const cleanCommand = command.replace('echo "', '').replace('"', '');
-                    return `<span class="moon-phase">${cleanCommand}</span>`;
-                }
                 if (command === 'echo "Welcome to Kyros: an investment studio"') {
                     return 'Welcome to Kyros: an investment studio';
                 }
@@ -1399,7 +1385,7 @@
                     case 'kaomoji':
                         return 'Kaomoji: (◕‿◕) (◡‿◡) (◕‿-) (-‿◕) (◕‿◕) (Japanese emoticons)';
                     case 'ascii':
-                        return `<pre style="font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 10px; line-height: 1.1; margin: 0; white-space: pre;">ASCII:
+                        return `<pre class="ascii-art">ASCII:
 ┌─────────────────────────────────────────────────────────────┐
 │  ██████╗ ██╗   ██╗██╗██╗     ██████╗     ██████╗ ███████╗  │
 │  ██╔══██╗██║   ██║██║██║     ██╔══██╗   ██╔════╝ ██╔════╝  │
@@ -1525,27 +1511,24 @@
                             setCurrentCommand(command.substring(0, charIndex + 1));
                             charIndex++;
                             setTimeout(typeChar, Math.random() * 128 + 85);
-        } else {
-            setTimeout(() => {
+                        } else {
+                            setTimeout(() => {
                                 // Execute command and show output
                                 const output = executeCommand(command);
-                                
+
                                 // Add command and output to history
-                                setHistory(prev => {
-                                    const newHistory = [...prev, { command, output }];
-                                    return newHistory.length > MAX_LINES ? newHistory.slice(-MAX_LINES) : newHistory;
-                                });
-                                
+                                setHistory(prev => [...prev, { command, output }]);
+
                                 setCurrentCommandIndex(prev => prev + 1);
                                 setCurrentCommand('');
-          }, 1000);
+                            }, 1000);
                         }
                     };
-                    
+
                     typeChar();
                 } else if (currentCommandIndex >= allCommands.length) {
                     // Loop back to beginning and increment iteration count
-              setTimeout(() => {
+                    setTimeout(() => {
                         setCurrentCommandIndex(0);
                         setCurrentCommand('');
                         setIterationCount(prev => prev + 1);
@@ -1555,40 +1538,35 @@
 
             return (
                 <div className="magic-terminal">
-                    {history.map((item, index) => {
-                        // Check if this is a system message (no command needed)
-                        const isSystemMessage = item.command.includes('Last login:') || item.command.includes('Current moon phase:');
-                        
-                        if (isSystemMessage) {
-                            return (
-                                <div key={index} style={{position: 'absolute', left: '0', right: '0', marginBottom: '2px', paddingLeft: '40px', paddingRight: '40px'}}>
-                                    <span dangerouslySetInnerHTML={{__html: item.output}}></span>
+                    <div className="system-messages" aria-live="polite" aria-atomic="true">
+                        <div className="system-message system-info">{lastLoginMessage}</div>
+                        <div className="system-message moon-phase">🌙 Current moon phase: {moonPhaseText}</div>
                     </div>
-                            );
-                        }
-                        
-                        return (
-                            <div key={index}>
+                    <div className="history-scroll" role="log" aria-live="polite" aria-relevant="additions">
+                        {history.map((item, index) => (
+                            <div key={`${item.command}-${index}`}>
                                 <div className="terminal-history-line">
                                     <span className="terminal-prompt">▶</span>
                                     <span className="terminal-command">{item.command}</span>
                                 </div>
                                 <div className="terminal-history-line">
-                                    <span className="terminal-prompt"></span>
-                            <span className="terminal-output">
-                                <span className="checkmark">✓</span>
+                                    <span className="terminal-prompt" aria-hidden="true"></span>
+                                    <span className="terminal-output">
+                                        <span className="checkmark">✓</span>
                                         <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="terminal-footer">
+                        <div className="terminal-line">
+                            <span className="terminal-prompt">▶</span>
+                            <span className="animated-text">
+                                {currentCommand}
+                                <span className="cursor" aria-hidden="true"></span>
                             </span>
                         </div>
-                            </div>
-                        );
-                    })}
-                    <div className="terminal-line">
-                        <span className="terminal-prompt">▶</span>
-                        <span className="animated-text">
-                            {currentCommand}
-                            <span className="cursor">_</span>
-                        </span>
                     </div>
                 </div>
             );
