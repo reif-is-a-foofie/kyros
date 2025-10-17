@@ -28,7 +28,7 @@
       justify-content: center;
             align-items: center;
             overflow: hidden;
-            position: relative;
+      position: relative;
             font-family: 'Inter', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
 
@@ -197,16 +197,16 @@
             align-items: center;
             justify-content: center;
             padding: 18px 24px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             min-height: 52px;
             position: relative;
             box-shadow: 
-                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
                 inset 0 -1px 0 rgba(0, 0, 0, 0.1);
             flex-shrink: 0;
         }
@@ -214,7 +214,7 @@
         .terminal-buttons {
             display: flex;
             gap: 8px;
-            position: absolute;
+      position: absolute;
             left: 24px;
             top: 50%;
             transform: translateY(-50%);
@@ -286,9 +286,9 @@
         }
 
         .terminal-title {
-            color: #ffffff;
-            font-size: 20px;
-            font-weight: 400;
+            color: #1a1a1a;
+            font-size: 18px;
+            font-weight: 300;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex;
             align-items: center;
@@ -297,28 +297,25 @@
             left: 50%;
             transform: translateX(-50%);
             letter-spacing: -0.01em;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
         .terminal-title a {
-            color: #ffffff;
+            color: #1a1a1a;
             text-decoration: none;
             transition: all 0.3s ease;
             padding: 4px 10px;
             border-radius: 6px;
-            background: rgba(255, 215, 0, 0.3);
-            border: 1px solid rgba(255, 215, 0, 0.5);
-            font-weight: 500;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            font-weight: 300;
         }
 
         .terminal-title a:hover {
-            color: #ffffff;
-            background: rgba(255, 215, 0, 0.5);
-            border-color: rgba(255, 215, 0, 0.7);
+            color: #1a1a1a;
+            background: rgba(255, 215, 0, 0.3);
+            border-color: rgba(255, 215, 0, 0.5);
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
         }
 
         .terminal-content {
@@ -329,8 +326,9 @@
             -webkit-backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            overflow: hidden;
+            justify-content: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
             word-wrap: break-word;
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
@@ -340,8 +338,9 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-start;
             margin-bottom: 0;
+            min-height: 0;
         }
 
         .terminal-history-line {
@@ -1025,7 +1024,7 @@
             useEffect(() => {
                 // Check if we need to reset after 100 iterations
                 if (iterationCount >= MAX_ITERATIONS) {
-        setTimeout(() => {
+                    setTimeout(() => {
                         setCurrentCommand('');
                         setHistory([]);
                         setCurrentCommandIndex(0);
