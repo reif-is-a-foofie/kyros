@@ -707,18 +707,39 @@
                 return phases[phaseIndex % 8];
             };
             
-            // Diverse device names (not just Mac)
-            const deviceNames = [
-                'iPhone-15-Pro', 'iPhone-14', 'iPad-Pro', 'iPad-Air', 'MacBook-Pro', 'MacBook-Air', 
-                'iMac-Retina', 'Mac-Studio', 'Mac-Mini', 'Apple-Watch', 'Apple-TV', 'HomePod',
-                'Vision-Pro', 'MacBook-Pro-M3', 'iMac-M3', 'iPad-Mini', 'iPhone-SE', 'Mac-Pro'
+            // Shy animal computer hostnames (alliterative)
+            const computerNames = [
+                'Apprehensive-Aardvark', 'Anxious-Antelope', 'Aloof-Armadillo',
+                'Bashful-Butterfly', 'Blushing-Bat', 'Bashful-Badger', 'Brittle-Bunny',
+                'Coy-Crocodile', 'Cautious-Cat', 'Careful-Chameleon',
+                'Demure-Deer', 'Diffident-Dolphin', 'Discreet-Dragonfly',
+                'Evasive-Elephant', 'Edgy-Eel',
+                'Fearful-Fox', 'Furtive-Ferret', 'Fainthearted-Fawn',
+                'Gentle-Gazelle', 'Guarded-Gecko', 'Ginger-Giraffe',
+                'Hesitant-Hedgehog', 'Humble-Hamster', 'Hidden-Hare',
+                'Inhibited-Ibex', 'Introverted-Iguana',
+                'Jittery-Jackal', 'Jealous-Jaguar',
+                'Keen-Koala', 'Kindly-Kangaroo',
+                'Lurking-Lynx', 'Leery-Lemur', 'Lonesome-Llama',
+                'Meek-Mole', 'Modest-Mouse', 'Mild-Mongoose',
+                'Nervous-Newt', 'Nonchalant-Nightingale',
+                'Overcautious-Owl', 'Obscure-Otter',
+                'Pensive-Panda', 'Private-Porcupine', 'Prudent-Penguin',
+                'Quiet-Quokka', 'Quivering-Quail',
+                'Reserved-Rabbit', 'Retiring-Raccoon', 'Reticent-Raven',
+                'Shy-Sparrow', 'Secretive-Snail', 'Soft-Spoken-Swan',
+                'Timid-Tiger', 'Tentative-Tortoise', 'Touchy-Toad',
+                'Unassuming-Unicorn', 'Uncertain-Urchin',
+                'Vigilant-Vole', 'Volatile-Viper',
+                'Withdrawn-Wolf', 'Wary-Wombat', 'Watchful-Weasel',
+                'Zoned-Out-Zebra', 'Zen-Zebra'
             ];
-            const randomDevice = deviceNames[Math.floor(Math.random() * deviceNames.length)];
+            const randomComputer = computerNames[Math.floor(Math.random() * computerNames.length)];
             const randomUser = ['alex', 'sam', 'jordan', 'casey', 'riley', 'taylor', 'morgan', 'quinn'][Math.floor(Math.random() * 8)];
 
             const welcomeCommands = [
                 `echo "Last login: ${lastLoginTime} on ttys${Math.floor(Math.random() * 10) + 1}"`,
-                `echo "${randomUser}@${randomDevice} ~ %"`,
+                `echo "${randomUser}@${randomComputer} ~ %"`,
                 `echo "🌙 Current moon phase: ${getMoonPhase()}"`,
                 'echo "Welcome to Kyros: an investment studio"',
                 'define investment_studio',
