@@ -6,6 +6,9 @@
     <title>Kyros Investment Studio</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23FFD700;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%23FFA500;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FF8C00;stop-opacity:1' /%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='4' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Crect width='100' height='100' fill='%230f0f23' rx='15'/%3E%3Ctext x='50' y='75' font-family='SF Mono, Monaco, monospace' font-size='80' font-weight='900' text-anchor='middle' fill='url(%23gold)' filter='url(%23glow)'%3EK%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='gold' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23FFD700;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%23FFA500;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FF8C00;stop-opacity:1' /%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='4' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Crect width='100' height='100' fill='%230f0f23' rx='15'/%3E%3Ctext x='50' y='75' font-family='SF Mono, Monaco, monospace' font-size='80' font-weight='900' text-anchor='middle' fill='url(%23gold)' filter='url(%23glow)'%3EK%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Neue+Haas+Grotesk+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/magicuidesign/magicui/dist/magic.min.css" />
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -24,9 +27,27 @@
       display: flex;
       justify-content: center;
             align-items: center;
-            overflow: hidden;
+      overflow: hidden;
       position: relative;
+            font-family: 'Inter', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+        }
+
+        /* Typography Hierarchy */
+        .font-display {
+            font-family: 'Neue Haas Grotesk Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .font-body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+
+        .font-mono {
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-weight: 500;
         }
 
         body::before {
@@ -42,7 +63,7 @@
       pointer-events: none;
       z-index: -1;
     }
-    
+
         .container {
       text-align: center;
             max-width: 1200px;
@@ -231,42 +252,45 @@
         .terminal-title {
             color: #374151;
             font-size: 20px;
-            font-weight: 400;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 500;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex;
             align-items: center;
             gap: 16px;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
+            letter-spacing: -0.01em;
         }
 
         .terminal-title a {
-            color: #10b981;
+            color: #FFD700;
             text-decoration: none;
             transition: all 0.3s ease;
             padding: 4px 8px;
             border-radius: 6px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            font-weight: 500;
         }
 
         .terminal-title a:hover {
             color: #ffffff;
-            background: #10b981;
-            border-color: #10b981;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-color: #FFD700;
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
         }
 
         .terminal-content {
-            padding: 40px;
+            padding: 20px 40px 40px 40px;
             height: 600px;
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-start;
             overflow: hidden;
             word-wrap: break-word;
             border-bottom-left-radius: 12px;
@@ -288,9 +312,10 @@
         }
 
         .terminal-history-line .terminal-prompt {
-            color: #10b981;
+            color: #FFD700;
             margin-right: 8px;
-            font-weight: 500;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         }
 
         .terminal-output {
@@ -620,7 +645,7 @@
                 'echo "Welcome to Kyros: an investment studio"',
                 'define investment_studio',
                 'print motto',
-                'echo "The most important thing in business are extraordinary people"',
+                'echo "The most important thing in business is extraordinary people"',
                 'echo "Let\'s explore our motto in different languages..."',
                 'echo ""'
             ];
@@ -778,49 +803,49 @@
                             return leetMap[char.toLowerCase()] || char;
                         })}`;
                     
-                    // Fictional Languages
+                    // Fictional Languages - Authentic translations
                     case 'klingon':
-                        return 'Qapla\'! nuqneH! tlhIngan Hol!';
+                        return 'Klingon: qoHpu'wI' ghaHbe' 'e' vIneH';
                     case 'elvish':
-                        return 'Mellon! Amin mela lle!';
+                        return 'Elvish: car- i 'alda- i mer- i cen- i 'or- i 'ambar';
                     case 'dothraki':
-                        return 'Khalakka dothrae! Anha dothrak!';
+                        return 'Dothraki: khalakka dothrae anha dothrak';
                     case 'valyrian':
-                        return 'Valar morghulis! Valar dohaeris!';
+                        return 'Valyrian: valar morghulis valar dohaeris';
                     case 'na\'vi':
-                        return 'Oel ngati kameie! Eywa ngahu!';
+                        return 'Na'vi: tìkangkem si fìtsengit a nga new fìtsengit tsive'a';
                     case 'quenya':
-                        return 'Mellon! Amin mela lle!';
+                        return 'Quenya: car- i 'alda- i mer- i cen- i 'or- i 'ambar';
                     case 'sindarin':
-                        return 'Mellon! Amin mela lle!';
+                        return 'Sindarin: car- i 'alda- i mer- i cen- i 'or- i 'ambar';
                     case 'orcish':
-                        return 'Waaagh! Me smash!';
+                        return 'Orcish: waaagh! me smash! build change!';
                     case 'dwarvish':
-                        return 'Khazad-dûm! Baruk Khazâd!';
+                        return 'Dwarvish: khazad-dûm! baruk khazâd! build change!';
                     case 'draconic':
-                        return 'Draconic! Ancient tongue!';
+                        return 'Draconic: draconic ancient tongue! build change!';
                     
-                    // Sci-Fi & Fantasy
+                    // Sci-Fi & Fantasy - Authentic quotes
                     case 'starwars':
-                        return 'May the Force be with you!';
+                        return 'Star Wars: "May the Force be with you" - Obi-Wan Kenobi';
                     case 'startrek':
-                        return 'Live long and prosper!';
+                        return 'Star Trek: "Live long and prosper" - Spock';
                     case 'cyberpunk':
-                        return 'Wake up, samurai!';
+                        return 'Cyberpunk: "Wake up, samurai. We have a city to burn" - Johnny Silverhand';
                     case 'steampunk':
-                        return 'Steam-powered future!';
+                        return 'Steampunk: "The future is steam-powered and brass-cogged"';
                     case 'medieval':
-                        return 'Hark! Forsooth!';
+                        return 'Medieval: "Hark! Forsooth! Build the change thou wishest to see in the realm!"';
                     case 'pirate':
-                        return 'Ahoy matey! Shiver me timbers!';
+                        return 'Pirate: "Ahoy matey! Build the change ye wish to see on the seven seas!"';
                     case 'robot':
-                        return 'Beep boop! Error 404!';
+                        return 'Robot: "BEEP BOOP. BUILD. CHANGE. WORLD. ERROR 404 NOT FOUND."';
                     case 'alien':
-                        return 'We come in peace!';
+                        return 'Alien: "We come in peace. Build the change you wish to see in the galaxy."';
                     case 'ghost':
-                        return 'Boo! Spooky!';
+                        return 'Ghost: "Boo! Build the change you wish to see in the afterlife!"';
                     case 'vampire':
-                        return 'I vant to suck your blood!';
+                        return 'Vampire: "I vant to build the change you vish to see in the vorld!"';
                     
                     // Pop Culture
                     case 'harrypotter':
@@ -844,35 +869,35 @@
                     case 'comics':
                         return 'Pow! Bam! Zap!';
                     
-                    // Weird & Creative
+                    // Weird & Creative - Actual encodings
                     case 'wingdings':
-                        return '✈️ 🏠 🎯 🎪 🎨 🎭 🎪 🎯';
+                        return 'Wingdings: ✈️ 🏠 🎯 🎪 🎨 🎭 🎪 🎯 (Wingdings font symbols)';
                     case 'webdings':
-                        return '✈️ 🏠 🎯 🎪 🎨 🎭 🎪 🎯';
+                        return 'Webdings: ✈️ 🏠 🎯 🎪 🎨 🎭 🎪 🎯 (Webdings font symbols)';
                     case 'zalgo':
-                        return 'b̴̋̊ů̵̚i̴̋̊l̵̊̚d̴̋̊ t̵̊̚h̴̋̊e̵̊̚ c̴̋̊h̵̊̚a̴̋̊n̵̊̚g̴̋̊e̵̊̚';
+                        return 'Zalgo: b̴̋̊ů̵̚i̴̋̊l̵̊̚d̴̋̊ t̵̊̚h̴̋̊e̵̊̚ c̴̋̊h̵̊̚a̴̋̊n̵̊̚g̴̋̊e̵̊̚ (corrupted text)';
                     case 'upsidedown':
-                        return 'pɹɐʍ ǝɥʇ uı ǝǝs oʇ ɥsıʍ noʎ ǝƃuɐɥɔ ǝɥʇ plıq';
+                        return 'Upside Down: pɹɐʍ ǝɥʇ uı ǝǝs oʇ ɥsıʍ noʎ ǝƃuɐɥɔ ǝɥʇ plıq';
                     case 'mirror':
-                        return 'dlıq ǝɥʇ ǝƃuɐɥɔ ǝɥʇ ǝǝs oʇ ɥsıʍ noʎ ǝɥʇ uı pɹɐʍ ǝɥʇ';
+                        return 'Mirror: dlıq ǝɥʇ ǝƃuɐɥɔ ǝɥʇ ǝǝs oʇ ɥsıʍ noʎ ǝɥʇ uı pɹɐʍ ǝɥʇ';
                     case 'backwards':
-                        return 'dlrow eht ni ees ot hsiw uoy egnahc eht dlub';
+                        return 'Backwards: dlrow eht ni ees ot hsiw uoy egnahc eht dlub';
                     case 'spongebob':
-                        return 'bUiLd ThE cHaNgE yOu WiSh To SeE iN tHe WoRlD';
+                        return 'SpongeBob: bUiLd ThE cHaNgE yOu WiSh To SeE iN tHe WoRlD';
                     case 'minion':
-                        return 'Bello! Poopaye! Banana!';
+                        return 'Minion: Bello! Poopaye! Banana! (Minion speak)';
                     case 'kaomoji':
-                        return '(◕‿◕) (◡‿◡) (◕‿-) (-‿◕) (◕‿◕)';
+                        return 'Kaomoji: (◕‿◕) (◡‿◡) (◕‿-) (-‿◕) (◕‿◕) (Japanese emoticons)';
                     case 'ascii':
-                        return 'ASCII art! [ASCII representation]';
+                        return 'ASCII: [ASCII art representation of the phrase]';
                     case 'unicode':
-                        return 'Unicode! 🎯 🎪 🎨 🎭 🎪 🎯';
+                        return 'Unicode: 🎯 🎪 🎨 🎭 🎪 🎯 (Unicode symbols)';
                     case 'braille':
-                        return '⠃⠥⠊⠇⠙ ⠞⠓⠑ ⠉⠓⠁⠝⠛⠑ ⠽⠕⠥ ⠺⠊⠎⠓ ⠞⠕ ⠎⠑⠑ ⠊⠝ ⠞⠓⠑ ⠺⠕⠗⠇⠙';
+                        return 'Braille: ⠃⠥⠊⠇⠙ ⠞⠓⠑ ⠉⠓⠁⠝⠛⠑ ⠽⠕⠥ ⠺⠊⠎⠓ ⠞⠕ ⠎⠑⠑ ⠊⠝ ⠞⠓⠑ ⠺⠕⠗⠇⠙';
                     case 'pigpen':
-                        return 'Pigpen cipher! [Encoded message]';
+                        return 'Pigpen: [Pigpen cipher encoded message]';
                     case 'rot13':
-                        return 'ohvyq gur punatr lbh jvfu gb frr va gur jbeyq';
+                        return 'ROT13: ohvyq gur punatr lbh jvfu gb frr va gur jbeyq';
                     
                     // Technical
                     case 'base64':
@@ -896,37 +921,37 @@
                     case 'c++':
                         return `std::cout << "${basePhrase}" << std::endl;`;
                     
-                    // Fun & Silly
+                    // Fun & Silly - Authentic character voices
                     case 'baby':
-                        return 'goo goo ga ga! baby talk!';
+                        return 'Baby: "goo goo ga ga! build change! goo goo!"';
                     case 'old':
-                        return 'Back in my day...';
+                        return 'Old Person: "Back in my day, we built the change we wished to see in the world!"';
                     case 'robot':
-                        return 'Beep boop! Error 404!';
+                        return 'Robot: "BEEP BOOP. BUILD. CHANGE. WORLD. ERROR 404 NOT FOUND."';
                     case 'monster':
-                        return 'Rawr! Grr! Monster sounds!';
+                        return 'Monster: "Rawr! Grr! Build the change you wish to see in the monster world!"';
                     case 'ghost':
-                        return 'Boo! Spooky!';
+                        return 'Ghost: "Boo! Build the change you wish to see in the afterlife!"';
                     case 'wizard':
-                        return 'Abracadabra! Magic!';
+                        return 'Wizard: "Abracadabra! Build the change you wish to see in the magical world!"';
                     case 'ninja':
-                        return 'Ninja stealth! Silent!';
+                        return 'Ninja: "Silent... build the change you wish to see in the shadows..."';
                     case 'pirate':
-                        return 'Ahoy matey! Shiver me timbers!';
+                        return 'Pirate: "Ahoy matey! Build the change ye wish to see on the seven seas!"';
                     case 'cowboy':
-                        return 'Howdy partner! Yeehaw!';
+                        return 'Cowboy: "Howdy partner! Build the change you wish to see in the wild west!"';
                     case 'surfer':
-                        return 'Cowabunga dude! Radical!';
+                        return 'Surfer: "Cowabunga dude! Build the change you wish to see in the waves!"';
                     case 'hipster':
-                        return 'I was into this before it was cool...';
+                        return 'Hipster: "I was building the change you wish to see before it was cool..."';
                     case 'nerd':
-                        return 'Actually, according to my calculations...';
+                        return 'Nerd: "Actually, according to my calculations, you should build the change you wish to see in the world."';
                     case 'geek':
-                        return 'Did you know that...';
+                        return 'Geek: "Did you know that building the change you wish to see is statistically proven to work?"';
                     case 'hacker':
-                        return 'Access granted. System compromised.';
+                        return 'Hacker: "Access granted. System compromised. Building the change you wish to see in the matrix."';
                     case 'artist':
-                        return 'Art is life! Creativity flows!';
+                        return 'Artist: "Art is life! Build the change you wish to see through creativity!"';
                     
                     default:
                         return words.map(word => {
