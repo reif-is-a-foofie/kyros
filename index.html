@@ -405,6 +405,7 @@
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
+            transition: color 0.4s ease;
         }
 
         .brand-icon {
@@ -425,6 +426,21 @@
         .terminal-title a strong {
             font-weight: 700;
             color: #1a1a1a;
+            transition: color 0.4s ease;
+        }
+
+        .header-callout {
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+
+        .terminal-title.magic-on a strong {
+            color: transparent;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shinyMove 8s ease-in-out infinite;
         }
 
         .terminal-title a:hover,
@@ -889,14 +905,14 @@
 </head>
 <body>
     <div class="terminal">
-        <div class="terminal-header">
-            <div class="terminal-buttons">
-                <div class="button red" onclick="showEasterEgg('red')" title="Red button surprise mix"></div>
-                <div class="button yellow" onclick="showEasterEgg('yellow')" title="Sunbeam Coldplay loop — proceed with vibes"></div>
-                <div class="button green" onclick="showEasterEgg('green')" title="Green Screen - YouTube Short"></div>
-            </div>
-            <div class="terminal-title">
-                <a href="mailto:hello@kyros.cc">hello@<strong>kyros</strong>.cc</a>
+            <div class="terminal-header" id="terminal-header">
+                <div class="terminal-buttons">
+                    <div class="button red" onclick="showEasterEgg('red')" title="Red button surprise mix"></div>
+                    <div class="button yellow" onclick="showEasterEgg('yellow')" title="Sunbeam Coldplay loop — proceed with vibes"></div>
+                    <div class="button green" onclick="showEasterEgg('green')" title="Green Screen - YouTube Short"></div>
+                </div>
+            <div class="terminal-title" id="terminal-title">
+                <a href="mailto:hello@kyros.cc">hello@<strong>kyros</strong>.cc — <span class="header-callout">email us!</span></a>
             </div>
         </div>
         <div class="terminal-content">
@@ -1043,6 +1059,7 @@
             const [isTyping, setIsTyping] = useState(true);
             const [iterationCount, setIterationCount] = useState(0);
             const [moonPhaseText, setMoonPhaseText] = useState(() => formatMoonPhase());
+            const [isMagicHeader, setIsMagicHeader] = useState(false);
             const MAX_ITERATIONS = 100; // Reset after 100 iterations
 
 
@@ -1197,6 +1214,33 @@
                 const interval = setInterval(updateMoonPhase, 1000 * 60 * 60); // refresh hourly
                 return () => clearInterval(interval);
             }, []);
+
+            useEffect(() => {
+                let timeoutId;
+                const activateMagic = () => {
+                    setIsMagicHeader(true);
+                    timeoutId = window.setTimeout(() => setIsMagicHeader(false), 4000);
+                };
+
+                activateMagic();
+                const intervalId = window.setInterval(activateMagic, 20000);
+                return () => {
+                    clearInterval(intervalId);
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+                };
+            }, []);
+
+            useEffect(() => {
+                const titleEl = document.getElementById('terminal-title');
+                if (!titleEl) return;
+                if (isMagicHeader) {
+                    titleEl.classList.add('magic-on');
+                } else {
+                    titleEl.classList.remove('magic-on');
+                }
+            }, [isMagicHeader]);
 
             // Function to make emails and URLs clickable
             const formatInteractiveText = (text) => {
