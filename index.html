@@ -720,10 +720,9 @@
                 <div class="button green"></div>
             </div>
             <div class="terminal-title">
-                <span class="magic-text">Kyros: an investment studio</span> | 
-                <span class="magic-text">We want to work with you:</span> 
-                <a href="mailto:hello@kyros.cc" class="magic-text">contact us here</a> | 
-                <a href="mailto:hello@kyros.cc?subject=Pitch%20Us" class="magic-text">email us here</a>
+                <span class="magic-text">Kyros</span> | 
+                <a href="mailto:hello@kyros.cc" class="magic-text">hello@kyros.cc</a> | 
+                <a href="mailto:hello@kyros.cc?subject=Pitch%20Us" class="magic-text">pitch us</a>
             </div>
         </div>
         <div class="terminal-content">
@@ -771,19 +770,48 @@
                 hour12: false
             });
             
-            // Moon phase calculation
+            // Accurate moon phase calculation
             const getMoonPhase = () => {
                 const phases = ['🌑 New Moon', '🌒 Waxing Crescent', '🌓 First Quarter', '🌔 Waxing Gibbous', 
                                '🌕 Full Moon', '🌖 Waning Gibbous', '🌗 Last Quarter', '🌘 Waning Crescent'];
+                
                 const now = new Date();
                 const year = now.getFullYear();
                 const month = now.getMonth() + 1;
                 const day = now.getDate();
                 
-                // Simple moon phase calculation (approximate)
-                const daysSinceNewMoon = (year * 365.25 + month * 30.44 + day) % 29.53;
-                const phaseIndex = Math.floor((daysSinceNewMoon / 29.53) * 8);
-                return phases[phaseIndex % 8];
+                // Known new moon date (January 11, 2024)
+                const knownNewMoon = new Date(2024, 0, 11);
+                const currentDate = new Date(year, month - 1, day);
+                
+                // Calculate days since known new moon
+                const daysSinceNewMoon = Math.floor((currentDate - knownNewMoon) / (1000 * 60 * 60 * 24));
+                
+                // Moon cycle is approximately 29.53 days
+                const moonCycle = 29.53059;
+                const phaseInCycle = (daysSinceNewMoon % moonCycle + moonCycle) % moonCycle;
+                
+                // Determine phase based on cycle position
+                let phaseIndex;
+                if (phaseInCycle < 1.84566) {
+                    phaseIndex = 0; // New Moon
+                } else if (phaseInCycle < 5.53699) {
+                    phaseIndex = 1; // Waxing Crescent
+                } else if (phaseInCycle < 9.22831) {
+                    phaseIndex = 2; // First Quarter
+                } else if (phaseInCycle < 12.91963) {
+                    phaseIndex = 3; // Waxing Gibbous
+                } else if (phaseInCycle < 16.61096) {
+                    phaseIndex = 4; // Full Moon
+                } else if (phaseInCycle < 20.30228) {
+                    phaseIndex = 5; // Waning Gibbous
+                } else if (phaseInCycle < 23.99361) {
+                    phaseIndex = 6; // Last Quarter
+                } else {
+                    phaseIndex = 7; // Waning Crescent
+                }
+                
+                return phases[phaseIndex];
             };
             
             // Shy animal computer hostnames (alliterative)
@@ -1217,12 +1245,18 @@
             return (
                 <div className="magic-terminal">
                     {history.map((item, index) => (
-                        <div key={index} className="terminal-history-line">
-                            <span className="terminal-prompt">$</span>
-                            <span className="terminal-output">
-                                <span className="checkmark shiny-text">✓</span>
-                                <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
-                            </span>
+                        <div key={index}>
+                            <div className="terminal-history-line">
+                                <span className="terminal-prompt">$</span>
+                                <span className="terminal-command">{item.command}</span>
+                            </div>
+                            <div className="terminal-history-line">
+                                <span className="terminal-prompt"></span>
+                                <span className="terminal-output">
+                                    <span className="checkmark shiny-text">✓</span>
+                                    <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
+                                </span>
+                            </div>
                         </div>
                     ))}
                     <div className="terminal-line">
