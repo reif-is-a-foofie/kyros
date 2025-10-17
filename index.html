@@ -944,7 +944,7 @@
 
     <script type="text/babel">
         // Magic UI Terminal with React components
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
         
         const basePhrase = 'build the change you wish to see in the world';
         const CONTACT_EMAIL = 'hello@kyros.cc';
@@ -1060,6 +1060,7 @@
             const [iterationCount, setIterationCount] = useState(0);
             const [moonPhaseText, setMoonPhaseText] = useState(() => formatMoonPhase());
             const [isMagicHeader, setIsMagicHeader] = useState(false);
+            const historyRef = useRef(null);
             const MAX_ITERATIONS = 100; // Reset after 100 iterations
 
 
@@ -1241,6 +1242,12 @@
                     titleEl.classList.remove('magic-on');
                 }
             }, [isMagicHeader]);
+
+            useEffect(() => {
+                if (historyRef.current) {
+                    historyRef.current.scrollTop = historyRef.current.scrollHeight;
+                }
+            }, [history]);
 
             // Function to make emails and URLs clickable
             const formatInteractiveText = (text) => {
@@ -1657,7 +1664,7 @@
                         <div className="system-message system-info">{lastLoginMessage}</div>
                         <div className="system-message moon-phase">🌙 Current moon phase: {moonPhaseText}</div>
                     </div>
-                    <div className="history-scroll" role="log" aria-live="polite" aria-relevant="additions">
+                    <div className="history-scroll" role="log" aria-live="polite" aria-relevant="additions" ref={historyRef}>
                         {history.map((item, index) => (
                             <div key={`${item.command}-${index}`}>
                                 <div className="terminal-history-line">
