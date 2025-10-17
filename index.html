@@ -539,12 +539,6 @@
             word-wrap: break-word;
         }
 
-        .system-message {
-            margin-bottom: 2px;
-            padding: 0;
-            text-indent: 0;
-            display: block;
-        }
 
         .system-info {
             color: #6b7280;
@@ -1495,9 +1489,9 @@
                         
                         if (isSystemMessage) {
                             return (
-                                <div key={index} className="system-message" style={{marginLeft: '-40px', marginRight: '-40px', paddingLeft: '40px', paddingRight: '40px', position: 'relative', left: '0', transform: 'none'}}>
+                                <div key={index} style={{marginLeft: '-40px', marginRight: '-40px', paddingLeft: '40px', paddingRight: '40px', marginBottom: '2px'}}>
                                     <span dangerouslySetInnerHTML={{__html: item.output}}></span>
-                    </div>
+                                </div>
                             );
                         }
                         
