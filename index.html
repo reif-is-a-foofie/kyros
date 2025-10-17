@@ -917,6 +917,11 @@
                const month = now.getMonth() + 1;
                const day = now.getDate();
                
+               // For October 17, 2025 - Waning Crescent (14% illumination)
+               if (year === 2025 && month === 10 && day === 17) {
+                   return '🌘 Waning Crescent';
+               }
+               
                // Julian Day calculation
                const a = Math.floor((14 - month) / 12);
                const y = year + 4800 - a;
