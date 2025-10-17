@@ -770,9 +770,9 @@
     <div class="terminal">
         <div class="terminal-header">
             <div class="terminal-buttons">
-                <div class="button red"></div>
-                <div class="button yellow"></div>
-                <div class="button green"></div>
+                <div class="button red" onclick="showEasterEgg('red')" title="Red Red Wine - UB40"></div>
+                <div class="button yellow" onclick="showEasterEgg('yellow')" title="Yellow - Coldplay"></div>
+                <div class="button green" onclick="showEasterEgg('green')" title="Green Screen - YouTube Short"></div>
             </div>
             <div class="terminal-title">
                 <span class="brand-icon">◆</span>
@@ -788,6 +788,27 @@
         </div>
     </div>
 
+
+    <script>
+        // Easter egg functionality
+        function showEasterEgg(color) {
+            let url;
+            switch(color) {
+                case 'red':
+                    url = 'https://www.youtube.com/watch?v=zA52uNzx7Y4'; // Red Red Wine - UB40
+                    break;
+                case 'yellow':
+                    url = 'https://www.youtube.com/watch?v=yKNxeF4KMsY'; // Yellow - Coldplay
+                    break;
+                case 'green':
+                    url = 'https://www.youtube.com/shorts/SnUjPX_LrZE'; // Green Screen - YouTube Short
+                    break;
+                default:
+                    return;
+            }
+            window.open(url, '_blank');
+        }
+    </script>
 
     <script type="text/babel">
         // Magic UI Terminal with React components
