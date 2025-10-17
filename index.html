@@ -135,14 +135,15 @@
 
         @media (max-width: 480px) {
             body {
-                padding: 0.25rem;
-                padding-top: 1rem;
+                padding: 0.75rem;
+                padding-top: 1.5rem;
             }
             
             .terminal {
-                height: min(90vh, 450px);
+                height: min(80vh, 450px);
                 min-height: 300px;
                 border-radius: 6px;
+                max-width: calc(100vw - 1.5rem);
             }
             
             .terminal-header {
@@ -350,32 +351,25 @@
 
         .terminal-title {
             color: #374151;
-            font-size: 20px;
+            font-size: 14px;
             font-weight: 400;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 8px;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
         }
 
-        .terminal-title a {
-            color: #10b981;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            padding: 4px 8px;
-            border-radius: 6px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
+        .folder-icon {
+            font-size: 16px;
+            opacity: 0.8;
         }
 
-        .terminal-title a:hover {
-            color: #ffffff;
-            background: #10b981;
-            border-color: #10b981;
-            transform: translateY(-1px);
+        .title-text {
+            color: #374151;
+            font-weight: 400;
         }
 
         /* Magic UI Text Effects */
@@ -745,9 +739,8 @@
                 <div class="button green"></div>
             </div>
             <div class="terminal-title">
-                <span>Kyros</span> | 
-                <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | 
-                <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">pitch us</a>
+                <span class="folder-icon">📁</span>
+                <span class="title-text">Kyros</span>
             </div>
         </div>
         <div class="terminal-content">
@@ -775,7 +768,10 @@
         // Magic UI Terminal Component
         function MagicTerminal() {
             const [currentCommand, setCurrentCommand] = useState('');
-            const [history, setHistory] = useState([]);
+            const [history, setHistory] = useState([
+                { command: '', output: `<span class="system-info">Last login: ${lastLoginTime} on ${randomComputer}</span>` },
+                { command: '', output: `<span class="moon-phase">🌙 Current moon phase: ${getMoonPhase()}</span>` }
+            ]);
             const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
             const [isTyping, setIsTyping] = useState(true);
             const [iterationCount, setIterationCount] = useState(0);
@@ -869,8 +865,6 @@
             const randomComputer = computerNames[Math.floor(Math.random() * computerNames.length)];
 
             const welcomeCommands = [
-                `echo "Last login: ${lastLoginTime} on ${randomComputer}"`,
-                `echo "🌙 Current moon phase: ${getMoonPhase()}"`,
                 'echo "Welcome to Kyros: an investment studio"',
                 'define investment_studio',
                 'print motto',
