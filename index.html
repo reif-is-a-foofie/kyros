@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Neue+Haas+Grotesk+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/magicuidesign/magicui/dist/magic.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/magicuidesign/magicui/dist/magic.min.css" />
+        <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -318,6 +319,37 @@
             box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
         }
 
+        /* Magic UI Text Effects */
+        .magic-text {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Shiny Text Effect */
+        .shiny-text {
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shinyMove 4s ease-in-out infinite;
+        }
+
+        @keyframes shinyMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
         .terminal-content {
             padding: 20px 40px 40px 40px;
             flex: 1;
@@ -601,7 +633,10 @@
                 </span>
             </div>
             <div class="terminal-title">
-                Kyros: an investment studio | <a href="mailto:hello@kyros.cc">hello@kyros.cc</a> | <a href="mailto:hello@kyros.cc?subject=Pitch%20Us">Pitch us</a>
+                <span class="magic-text">Kyros: an investment studio</span> | 
+                <span class="magic-text">We want to work with you:</span> 
+                <a href="mailto:hello@kyros.cc" class="magic-text">contact us here</a> | 
+                <a href="mailto:hello@kyros.cc?subject=Pitch%20Us" class="magic-text">email us here</a>
             </div>
         </div>
         <div class="terminal-content">
@@ -1135,18 +1170,18 @@
                 <div className="magic-terminal">
                     {history.map((item, index) => (
                         <div key={index} className="terminal-history-line">
-                            <span className="terminal-prompt">$</span>
+                            <span className="terminal-prompt magic-text">$</span>
                             <span className="terminal-output">
-                                <span className="checkmark">✓</span>
-                                <span className="output-text">{item.output}</span>
+                                <span className="checkmark shiny-text">✓</span>
+                                <span className="output-text magic-text">{item.output}</span>
                             </span>
                         </div>
                     ))}
                     <div className="terminal-line">
-                        <span className="terminal-prompt">$</span>
-                        <span className="animated-text">
+                        <span className="terminal-prompt magic-text">$</span>
+                        <span className="animated-text magic-text">
                             {currentCommand}
-                            <span className="cursor">_</span>
+                            <span className="cursor shiny-text">_</span>
                         </span>
                     </div>
                 </div>
