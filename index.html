@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Neue+Haas+Grotesk+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-normalize/modern-normalize.min.css" integrity="sha384-w0cP7FpC18JNpDutLCRa14Q6gttxyPjdvVSdGInxjeRGna43EIBgzHuLlHotE5T7" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/magicuidesign/magicui/dist/magic.min.css" />
         <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -19,6 +20,10 @@
       margin: 0;
       padding: 0;
             box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
         }
 
         body {
@@ -33,6 +38,7 @@
             font-family: 'Inter', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
             padding: 1rem;
             box-sizing: border-box;
+            background-attachment: fixed;
         }
 
         body::before {
@@ -903,6 +909,16 @@
         }
 
         /* Responsive adjustments */
+
+        @supports not ((backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px))) {
+            .terminal {
+                background: rgba(20, 24, 42, 0.85);
+            }
+
+            .terminal-header {
+                background: rgba(31, 41, 55, 0.9);
+            }
+        }
     </style>
 </head>
 <body>
@@ -915,7 +931,7 @@
                 </div>
             <div class="terminal-title" id="terminal-title">
                 <a href="mailto:hello@kyros.cc">
-                    <img src="folder%20icon.jpg" alt="Folder" class="terminal-folder-icon" />
+                    <img src="folder%20icon.png" alt="Folder" class="terminal-folder-icon" />
                     hello@<strong>kyros</strong>.cc — <span class="header-callout">email us!</span>
                 </a>
             </div>
