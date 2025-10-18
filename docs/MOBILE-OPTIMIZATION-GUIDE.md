@@ -10,8 +10,8 @@ Add these scripts to your `index.html` **before** your Three.js initialization:
 
 ```html
 <!-- Add these before your Three.js script -->
-<script src="mobile-optimizations.js"></script>
-<script src="webgl-fallback.js"></script>
+<script src="./mobile-optimizations.js"></script>
+<script src="./webgl-fallback.js"></script>
 ```
 
 Then modify your Three.js initialization:
@@ -202,4 +202,3 @@ The system automatically logs performance metrics. Check browser console for:
 5. **Iterate based on real-world feedback**
 
 The optimizations are designed to be non-breaking - your site will work exactly the same on desktop while being much more stable on mobile Safari.
-

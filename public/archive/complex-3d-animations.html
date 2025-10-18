@@ -8,7 +8,7 @@
   <style>
     @font-face {
       font-family: 'Universal Secondary Web';
-      src: url('universal-secondary-web-regular.ttf') format('truetype');
+      src: url('assets/fonts/universal-secondary-web-regular.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
@@ -274,12 +274,12 @@
     let orbitalObjects = [];
     let orbitalGroups = [];
     let glbFiles = [
-      'pizza/scene.gltf',
-      'donut_2.0/scene.gltf',
-      'orbital_objects/crystal_stone_rock.glb', 
-      'orbital_objects/gameboy_classic.glb', 
-      'orbital_objects/2f322dab13694f6db1fb4795ff209171.glb',
-      'orbital_objects/tether_usdt.glb'
+      'assets/pizza/scene.gltf',
+      'assets/donut_2.0/scene.gltf',
+      'assets/orbital_objects/crystal_stone_rock.glb', 
+      'assets/orbital_objects/gameboy_classic.glb', 
+      'assets/orbital_objects/2f322dab13694f6db1fb4795ff209171.glb',
+      'assets/orbital_objects/tether_usdt.glb'
     ]; // Orbital objects around Earth - ordered: pizza → donut → crystal → gameboy → K → tether
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
@@ -696,7 +696,7 @@
       const loader = new FontLoader();
     // Load Universal Secondaries font (authentic Universal Studios look)
     console.log('🔤 Loading Universal font...');
-    loader.load('Universal Secondary Web_Regular.json', function(font) {
+    loader.load('assets/fonts/universal-secondary-web-regular.json', function(font) {
       fontLoaded = true;
       clearTimeout(fontTimeout);
       console.log('✅ Universal font loaded successfully');
@@ -1514,8 +1514,8 @@
       const loader = new GLTFLoader();
       
       // Try GLB first
-      console.log('🔍 Attempting to load earth.glb...');
-      loader.load('earth.glb', function(gltf) {
+      console.log('🔍 Attempting to load assets/earth_gltf/scene.gltf...');
+      loader.load('assets/earth_gltf/scene.gltf', function(gltf) {
         console.log('✅ Earth GLB loaded successfully');
         earthModel = gltf.scene;
         
@@ -1562,8 +1562,8 @@
         console.log('⚠️ Earth GLB load failed:', error);
         
         // Reset loader path and try GLTF
-        loader.setPath('earth_gltf/');
-        console.log('🔍 Attempting to load GLTF from earth_gltf/scene.gltf...');
+        loader.setPath('assets/earth_gltf/');
+        console.log('🔍 Attempting to load GLTF from assets/earth_gltf/scene.gltf...');
         loader.load('scene.gltf', function(gltf) {
           console.log('✅ Earth GLTF loaded successfully');
           earthModel = gltf.scene;
