@@ -527,13 +527,20 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: hidden;
             word-wrap: break-word;
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
             scroll-behavior: smooth;
             height: 100%;
+        }
+
+        #magic-terminal-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            width: 100%;
         }
 
         .system-messages {
@@ -953,7 +960,7 @@
             <div class="terminal-title" id="terminal-title">
                 <a href="mailto:hello@kyros.cc">
                     <img src="assets/folder-icon.png" alt="Folder" class="terminal-folder-icon" />
-                    hello@<strong>kyros</strong>.cc — <span class="header-callout">email us!</span>
+                    hello@<strong>kyros</strong>.cc — <span class="header-callout">need capital or a build partner?</span>
                 </a>
             </div>
         </div>
@@ -1377,19 +1384,19 @@
                 }
 
                 if (command === 'contact') {
-                    return formatInteractiveText(`📬 Drop us a line at ${CONTACT_EMAIL} or grab time at ${CALENDLY_URL}`);
+                    return formatInteractiveText(`📬 Looking for capital or help shipping a project? Reach us at ${CONTACT_EMAIL} or book a slot at ${CALENDLY_URL}`);
                 }
 
                 if (command === 'email') {
-                    return formatInteractiveText(`✉️ Preferred inbox: ${CONTACT_EMAIL} · Calendar: ${CALENDLY_URL}`);
+                    return formatInteractiveText(`✉️ Capital requests & build support: ${CONTACT_EMAIL} · Calendar: ${CALENDLY_URL}`);
                 }
 
                 if (command === 'pitch') {
-                    return formatInteractiveText(`🚀 Ready to pitch? Send materials to ${CONTACT_EMAIL} and book a 30-minute deep dive at ${CALENDLY_URL}`);
+                    return formatInteractiveText(`🚀 Have a project that needs capital or product firepower? Send materials to ${CONTACT_EMAIL} and book a 30-minute planning session at ${CALENDLY_URL}`);
                 }
 
                 if (command === 'help') {
-                    return formatInteractiveText(`🆘 Try commands like translate(spanish), contact, warn(), or book time via ${CALENDLY_URL}`);
+                    return formatInteractiveText(`🆘 Try commands like translate(spanish), contact, warn(), or book time via ${CALENDLY_URL} if you need capital or build support`);
                 }
 
                 if (command === 'whoami') {
@@ -1401,11 +1408,11 @@
                 }
 
                 if (command === 'ls -la') {
-                    return formatInteractiveText(`. .. deals/ talent/ partners/ pipeline.md → start at ${CALENDLY_URL}`);
+                    return formatInteractiveText(`. .. deals/ talent/ partners/ pipeline.md → start your capital or project chat at ${CALENDLY_URL}`);
                 }
 
                 if (command === 'cat README.md') {
-                    return formatInteractiveText(`Kyros: Build, buy, broker. Reach us at ${CONTACT_EMAIL} or schedule at ${CALENDLY_URL}.`);
+                    return formatInteractiveText(`Kyros: Build, buy, broker. Need capital or project support? Email ${CONTACT_EMAIL} or schedule at ${CALENDLY_URL}.`);
                 }
                 
                 // Handle echo commands with interactive links
