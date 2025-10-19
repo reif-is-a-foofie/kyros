@@ -571,6 +571,7 @@
             overflow-y: auto;
             min-height: 0;
             padding-right: calc(var(--terminal-padding) - 16px);
+            padding-top: 6px;
         }
 
         .terminal-footer {
@@ -960,7 +961,7 @@
             <div class="terminal-title" id="terminal-title">
                 <a href="mailto:hello@kyros.cc">
                     <img src="assets/folder-icon.png" alt="Folder" class="terminal-folder-icon" />
-                    hello@<strong>kyros</strong>.cc — <span class="header-callout">need capital or a build partner?</span>
+                    hello@<strong>kyros</strong>.cc — <span class="header-callout">help buying or selling a company? email us!</span>
                 </a>
             </div>
         </div>
@@ -1154,16 +1155,26 @@
            };
 
            const lastLoginMessage = `Last login: ${lastLoginTime} on ${computerName}`;
+           const createSystemEntry = (moonPhaseDisplay) => ({
+               type: 'system',
+               id: 'system',
+               messages: [
+                   { id: 'system-info', className: 'system-info', text: lastLoginMessage },
+                   { id: 'moon-phase', className: 'moon-phase', text: `🌙 Current moon phase: ${moonPhaseDisplay}` }
+               ]
+           });
+           const HISTORY_LIMIT = 200;
+           const MAX_ITERATIONS = 100; // Reset after 100 iterations
+           const initialMoonPhase = formatMoonPhase();
 
             const [currentCommand, setCurrentCommand] = useState('');
-            const [history, setHistory] = useState([]);
+            const [history, setHistory] = useState(() => [createSystemEntry(initialMoonPhase)]);
             const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
             const [isTyping, setIsTyping] = useState(true);
             const [iterationCount, setIterationCount] = useState(0);
-            const [moonPhaseText, setMoonPhaseText] = useState(() => formatMoonPhase());
+            const [moonPhaseText, setMoonPhaseText] = useState(initialMoonPhase);
             const [isMagicHeader, setIsMagicHeader] = useState(false);
             const historyRef = useRef(null);
-            const MAX_ITERATIONS = 100; // Reset after 100 iterations
 
 
             const welcomeCommands = [
@@ -1172,7 +1183,10 @@
                 'print motto',
                 'echo "The most important thing in business is extraordinary people"',
                 'echo "Let\'s explore our motto in different languages..."',
-                'echo ""'
+                'echo ""',
+                'echo "🏦 Selling your company? Email us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "📈 Buying a company? Let\'s plan it: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "✉️ hello@kyros.cc - email us for capital, product, or M&A support!"'
             ];
 
             const commands = [
@@ -1225,11 +1239,15 @@
                 'warn()',
                 
                 // Call to Action Commands - More frequent and varied
+                'echo "🏦 Selling your company? Email us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "📈 Buying a company? Let\'s plan it: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🤝 Need a partner for acquisitions? Reach out: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🧭 Navigating an exit? hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "🛠 Rolling up a market? Email us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
+                'echo "📊 Carve-out or spin-off in motion? hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 'echo "💼 Ready to pitch your idea? Contact us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 'echo "🚀 Have a startup? Let\'s talk: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
-                'echo "💡 Building something amazing? Pitch us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 'echo "🎯 Looking for investment? We want to hear from you: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
-                'echo "⚡ Got a game-changing idea? Let\'s discuss: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 'echo "🌟 Ready to scale? Contact Kyros: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 'echo "🔥 Building the future? Pitch us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 'echo "💎 Have a diamond in the rough? Let\'s talk: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
@@ -1237,10 +1255,6 @@
                 'echo "☕ Coffee chat? Meet us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 'echo "📅 Schedule a meeting: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 'echo "💬 Let\'s meet and discuss: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
-                'echo "🎪 Come meet the team: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
-                'echo "🏢 Office visit? Meet us: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
-                'echo "🤝 Partnership meeting: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
-                'echo "💼 Business meeting: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
                 
                 // Additional creative call-to-actions
                 'echo "🎨 Creative entrepreneur? Let\'s collaborate: hello@kyros.cc · https://calendly.com/reif-kyros/30min"',
@@ -1351,6 +1365,41 @@
                 }
             }, [history]);
 
+            useEffect(() => {
+                setHistory(prev => {
+                    let changed = false;
+                    const updated = prev.map(entry => {
+                        if (entry.type !== 'system' || entry.id !== 'system') {
+                            return entry;
+                        }
+
+                        let systemChanged = false;
+                        const messages = entry.messages.map(message => {
+                            if (message.id !== 'moon-phase') {
+                                return message;
+                            }
+
+                            const nextText = `🌙 Current moon phase: ${moonPhaseText}`;
+                            if (message.text === nextText) {
+                                return message;
+                            }
+
+                            systemChanged = true;
+                            return { ...message, text: nextText };
+                        });
+
+                        if (!systemChanged) {
+                            return entry;
+                        }
+
+                        changed = true;
+                        return { ...entry, messages };
+                    });
+
+                    return changed ? updated : prev;
+                });
+            }, [moonPhaseText]);
+
             // Function to make emails and URLs clickable
             const formatInteractiveText = (text) => {
                 const withEmails = text.replace(
@@ -1384,19 +1433,19 @@
                 }
 
                 if (command === 'contact') {
-                    return formatInteractiveText(`📬 Looking for capital or help shipping a project? Reach us at ${CONTACT_EMAIL} or book a slot at ${CALENDLY_URL}`);
+                    return formatInteractiveText(`📬 Need capital, help shipping a project, or support buying/selling a company? Reach us at ${CONTACT_EMAIL} or book a slot at ${CALENDLY_URL}`);
                 }
 
                 if (command === 'email') {
-                    return formatInteractiveText(`✉️ Capital requests & build support: ${CONTACT_EMAIL} · Calendar: ${CALENDLY_URL}`);
+                    return formatInteractiveText(`✉️ Capital, product, and M&A support: ${CONTACT_EMAIL} · Calendar: ${CALENDLY_URL}`);
                 }
 
                 if (command === 'pitch') {
-                    return formatInteractiveText(`🚀 Have a project that needs capital or product firepower? Send materials to ${CONTACT_EMAIL} and book a 30-minute planning session at ${CALENDLY_URL}`);
+                    return formatInteractiveText(`🚀 Have a project, acquisition, or exit in motion? Send materials to ${CONTACT_EMAIL} and book a 30-minute planning session at ${CALENDLY_URL}`);
                 }
 
                 if (command === 'help') {
-                    return formatInteractiveText(`🆘 Try commands like translate(spanish), contact, warn(), or book time via ${CALENDLY_URL} if you need capital or build support`);
+                    return formatInteractiveText(`🆘 Need capital, build support, or help buying/selling a company? Email ${CONTACT_EMAIL} or book time via ${CALENDLY_URL}`);
                 }
 
                 if (command === 'whoami') {
@@ -1408,11 +1457,11 @@
                 }
 
                 if (command === 'ls -la') {
-                    return formatInteractiveText(`. .. deals/ talent/ partners/ pipeline.md → start your capital or project chat at ${CALENDLY_URL}`);
+                    return formatInteractiveText(`. .. deals/ talent/ partners/ m&a.md → start your capital or project chat at ${CALENDLY_URL}`);
                 }
 
                 if (command === 'cat README.md') {
-                    return formatInteractiveText(`Kyros: Build, buy, broker. Need capital or project support? Email ${CONTACT_EMAIL} or schedule at ${CALENDLY_URL}.`);
+                    return formatInteractiveText(`Kyros: Build, buy, broker. Need capital, product muscle, or M&A guidance? Email ${CONTACT_EMAIL} or schedule at ${CALENDLY_URL}.`);
                 }
                 
                 // Handle echo commands with interactive links
@@ -1717,7 +1766,7 @@
                 if (iterationCount >= MAX_ITERATIONS) {
                     setTimeout(() => {
                         setCurrentCommand('');
-                        setHistory([]);
+                        setHistory([createSystemEntry(moonPhaseText)]);
                         setCurrentCommandIndex(0);
                         setIterationCount(0);
                     }, 2000);
@@ -1739,7 +1788,10 @@
                                 const output = executeCommand(command);
 
                                 // Add command and output to history
-                                setHistory(prev => [...prev, { command, output }]);
+                                setHistory(prev => {
+                                    const next = [...prev, { type: 'command', command, output }];
+                                    return next.length > HISTORY_LIMIT ? next.slice(next.length - HISTORY_LIMIT) : next;
+                                });
 
                                 setCurrentCommandIndex(prev => prev + 1);
                                 setCurrentCommand('');
@@ -1756,30 +1808,40 @@
                         setIterationCount(prev => prev + 1);
                     }, 2000);
                 }
-            }, [currentCommandIndex, isTyping, iterationCount]);
+            }, [currentCommandIndex, isTyping, iterationCount, moonPhaseText]);
 
             return (
                 <div className="magic-terminal">
-                    <div className="system-messages" aria-live="polite" aria-atomic="true">
-                        <div className="system-message system-info">{lastLoginMessage}</div>
-                        <div className="system-message moon-phase">🌙 Current moon phase: {moonPhaseText}</div>
-                    </div>
                     <div className="history-scroll" role="log" aria-live="polite" aria-relevant="additions" ref={historyRef}>
-                        {history.map((item, index) => (
-                            <div key={`${item.command}-${index}`}>
-                                <div className="terminal-history-line">
-                                    <span className="terminal-prompt">▶</span>
-                                    <span className="terminal-command">{item.command}</span>
+                        {history.map((item, index) => {
+                            if (item.type === 'system') {
+                                return (
+                                    <div key={`${item.id}-${index}`} className="system-messages" aria-live="polite" aria-atomic="true">
+                                        {item.messages.map(message => (
+                                            <div key={message.id} className={`system-message ${message.className}`}>
+                                                {message.text}
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <div key={`${item.command}-${index}`}>
+                                    <div className="terminal-history-line">
+                                        <span className="terminal-prompt">▶</span>
+                                        <span className="terminal-command">{item.command}</span>
+                                    </div>
+                                    <div className="terminal-history-line">
+                                        <span className="terminal-prompt" aria-hidden="true"></span>
+                                        <span className="terminal-output">
+                                            <span className="checkmark">✓</span>
+                                            <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="terminal-history-line">
-                                    <span className="terminal-prompt" aria-hidden="true"></span>
-                                    <span className="terminal-output">
-                                        <span className="checkmark">✓</span>
-                                        <span className="output-text" dangerouslySetInnerHTML={{__html: item.output}}></span>
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                     <div className="terminal-footer">
                         <div className="terminal-line">
